@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Send } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const suggestedTopics = ["Stress", "Relationships", "Career Change", "Motivation"];
 
@@ -10,35 +10,33 @@ const WritingInput = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      // Handle chat transition here
       console.log('Starting chat with:', input);
     }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
+    <div className="w-full max-w-3xl mx-auto space-y-8">
       <form onSubmit={handleSubmit} className="relative">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="What's on your mind lately?"
-          className="w-full px-6 py-4 text-lg font-serif bg-white/80 backdrop-blur-sm rounded-full border-2 border-dusty-rose/20 focus:border-dusty-rose focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-32"
+          className="w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal/20 focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50"
         />
         <button
           type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-6 h-12 flex items-center gap-2 rounded-full bg-deep-charcoal text-white hover:bg-dusty-rose transition-colors border-2 border-deep-charcoal hover:border-dusty-rose"
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-deep-charcoal/5 transition-colors"
         >
-          <span className="font-poppins text-sm">Send</span>
-          <Send size={16} />
+          <ArrowRight className="w-6 h-6 text-deep-charcoal" />
         </button>
       </form>
       
-      <div className="flex flex-wrap gap-3 justify-center">
+      <div className="flex flex-wrap gap-4 justify-center">
         {suggestedTopics.map((topic) => (
           <button
             key={topic}
-            className="px-6 py-2 rounded-full border border-muted-sage text-deep-charcoal hover:bg-muted-sage hover:text-white transition-all duration-200 text-sm font-poppins"
+            className="px-8 py-3 rounded-full border-2 border-deep-charcoal bg-transparent text-deep-charcoal hover:bg-deep-charcoal hover:text-white transition-all duration-200 text-lg font-poppins"
           >
             {topic}
           </button>
