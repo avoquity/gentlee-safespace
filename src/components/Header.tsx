@@ -14,17 +14,20 @@ const Header = () => {
           </div>
           
           <nav className="hidden md:flex items-center space-x-10">
-            <Link to="/wall-of-love" className="text-deep-charcoal hover:text-dusty-rose transition-colors duration-200 font-poppins">
+            <Link to="/wall-of-love" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
               Wall of Love
             </Link>
-            <Link to="/about" className="text-deep-charcoal hover:text-dusty-rose transition-colors duration-200 font-poppins">
+            <Link to="/about" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
               About
             </Link>
           </nav>
           
           <div className="flex items-center space-x-4">
-            <button className="px-6 py-2 rounded-full border-2 border-dusty-rose text-dusty-rose hover:bg-dusty-rose hover:text-white transition-all duration-200 font-poppins">
+            <button className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white transition-all duration-200 font-poppins">
               Sign In
+            </button>
+            <button className="px-6 py-2 rounded-full bg-deep-charcoal border-2 border-deep-charcoal text-white hover:bg-muted-sage hover:border-muted-sage transition-all duration-200 font-poppins">
+              Sign Up
             </button>
           </div>
         </div>

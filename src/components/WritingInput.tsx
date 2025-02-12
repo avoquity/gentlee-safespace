@@ -26,9 +26,10 @@ const WritingInput = () => {
         />
         <button
           type="submit"
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-deep-charcoal/5 transition-colors"
+          className="absolute right-0 top-1/2 -translate-y-1/2 px-6 py-2 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
         >
-          <ArrowRight className="w-6 h-6 text-deep-charcoal" />
+          <span className="font-poppins text-base">Send</span>
+          <ArrowRight className="w-4 h-4" />
         </button>
       </form>
       
@@ -36,7 +37,7 @@ const WritingInput = () => {
         {suggestedTopics.map((topic) => (
           <button
             key={topic}
-            className="px-8 py-3 rounded-full border-2 border-deep-charcoal bg-transparent text-deep-charcoal hover:bg-deep-charcoal hover:text-white transition-all duration-200 text-lg font-poppins"
+            className="px-6 py-2 rounded-full border border-deep-charcoal bg-transparent text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white transition-all duration-200 text-base font-poppins"
           >
             {topic}
           </button>
