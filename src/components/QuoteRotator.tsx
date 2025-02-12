@@ -24,13 +24,15 @@ const QuoteRotator = () => {
   }, []);
 
   return (
-    <h1 
-      className={`text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight transition-opacity duration-500 ${
-        isVisible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      {quotes[currentQuote]}
-    </h1>
+    <div className="w-[75vw]">
+      <h1 
+        className={`text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight transition-opacity duration-500 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        {quotes[currentQuote]}
+      </h1>
+    </div>
   );
 };
 

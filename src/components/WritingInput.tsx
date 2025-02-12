@@ -23,13 +23,14 @@ const WritingInput = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="What's on your mind lately?"
-          className="w-full px-6 py-4 text-lg font-serif bg-white/80 backdrop-blur-sm rounded-full border-2 border-dusty-rose/20 focus:border-dusty-rose focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-16"
+          className="w-full px-6 py-4 text-lg font-serif bg-white/80 backdrop-blur-sm rounded-full border-2 border-dusty-rose/20 focus:border-dusty-rose focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-32"
         />
         <button
           type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-dusty-rose text-white hover:bg-opacity-90 transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 px-6 h-12 flex items-center gap-2 rounded-full bg-deep-charcoal text-white hover:bg-dusty-rose transition-colors border-2 border-deep-charcoal hover:border-dusty-rose"
         >
-          <Send size={20} />
+          <span className="font-poppins text-sm">Send</span>
+          <Send size={16} />
         </button>
       </form>
       
