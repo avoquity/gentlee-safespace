@@ -12,7 +12,7 @@ const Index = () => {
       
       <main className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-5 gap-12 items-center mb-24">
+          <div className="grid lg:grid-cols-5 gap-20 items-start mb-24">
             <div className="lg:col-span-3 space-y-8 animate-fade-in">
               <QuoteRotator />
               <p className="text-xl text-deep-charcoal/80 font-poppins max-w-2xl">

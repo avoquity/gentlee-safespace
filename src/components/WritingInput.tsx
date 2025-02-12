@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 
-const suggestedTopics = ["Stress", "Relationships", "Career Change", "Motivation"];
+const suggestedTopics = ["Stress", "Relationships", "Career Change", "Motivation", "Self-Care"];
 
 const WritingInput = () => {
   const [input, setInput] = useState('');
@@ -10,7 +10,6 @@ const WritingInput = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      // Handle chat transition here
       console.log('Starting chat with:', input);
     }
   };
@@ -38,7 +37,7 @@ const WritingInput = () => {
         {suggestedTopics.map((topic) => (
           <button
             key={topic}
-            className="px-6 py-2 rounded-full border border-muted-sage text-deep-charcoal hover:bg-muted-sage hover:text-white transition-all duration-200 text-sm font-poppins"
+            className="px-6 py-2 rounded-full border border-deep-charcoal text-deep-charcoal hover:bg-deep-charcoal hover:text-white transition-all duration-200 text-sm font-poppins"
           >
             {topic}
           </button>
