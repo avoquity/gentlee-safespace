@@ -15,14 +15,16 @@ const Index = () => {
           <div className="space-y-12">
             <div className="animate-fade-in">
               <QuoteRotator />
-              <p className="text-xl text-deep-charcoal/80 font-poppins max-w-2xl mt-8">
-                Your space to untangle your thoughts and find clarity through just chats.
-              </p>
             </div>
             
-            <div className="flex justify-end animate-fade-up">
-              <div className="max-w-md w-full">
-                <MusicPlayer />
+            <div className="grid lg:grid-cols-2 gap-8 items-start">
+              <p className="text-xl text-deep-charcoal/80 font-poppins animate-fade-in">
+                Your space to untangle your thoughts and find clarity through just chats.
+              </p>
+              <div className="flex justify-end animate-fade-up">
+                <div className="max-w-md w-full">
+                  <MusicPlayer />
+                </div>
               </div>
             </div>
           </div>

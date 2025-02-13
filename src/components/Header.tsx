@@ -23,11 +23,11 @@ const Header = () => {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <button className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white transition-all duration-200 font-poppins">
-              Sign In
-            </button>
             <button className="px-6 py-2 rounded-full bg-deep-charcoal border-2 border-deep-charcoal text-white hover:bg-muted-sage hover:border-muted-sage transition-all duration-200 font-poppins">
               Sign Up
+            </button>
+            <button className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white transition-all duration-200 font-poppins">
+              Sign In
             </button>
           </div>
         </div>
