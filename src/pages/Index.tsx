@@ -4,13 +4,14 @@ import Header from '../components/Header';
 import QuoteRotator from '../components/QuoteRotator';
 import MusicPlayer from '../components/MusicPlayer';
 import WritingInput from '../components/WritingInput';
+import Footer from '../components/Footer';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-soft-ivory">
+    <div className="min-h-screen bg-soft-ivory flex flex-col">
       <Header />
       
-      <main className="pt-40 pb-16 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 pt-40 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="space-y-16">
             <div className="animate-fade-in">
@@ -42,6 +43,8 @@ const Index = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
