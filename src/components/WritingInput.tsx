@@ -22,7 +22,7 @@ const WritingInput = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="What's on your mind lately?"
-          className="w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal/20 focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50"
+          className="w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40"
         />
         <button
           type="submit"
@@ -37,7 +37,7 @@ const WritingInput = () => {
         {suggestedTopics.map((topic) => (
           <button
             key={topic}
-            className="px-6 py-2 rounded-full border border-deep-charcoal bg-transparent text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white transition-all duration-200 text-base font-poppins"
+            className="px-6 py-2 rounded-full border border-deep-charcoal bg-transparent text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white transition-all duration-200 text-sm font-poppins"
           >
             {topic}
           </button>
