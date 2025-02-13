@@ -23,7 +23,7 @@ const WritingInput = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-4">
+    <div className="w-full max-w-3xl mx-auto space-y-2">
       <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto mb-20">
         <div className="relative max-h-48 overflow-hidden">
           <textarea
