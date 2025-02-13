@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const suggestedTopics = [
   "Stress", 
@@ -14,11 +15,14 @@ const suggestedTopics = [
 
 const WritingInput = () => {
   const [input, setInput] = useState('');
+  const navigate = useNavigate();
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      console.log('Starting chat with:', input);
+      navigate('/chat', {
+        state: { initialMessage: input }
+      });
     }
   };
 
