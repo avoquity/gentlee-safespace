@@ -16,7 +16,7 @@ const WritingInput = () => {
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8">
-      <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto mb-5">
+      <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto mb-10">
         <input
           type="text"
           value={input}

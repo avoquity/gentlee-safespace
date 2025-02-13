@@ -7,10 +7,12 @@ const MusicPlayer = () => {
   const [isMuted, setIsMuted] = useState(false);
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg max-w-sm w-full h-[400px] flex flex-col justify-between">
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg max-w-[280px] w-full h-[280px] flex flex-col justify-between border-2 border-black">
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
-          <span className="text-deep-charcoal font-poppins font-medium text-lg">Now Playing</span>
+          <span className="text-deep-charcoal font-poppins font-medium text-lg">
+            {isPlaying ? "Breathe, listen, reflect" : "A moment for you"}
+          </span>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className="text-deep-charcoal hover:text-dusty-rose transition-colors"
@@ -31,7 +33,7 @@ const MusicPlayer = () => {
               {[...Array(20)].map((_, i) => (
                 <div
                   key={i}
-                  className={`w-1.5 h-12 rounded-full bg-dusty-rose/30 animate-wave`}
+                  className={`w-1.5 h-24 rounded-full bg-soft-yellow/30 animate-wave`}
                   style={{
                     animationDelay: `${i * 0.1}s`,
                     opacity: isPlaying ? 1 : 0.5,
@@ -41,10 +43,10 @@ const MusicPlayer = () => {
             </div>
           </div>
         </div>
-        
-        <span className="text-base text-deep-charcoal/70 font-poppins">
-          Soft Instrumental Melody
-        </span>
+      </div>
+      
+      <div className="text-base text-deep-charcoal/70 font-poppins text-center border-t border-deep-charcoal/10 pt-4 mt-auto">
+        Soft Instrumental Melody
       </div>
     </div>
   );
