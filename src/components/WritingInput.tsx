@@ -47,7 +47,7 @@ const WritingInput = () => {
         </div>
         <button
           type="submit"
-          className="absolute right-0 top-0 px-6 py-2 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 sticky"
+          className="absolute right-0 top-0 px-6 py-2 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
         >
           <span className="font-poppins text-base">Send</span>
           <ArrowRight className="w-4 h-4" />

@@ -20,10 +20,7 @@ const Index = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-start">
               <div className="space-y-4 animate-fade-in">
                 <p className="text-xl text-deep-charcoal/80 font-poppins">
-                  Your space to untangle your thoughts and find clarity through just chats.
-                </p>
-                <p className="text-xl text-deep-charcoal/80 font-poppins">
-                  No rules, no pressure—just a space to let your thoughts breathe.
+                  Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
               </div>
               <div className="flex justify-end animate-fade-up">
