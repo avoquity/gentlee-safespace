@@ -7,7 +7,7 @@ const MusicPlayer = () => {
   const [isMuted, setIsMuted] = useState(false);
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg max-w-sm w-full h-[440px] flex flex-col justify-between border-2 border-black">
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg max-w-sm w-full h-[396px] flex flex-col justify-between border-2 border-black">
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <span className="text-deep-charcoal font-poppins font-medium text-lg">

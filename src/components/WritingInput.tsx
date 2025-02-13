@@ -23,7 +23,7 @@ const WritingInput = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-8">
+    <div className="w-full max-w-3xl mx-auto space-y-6">
       <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto mb-20">
         <div className="relative max-h-48 overflow-hidden">
           <textarea
@@ -47,14 +47,14 @@ const WritingInput = () => {
         </div>
         <button
           type="submit"
-          className="absolute right-0 top-0 px-6 py-2 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
+          className="absolute right-0 top-0 px-6 py-2 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 sticky"
         >
           <span className="font-poppins text-base">Send</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </form>
       
-      <div className="flex flex-wrap gap-4 justify-center max-w-2xl mx-auto">
+      <div className="flex flex-wrap gap-3 justify-center max-w-2xl mx-auto">
         {suggestedTopics.map((topic) => (
           <button
             key={topic}
