@@ -17,8 +17,8 @@ const QuoteRotator = () => {
       setTimeout(() => {
         setCurrentQuote((prev) => (prev + 1) % quotes.length);
         setIsVisible(true);
-      }, 500);
-    }, 10000);
+      }, 1000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -26,7 +26,7 @@ const QuoteRotator = () => {
   return (
     <div className="w-[75vw]">
       <h1 
-        className={`text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight transition-opacity duration-500 ${
+        className={`text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight transition-opacity duration-1000 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
