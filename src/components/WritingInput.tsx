@@ -23,8 +23,8 @@ const WritingInput = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col gap-1">
-      <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto">
+    <div className="w-full max-w-3xl mx-auto flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto mb-3">
         <div className="relative max-h-48 overflow-hidden">
           <textarea
             value={input}
@@ -54,7 +54,7 @@ const WritingInput = () => {
         </button>
       </form>
       
-      <div className="flex flex-wrap items-center gap-2 justify-center max-w-2xl mx-auto -mt-2">
+      <div className="flex flex-wrap items-center gap-2 justify-center max-w-2xl mx-auto mt-3">
         {suggestedTopics.map((topic) => (
           <button
             key={topic}
