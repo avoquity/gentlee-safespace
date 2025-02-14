@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ArrowRight } from 'lucide-react';
 
@@ -30,6 +30,7 @@ const Chat = () => {
   const [savedEntries, setSavedEntries] = useState<ChatEntry[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
+  const navigate = useNavigate();
 
   // Function to identify themes based on message content
   const identifyThemes = (messages: Message[]): string[] => {
@@ -62,6 +63,11 @@ const Chat = () => {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleCloseConversation = () => {
+    saveCurrentChat();
+    navigate('/entries');
   };
 
   const simulateAIResponse = async (userMessage: string) => {
@@ -164,6 +170,22 @@ const Chat = () => {
             <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
               {format(currentDate, 'd MMMM yyyy')}
             </h1>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {messages.length > 0 ? (
+                identifyThemes(messages).map((theme) => (
+                  <span
+                    key={theme}
+                    className="px-4 py-1.5 text-sm rounded-full border border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-colors"
+                  >
+                    {theme}
+                  </span>
+                ))
+              ) : (
+                <span className="px-4 py-1.5 text-sm rounded-full border border-deep-charcoal/20 text-deep-charcoal/40">
+                  No theme yet
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="space-y-8">
@@ -196,37 +218,21 @@ const Chat = () => {
                 </div>
               </div>
             )}
+            {messages.length > 0 && messages[messages.length - 1].sender === 'ai' && (
+              <div className="flex justify-start mt-8">
+                <div className="text-sm text-deep-charcoal/60">
+                  This is great. I feel much better. Thank you for the time and{' '}
+                  <button
+                    onClick={handleCloseConversation}
+                    className="text-deep-charcoal/60 hover:underline focus:outline-none"
+                  >
+                    close this conversation
+                  </button>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
-
-          {savedEntries.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-deep-charcoal/10">
-              <h3 className="text-deep-charcoal/60 text-sm font-medium mb-4">Past Entries</h3>
-              <div className="space-y-4">
-                {savedEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="p-4 bg-white/50 rounded-lg cursor-pointer hover:bg-white/80 transition-colors"
-                    onClick={() => setMessages(entry.messages)}
-                  >
-                    <div className="text-sm text-deep-charcoal">
-                      {format(new Date(entry.date), 'd MMMM yyyy')}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {entry.themes.map((theme) => (
-                        <span
-                          key={theme}
-                          className="px-2 py-1 text-xs rounded-full bg-muted-sage/20 text-deep-charcoal"
-                        >
-                          {theme}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
