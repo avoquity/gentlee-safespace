@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -15,14 +14,51 @@ interface Message {
   timestamp: Date;
 }
 
+interface ChatEntry {
+  id: string;
+  messages: Message[];
+  date: Date;
+  themes: string[];
+}
+
 const Chat = () => {
   const location = useLocation();
   const { initialMessage } = (location.state as LocationState) || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [savedEntries, setSavedEntries] = useState<ChatEntry[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
+
+  // Function to identify themes based on message content
+  const identifyThemes = (messages: Message[]): string[] => {
+    const commonThemes = [
+      'Anxiety', 'Growth', 'Relationships', 'Career',
+      'Self-discovery', 'Healing', 'Goals', 'Changes'
+    ];
+    
+    const messageText = messages.map(m => m.text.toLowerCase()).join(' ');
+    return commonThemes.filter(theme => 
+      messageText.includes(theme.toLowerCase())
+    );
+  };
+
+  // Function to save current chat as an entry
+  const saveCurrentChat = () => {
+    if (messages.length > 0) {
+      const themes = identifyThemes(messages);
+      const newEntry: ChatEntry = {
+        id: Date.now().toString(),
+        messages: [...messages],
+        date: new Date(),
+        themes
+      };
+      
+      setSavedEntries(prev => [...prev, newEntry]);
+      // Here you would typically also save to localStorage or a backend
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -31,7 +67,6 @@ const Chat = () => {
   const simulateAIResponse = async (userMessage: string) => {
     setIsTyping(true);
     
-    // Simulate AI thinking time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     let response = '';
@@ -41,7 +76,6 @@ const Chat = () => {
       response = `I understand. Let's explore that further. What aspects of this situation do you find most challenging?`;
     }
 
-    // Simulate typing effect
     for (let i = 0; i < response.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 30));
       setMessages(prev => {
@@ -69,6 +103,9 @@ const Chat = () => {
         timestamp: new Date()
       }
     ]);
+    
+    // Save chat entry after AI responds
+    saveCurrentChat();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,17 +141,29 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Load saved entries from storage on mount
+  useEffect(() => {
+    const storedEntries = localStorage.getItem('chatEntries');
+    if (storedEntries) {
+      setSavedEntries(JSON.parse(storedEntries));
+    }
+  }, []);
+
+  // Save entries to storage when they change
+  useEffect(() => {
+    if (savedEntries.length > 0) {
+      localStorage.setItem('chatEntries', JSON.stringify(savedEntries));
+    }
+  }, [savedEntries]);
+
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6">
           <div className="mb-10">
             <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
-              {format(currentDate, 'MMMM d')}
+              {format(currentDate, 'd MMMM yyyy')}
             </h1>
-            <h2 className="text-deep-charcoal/60 text-sm font-medium mt-2">
-              {format(currentDate, 'yyyy')}
-            </h2>
           </div>
 
           <div className="space-y-8">
@@ -149,6 +198,35 @@ const Chat = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {savedEntries.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-deep-charcoal/10">
+              <h3 className="text-deep-charcoal/60 text-sm font-medium mb-4">Past Entries</h3>
+              <div className="space-y-4">
+                {savedEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="p-4 bg-white/50 rounded-lg cursor-pointer hover:bg-white/80 transition-colors"
+                    onClick={() => setMessages(entry.messages)}
+                  >
+                    <div className="text-sm text-deep-charcoal">
+                      {format(new Date(entry.date), 'd MMMM yyyy')}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {entry.themes.map((theme) => (
+                        <span
+                          key={theme}
+                          className="px-2 py-1 text-xs rounded-full bg-muted-sage/20 text-deep-charcoal"
+                        >
+                          {theme}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -159,7 +237,7 @@ const Chat = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Continue your thoughts here..."
-              className="w-full px-1 py-3 pr-40 text-sm bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed"
+              className="w-full px-1 py-2 pr-48 text-sm bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed"
               style={{
                 minHeight: '3rem',
                 maxHeight: '12rem'
@@ -178,7 +256,7 @@ const Chat = () => {
             />
             <button
               type="submit"
-              className="absolute right-0 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
             >
               <span className="font-poppins text-sm">Send</span>
               <ArrowRight className="w-4 h-4" />
