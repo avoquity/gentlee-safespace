@@ -1,28 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ArrowRight } from 'lucide-react';
-
-interface LocationState {
-  initialMessage?: string;
-}
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
-}
-
-interface ChatEntry {
-  id: string;
-  messages: Message[];
-  date: Date;
-  themes: string[];
-}
+import { ChatMessage } from '@/components/chat/ChatMessage';
+import { ChatThemes } from '@/components/chat/ChatThemes';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { ChatTypingIndicator } from '@/components/chat/ChatTypingIndicator';
+import { identifyThemes } from '@/utils/themeUtils';
+import { Message, ChatEntry, LocationState } from '@/types/chat';
 
 const Chat = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { initialMessage } = (location.state as LocationState) || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -30,22 +18,7 @@ const Chat = () => {
   const [savedEntries, setSavedEntries] = useState<ChatEntry[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
-  const navigate = useNavigate();
 
-  // Function to identify themes based on message content
-  const identifyThemes = (messages: Message[]): string[] => {
-    const commonThemes = [
-      'Anxiety', 'Growth', 'Relationships', 'Career',
-      'Self-discovery', 'Healing', 'Goals', 'Changes'
-    ];
-    
-    const messageText = messages.map(m => m.text.toLowerCase()).join(' ');
-    return commonThemes.filter(theme => 
-      messageText.includes(theme.toLowerCase())
-    );
-  };
-
-  // Function to save current chat as an entry
   const saveCurrentChat = () => {
     if (messages.length > 0) {
       const themes = identifyThemes(messages);
@@ -57,17 +30,16 @@ const Chat = () => {
       };
       
       setSavedEntries(prev => [...prev, newEntry]);
-      // Here you would typically also save to localStorage or a backend
     }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleCloseConversation = () => {
     saveCurrentChat();
     navigate('/entries');
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const simulateAIResponse = async (userMessage: string) => {
@@ -171,53 +143,18 @@ const Chat = () => {
               {format(currentDate, 'd MMMM yyyy')}
             </h1>
             <div className="mt-3 flex flex-wrap gap-2">
-              {messages.length > 0 ? (
-                identifyThemes(messages).map((theme) => (
-                  <span
-                    key={theme}
-                    className="px-4 py-1.5 text-sm rounded-full border border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-colors"
-                  >
-                    {theme}
-                  </span>
-                ))
-              ) : (
-                <span className="px-4 py-1.5 text-sm rounded-full border border-deep-charcoal/20 text-deep-charcoal/40">
-                  No theme yet
-                </span>
-              )}
+              <ChatThemes 
+                themes={identifyThemes(messages)} 
+                hasMessages={messages.length > 0} 
+              />
             </div>
           </div>
 
           <div className="space-y-8">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] px-6 py-4 rounded-2xl ${
-                    message.sender === 'user'
-                      ? 'bg-white shadow-sm'
-                      : 'bg-transparent'
-                  }`}
-                >
-                  <p className="text-deep-charcoal text-sm leading-relaxed whitespace-pre-wrap">
-                    {message.text}
-                  </p>
-                </div>
-              </div>
+              <ChatMessage key={message.id} message={message} />
             ))}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-transparent max-w-[80%] px-6 py-4 rounded-2xl">
-                  <div className="flex space-x-2">
-                    <span className="w-2 h-2 bg-deep-charcoal/40 rounded-full animate-bounce" />
-                    <span className="w-2 h-2 bg-deep-charcoal/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <span className="w-2 h-2 bg-deep-charcoal/40 rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              </div>
-            )}
+            {isTyping && <ChatTypingIndicator />}
             {messages.length > 0 && messages[messages.length - 1].sender === 'ai' && (
               <div className="flex justify-start mt-8">
                 <div className="text-sm text-deep-charcoal/60">
@@ -238,36 +175,11 @@ const Chat = () => {
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <form onSubmit={handleSubmit} className="relative">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Continue your thoughts here..."
-              className="w-full px-1 py-2 pr-48 text-sm bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed"
-              style={{
-                minHeight: '3rem',
-                maxHeight: '12rem'
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${Math.min(target.scrollHeight, 192)}px`;
-              }}
-            />
-            <button
-              type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
-            >
-              <span className="font-poppins text-sm">Send</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
+          <ChatInput 
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+          />
         </div>
       </div>
     </div>
