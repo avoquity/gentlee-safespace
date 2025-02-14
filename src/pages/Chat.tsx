@@ -107,27 +107,30 @@ const Chat = () => {
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <div className="flex-1 overflow-hidden">
-        <div className="max-w-4xl mx-auto pt-24 pb-32 px-4">
-          <div className="mb-8">
-            <h2 className="text-deep-charcoal/60 text-sm font-medium">
-              {format(currentDate, 'EEEE, MMMM d, yyyy')}
+        <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6">
+          <div className="mb-10">
+            <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
+              {format(currentDate, 'MMMM d')}
+            </h1>
+            <h2 className="text-deep-charcoal/60 text-sm font-medium mt-2">
+              {format(currentDate, 'yyyy')}
             </h2>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] p-4 rounded-2xl ${
+                  className={`max-w-[80%] px-6 py-4 rounded-2xl ${
                     message.sender === 'user'
                       ? 'bg-white shadow-sm'
                       : 'bg-transparent'
                   }`}
                 >
-                  <p className="text-deep-charcoal whitespace-pre-wrap">
+                  <p className="text-deep-charcoal text-sm leading-relaxed whitespace-pre-wrap">
                     {message.text}
                   </p>
                 </div>
@@ -135,7 +138,7 @@ const Chat = () => {
             ))}
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-transparent max-w-[80%] p-4 rounded-2xl">
+                <div className="bg-transparent max-w-[80%] px-6 py-4 rounded-2xl">
                   <div className="flex space-x-2">
                     <span className="w-2 h-2 bg-deep-charcoal/40 rounded-full animate-bounce" />
                     <span className="w-2 h-2 bg-deep-charcoal/40 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -150,13 +153,13 @@ const Chat = () => {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="relative">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Continue your thoughts here..."
-              className="w-full px-4 py-3 pr-24 text-lg bg-white rounded-xl shadow-sm border border-deep-charcoal/10 focus:outline-none focus:border-deep-charcoal/20 text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none"
+              className="w-full px-1 py-3 pr-40 text-sm bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed"
               style={{
                 minHeight: '3rem',
                 maxHeight: '12rem'
@@ -175,7 +178,7 @@ const Chat = () => {
             />
             <button
               type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-lg bg-deep-charcoal text-white hover:bg-muted-sage transition-colors duration-200 flex items-center gap-2"
+              className="absolute right-0 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
             >
               <span className="font-poppins text-sm">Send</span>
               <ArrowRight className="w-4 h-4" />
