@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { ChatMessage } from '@/components/chat/ChatMessage';
@@ -36,7 +36,9 @@ const Chat = () => {
   };
 
   const handleCloseConversation = () => {
-    saveCurrentChat();
+    if (messages.length > 0) {
+      saveCurrentChat();
+    }
     navigate('/entries');
   };
 
@@ -140,9 +142,17 @@ const Chat = () => {
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
+          {/* Logo */}
+          <Link 
+            to="/"
+            className="absolute left-6 top-8 text-2xl font-bold text-deep-charcoal hover:text-dusty-rose transition-colors"
+          >
+            Lumi
+          </Link>
+
           {/* Close button */}
           <button
-            onClick={() => navigate('/entries')}
+            onClick={handleCloseConversation}
             className="absolute right-6 top-8 p-2 text-deep-charcoal/60 hover:text-dusty-rose transition-colors"
             aria-label="Close conversation"
           >
