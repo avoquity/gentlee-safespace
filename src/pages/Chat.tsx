@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { X } from 'lucide-react';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ChatThemes } from '@/components/chat/ChatThemes';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -137,7 +139,16 @@ const Chat = () => {
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <div className="flex-1 overflow-hidden">
-        <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
+          {/* Close button */}
+          <button
+            onClick={() => navigate('/entries')}
+            className="absolute right-6 top-8 p-2 text-deep-charcoal/60 hover:text-dusty-rose transition-colors"
+            aria-label="Close conversation"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
           <div className="mb-10">
             <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
               {format(currentDate, 'd MMMM yyyy')}
@@ -156,12 +167,12 @@ const Chat = () => {
             ))}
             {isTyping && <ChatTypingIndicator />}
             {messages.length > 0 && messages[messages.length - 1].sender === 'ai' && (
-              <div className="flex justify-start mt-8">
-                <div className="text-sm text-deep-charcoal/60">
+              <div className="flex justify-center mt-8">
+                <div className="text-xs text-dusty-rose">
                   This is great. I feel much better. Thank you for the time and{' '}
                   <button
                     onClick={handleCloseConversation}
-                    className="text-deep-charcoal/60 hover:underline focus:outline-none"
+                    className="text-dusty-rose underline hover:opacity-80 focus:outline-none"
                   >
                     close this conversation
                   </button>
