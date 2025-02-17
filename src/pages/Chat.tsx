@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage } from '@/components/chat/ChatMessage';
@@ -10,7 +11,7 @@ import { ChatThemes } from '@/components/chat/ChatThemes';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatTypingIndicator } from '@/components/chat/ChatTypingIndicator';
 import { identifyThemes } from '@/utils/themeUtils';
-import { Message, ChatEntry, LocationState, DatabaseMessage } from '@/types/chat';
+import { Message, LocationState } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
 
 const Chat = () => {
@@ -18,13 +19,49 @@ const Chat = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { initialMessage } = (location.state as LocationState) || {};
+  const { initialMessage, chatId: existingChatId } = (location.state as LocationState) || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState<number | null>(null);
+  const [currentChatId, setCurrentChatId] = useState<number | null>(existingChatId || null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
+
+  // Fetch messages for existing chat
+  const { data: chatMessages } = useQuery({
+    queryKey: ['messages', currentChatId],
+    queryFn: async () => {
+      if (!currentChatId) return [];
+      
+      const { data, error } = await supabase
+        .from('messages')
+        .select('content, user_role, created_at')
+        .eq('chat_id', currentChatId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        toast({
+          title: "Error loading messages",
+          description: error.message,
+          variant: "destructive"
+        });
+        return [];
+      }
+
+      return data.map(msg => ({
+        id: msg.created_at,
+        text: msg.content,
+        sender: msg.user_role as 'user' | 'ai',
+        timestamp: new Date(msg.created_at)
+      }));
+    },
+    enabled: !!currentChatId,
+    onSuccess: (data) => {
+      if (data) {
+        setMessages(data);
+      }
+    }
+  });
 
   useEffect(() => {
     if (!user) {
@@ -40,7 +77,7 @@ const Chat = () => {
           last_updated: new Date().toISOString(),
           theme: null,
           summary: null,
-          user_id: user?.id // Add user_id when creating a new chat
+          user_id: user?.id
         }])
         .select()
         .single();

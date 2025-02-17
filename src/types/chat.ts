@@ -10,11 +10,11 @@ export interface ChatEntry {
   id: number;
   created_at: string;
   theme: string | null;
-  messages: DatabaseMessage[];
 }
 
 export interface LocationState {
   initialMessage?: string;
+  chatId?: number;
 }
 
 export interface DatabaseMessage {

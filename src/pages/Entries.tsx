@@ -21,16 +21,8 @@ const Entries = () => {
       
       const { data: chats, error } = await supabase
         .from('chat')
-        .select(`
-          id,
-          created_at,
-          theme,
-          messages (
-            content,
-            user_role
-          )
-        `)
-        .eq('user_id', user.id) // Filter chats by user_id
+        .select('id, created_at, theme')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -60,7 +52,6 @@ const Entries = () => {
   return (
     <div className="min-h-screen bg-soft-ivory">
       <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
-        {/* Logo */}
         <Link 
           to="/"
           className="absolute left-6 top-8 text-2xl font-bold text-deep-charcoal hover:text-dusty-rose transition-colors"
