@@ -97,7 +97,7 @@ This chatbot isn’t here to diagnose, prescribe, or analyze—it’s here to be
           { role: 'user', content: userMessage }
         ],
         temperature: 0.7,
-        max_tokens: 150,
+        max_tokens: 500,
       }),
     });
 
