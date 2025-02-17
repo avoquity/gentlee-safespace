@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -55,13 +54,15 @@ const Chat = () => {
         timestamp: new Date(msg.created_at)
       }));
     },
-    enabled: !!currentChatId,
-    onSuccess: (data) => {
-      if (data) {
-        setMessages(data);
-      }
-    }
+    enabled: !!currentChatId
   });
+
+  // Handle successful messages fetch
+  useEffect(() => {
+    if (chatMessages) {
+      setMessages(chatMessages);
+    }
+  }, [chatMessages]);
 
   useEffect(() => {
     if (!user) {
