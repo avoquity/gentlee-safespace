@@ -7,10 +7,10 @@ export interface Message {
 }
 
 export interface ChatEntry {
-  id: string;
-  messages: Message[];
-  date: Date;
-  themes: string[];
+  id: number;
+  created_at: string;
+  theme: string | null;
+  messages: DatabaseMessage[];
 }
 
 export interface LocationState {

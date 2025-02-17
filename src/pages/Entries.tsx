@@ -7,16 +7,7 @@ import { getThemeStyles } from '@/utils/themeUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-
-interface ChatEntry {
-  id: number;
-  created_at: string;
-  theme: string | null;
-  messages: Array<{
-    content: string;
-    user_role: string;
-  }>;
-}
+import { ChatEntry } from '@/types/chat';
 
 const Entries = () => {
   const navigate = useNavigate();
