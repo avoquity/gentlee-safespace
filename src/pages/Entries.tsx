@@ -2,23 +2,68 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 import { getThemeStyles } from '@/utils/themeUtils';
-import { ChatEntry } from '@/types/chat';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+
+interface ChatEntry {
+  id: number;
+  created_at: string;
+  theme: string | null;
+  messages: Array<{
+    content: string;
+    user_role: string;
+  }>;
+}
 
 const Entries = () => {
   const navigate = useNavigate();
-  const [entries, setEntries] = React.useState<ChatEntry[]>([]);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const { data: entries = [] } = useQuery({
+    queryKey: ['chats', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data: chats, error } = await supabase
+        .from('chat')
+        .select(`
+          id,
+          created_at,
+          theme,
+          messages (
+            content,
+            user_role
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error loading chats",
+          description: error.message,
+          variant: "destructive"
+        });
+        return [];
+      }
+
+      return chats as ChatEntry[];
+    },
+    enabled: !!user
+  });
 
   React.useEffect(() => {
-    const storedEntries = localStorage.getItem('chatEntries');
-    if (storedEntries) {
-      const parsedEntries = JSON.parse(storedEntries);
-      parsedEntries.sort((a: ChatEntry, b: ChatEntry) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      setEntries(parsedEntries);
+    if (!user) {
+      navigate('/auth');
     }
-  }, []);
+  }, [user, navigate]);
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-soft-ivory">
@@ -40,28 +85,30 @@ const Entries = () => {
             <button
               key={entry.id}
               onClick={() => navigate('/chat', { 
-                state: { messages: entry.messages }
+                state: { chatId: entry.id }
               })}
               className="w-full text-left p-6 border-2 border-deep-charcoal rounded-xl hover:bg-gray-50 transition-colors group"
             >
               <div className="flex justify-between items-start">
                 <h2 className="text-xl font-semibold text-deep-charcoal">
-                  {format(new Date(entry.date), 'd MMMM yyyy')}
+                  {format(new Date(entry.created_at), 'd MMMM yyyy')}
                 </h2>
-                <div className="flex flex-wrap gap-2 justify-end">
-                  {entry.themes.slice(0, 3).map((theme) => {
-                    const borderColor = getThemeStyles(theme, entries);
-                    return (
-                      <span
-                        key={theme}
-                        className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow transition-colors duration-200"
-                        style={{ borderColor }}
-                      >
-                        {theme}
-                      </span>
-                    );
-                  })}
-                </div>
+                {entry.theme && (
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {entry.theme.split(',').map((theme) => {
+                      const borderColor = getThemeStyles(theme.trim(), entries);
+                      return (
+                        <span
+                          key={theme}
+                          className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow transition-colors duration-200"
+                          style={{ borderColor }}
+                        >
+                          {theme.trim()}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </button>
           ))}

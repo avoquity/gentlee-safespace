@@ -16,3 +16,12 @@ export interface ChatEntry {
 export interface LocationState {
   initialMessage?: string;
 }
+
+export interface DatabaseMessage {
+  id: number;
+  content: string;
+  user_role: string;
+  created_at: string;
+  chat_id: number;
+  sender_id: string | null;
+}

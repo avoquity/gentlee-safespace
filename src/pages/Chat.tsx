@@ -3,41 +3,98 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ChatThemes } from '@/components/chat/ChatThemes';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatTypingIndicator } from '@/components/chat/ChatTypingIndicator';
 import { identifyThemes } from '@/utils/themeUtils';
-import { Message, ChatEntry, LocationState } from '@/types/chat';
+import { Message, ChatEntry, LocationState, DatabaseMessage } from '@/types/chat';
+import { useToast } from '@/components/ui/use-toast';
 
 const Chat = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const { initialMessage } = (location.state as LocationState) || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [savedEntries, setSavedEntries] = useState<ChatEntry[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
 
-  const saveCurrentChat = () => {
-    if (messages.length > 0) {
-      const themes = identifyThemes(messages);
-      const newEntry: ChatEntry = {
-        id: Date.now().toString(),
-        messages: [...messages],
-        date: new Date(),
-        themes
-      };
-      
-      setSavedEntries(prev => [...prev, newEntry]);
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
+  const createNewChat = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat')
+        .insert([{ 
+          last_updated: new Date().toISOString(),
+          theme: null,
+          summary: null
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    } catch (error: any) {
+      toast({
+        title: "Error creating chat",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
     }
   };
 
-  const handleCloseConversation = () => {
-    if (messages.length > 0) {
-      saveCurrentChat();
+  const saveMessage = async (message: Message, chatId: number) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert([{
+          chat_id: chatId,
+          content: message.text,
+          user_role: message.sender,
+          sender_id: user?.id || null,
+        }]);
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error saving message",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCloseConversation = async () => {
+    if (messages.length > 0 && currentChatId) {
+      const themes = identifyThemes(messages);
+      try {
+        await supabase
+          .from('chat')
+          .update({ 
+            theme: themes.join(', '),
+            last_updated: new Date().toISOString()
+          })
+          .eq('id', currentChatId);
+      } catch (error: any) {
+        toast({
+          title: "Error saving chat",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
     navigate('/entries');
   };
@@ -46,7 +103,7 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const simulateAIResponse = async (userMessage: string) => {
+  const simulateAIResponse = async (userMessage: string, chatId: number) => {
     setIsTyping(true);
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -58,41 +115,26 @@ const Chat = () => {
       response = `I understand. Let's explore that further. What aspects of this situation do you find most challenging?`;
     }
 
-    for (let i = 0; i < response.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 30));
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage && lastMessage.sender === 'ai' && lastMessage.id === 'typing') {
-          const updatedMessages = [...prev.slice(0, -1)];
-          return [...updatedMessages, {
-            id: 'typing',
-            text: response.slice(0, i + 1),
-            sender: 'ai',
-            timestamp: new Date()
-          }];
-        }
-        return prev;
-      });
-    }
+    const aiMessage = {
+      id: Date.now().toString(),
+      text: response,
+      sender: 'ai' as const,
+      timestamp: new Date()
+    };
 
+    setMessages(prev => [...prev, aiMessage]);
     setIsTyping(false);
-    setMessages(prev => [
-      ...prev.filter(m => m.id !== 'typing'),
-      {
-        id: Date.now().toString(),
-        text: response,
-        sender: 'ai',
-        timestamp: new Date()
-      }
-    ]);
-    
-    // Save chat entry after AI responds
-    saveCurrentChat();
+    await saveMessage(aiMessage, chatId);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !user) return;
+
+    const chatId = currentChatId || await createNewChat();
+    if (!chatId) return;
+
+    setCurrentChatId(chatId);
 
     const newMessage = {
       id: Date.now().toString(),
@@ -103,40 +145,40 @@ const Chat = () => {
 
     setMessages(prev => [...prev, newMessage]);
     setInput('');
-    await simulateAIResponse(input);
+    await saveMessage(newMessage, chatId);
+    await simulateAIResponse(input, chatId);
   };
 
   useEffect(() => {
-    if (initialMessage) {
-      const firstMessage = {
-        id: Date.now().toString(),
-        text: initialMessage,
-        sender: 'user' as const,
-        timestamp: new Date()
+    if (initialMessage && user) {
+      const setupInitialChat = async () => {
+        const chatId = await createNewChat();
+        if (!chatId) return;
+
+        setCurrentChatId(chatId);
+        const firstMessage = {
+          id: Date.now().toString(),
+          text: initialMessage,
+          sender: 'user' as const,
+          timestamp: new Date()
+        };
+        
+        setMessages([firstMessage]);
+        await saveMessage(firstMessage, chatId);
+        await simulateAIResponse(initialMessage, chatId);
       };
-      setMessages([firstMessage]);
-      simulateAIResponse(initialMessage);
+
+      setupInitialChat();
     }
-  }, [initialMessage]);
+  }, [initialMessage, user]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Load saved entries from storage on mount
-  useEffect(() => {
-    const storedEntries = localStorage.getItem('chatEntries');
-    if (storedEntries) {
-      setSavedEntries(JSON.parse(storedEntries));
-    }
-  }, []);
-
-  // Save entries to storage when they change
-  useEffect(() => {
-    if (savedEntries.length > 0) {
-      localStorage.setItem('chatEntries', JSON.stringify(savedEntries));
-    }
-  }, [savedEntries]);
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col">
