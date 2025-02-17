@@ -10,7 +10,7 @@ const getThemeColor = (frequency: number): string => {
 };
 
 export const getThemeFrequency = (theme: string, entries: ChatEntry[]): number => {
-  return entries.filter(entry => entry.themes.includes(theme)).length;
+  return entries.filter(entry => entry.theme?.includes(theme)).length;
 };
 
 export const identifyThemes = (messages: Message[]): string[] => {
