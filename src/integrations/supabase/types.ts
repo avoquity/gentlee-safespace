@@ -78,7 +78,8 @@ export type Database = {
           content: string
           created_at: string
           id: number
-          user_id: number
+          sender_id: string | null
+          user_id: number | null
           user_role: string
         }
         Insert: {
@@ -86,7 +87,8 @@ export type Database = {
           content: string
           created_at?: string
           id?: number
-          user_id: number
+          sender_id?: string | null
+          user_id?: number | null
           user_role: string
         }
         Update: {
@@ -94,7 +96,8 @@ export type Database = {
           content?: string
           created_at?: string
           id?: number
-          user_id?: number
+          sender_id?: string | null
+          user_id?: number | null
           user_role?: string
         }
         Relationships: [
@@ -138,6 +141,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+        }
+        Relationships: []
       }
       reports: {
         Row: {
