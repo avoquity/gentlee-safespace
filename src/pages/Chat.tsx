@@ -142,28 +142,45 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const getAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-completion', {
+        body: { userMessage }
+      });
+
+      if (error) throw error;
+      return data.response;
+    } catch (error: any) {
+      console.error('Error getting AI response:', error);
+      toast({
+        title: "Error getting AI response",
+        description: error.message,
+        variant: "destructive"
+      });
+      return "I apologize, but I'm having trouble responding right now. Could you please try again?";
+    }
+  };
+
   const simulateAIResponse = async (userMessage: string, chatId: number) => {
     setIsTyping(true);
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    let response = '';
-    if (messages.length === 0) {
-      response = `Thank you for sharing that with me. I can sense there's a lot on your mind. Would you like to tell me more about what's making you feel this way?`;
-    } else {
-      response = `I understand. Let's explore that further. What aspects of this situation do you find most challenging?`;
+    try {
+      const aiResponse = await getAIResponse(userMessage);
+      
+      const aiMessage = {
+        id: Date.now().toString(),
+        text: aiResponse,
+        sender: 'ai' as const,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+      await saveMessage(aiMessage, chatId);
+    } catch (error) {
+      console.error('Error in AI response:', error);
+    } finally {
+      setIsTyping(false);
     }
-
-    const aiMessage = {
-      id: Date.now().toString(),
-      text: response,
-      sender: 'ai' as const,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, aiMessage]);
-    setIsTyping(false);
-    await saveMessage(aiMessage, chatId);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
