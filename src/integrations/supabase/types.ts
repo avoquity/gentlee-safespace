@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat: {
+        Row: {
+          created_at: string
+          id: number
+          last_updated: string
+          summary: string | null
+          theme: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          last_updated: string
+          summary?: string | null
+          theme?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          last_updated?: string
+          summary?: string | null
+          theme?: string | null
+        }
+        Relationships: []
+      }
       idea: {
         Row: {
           company_name: string
@@ -47,6 +71,41 @@ export type Database = {
           user_acquisition?: string | null
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          chat_id: number
+          content: string
+          created_at: string
+          id: number
+          user_id: number
+          user_role: string
+        }
+        Insert: {
+          chat_id: number
+          content: string
+          created_at?: string
+          id?: number
+          user_id: number
+          user_role: string
+        }
+        Update: {
+          chat_id?: number
+          content?: string
+          created_at?: string
+          id?: number
+          user_id?: number
+          user_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chat"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
