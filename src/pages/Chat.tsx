@@ -39,7 +39,8 @@ const Chat = () => {
         .insert([{ 
           last_updated: new Date().toISOString(),
           theme: null,
-          summary: null
+          summary: null,
+          user_id: user?.id // Add user_id when creating a new chat
         }])
         .select()
         .single();

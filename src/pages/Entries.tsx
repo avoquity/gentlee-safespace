@@ -30,6 +30,7 @@ const Entries = () => {
             user_role
           )
         `)
+        .eq('user_id', user.id) // Filter chats by user_id
         .order('created_at', { ascending: false });
 
       if (error) {
