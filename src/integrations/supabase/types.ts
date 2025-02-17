@@ -79,7 +79,6 @@ export type Database = {
           created_at: string
           id: number
           sender_id: string | null
-          user_id: number | null
           user_role: string
         }
         Insert: {
@@ -88,7 +87,6 @@ export type Database = {
           created_at?: string
           id?: number
           sender_id?: string | null
-          user_id?: number | null
           user_role: string
         }
         Update: {
@@ -97,7 +95,6 @@ export type Database = {
           created_at?: string
           id?: number
           sender_id?: string | null
-          user_id?: number | null
           user_role?: string
         }
         Relationships: [
