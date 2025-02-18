@@ -2,11 +2,13 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { MessageSquarePlus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getThemeStyles } from '@/utils/themeUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 import { ChatEntry } from '@/types/chat';
 
 const Entries = () => {
@@ -39,6 +41,14 @@ const Entries = () => {
     enabled: !!user
   });
 
+  const startNewChat = () => {
+    navigate('/chat', {
+      state: {
+        initialMessage: "Hi there! How are you feeling today? I'm here to listen and chat about whatever's on your mind."
+      }
+    });
+  };
+
   React.useEffect(() => {
     if (!user) {
       navigate('/auth');
@@ -52,16 +62,24 @@ const Entries = () => {
   return (
     <div className="min-h-screen bg-soft-ivory">
       <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
-        <Link 
-          to="/"
-          className="absolute left-6 top-8 text-2xl font-bold text-deep-charcoal hover:text-dusty-rose transition-colors"
-        >
-          Lumi
-        </Link>
-
-        <h1 className="text-5xl font-bold text-deep-charcoal mb-12">
-          Looking back, to move forward.
-        </h1>
+        <div className="flex justify-between items-center mb-12">
+          <Link 
+            to="/"
+            className="absolute left-6 top-8 text-2xl font-bold text-deep-charcoal hover:text-dusty-rose transition-colors"
+          >
+            Gentlee
+          </Link>
+          <h1 className="text-5xl font-bold text-deep-charcoal">
+            Looking back, to move forward.
+          </h1>
+          <Button
+            onClick={startNewChat}
+            className="flex items-center gap-2 bg-dusty-rose hover:bg-dusty-rose/90 text-white"
+          >
+            <MessageSquarePlus size={20} />
+            New Chat
+          </Button>
+        </div>
 
         <div className="space-y-4">
           {entries.map((entry) => (

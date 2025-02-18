@@ -61,7 +61,7 @@ const Header = () => {
         <div className="flex justify-between items-center py-6">
           <div className="flex items-center">
             <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
-              Solura
+              Gentlee
             </Link>
           </div>
           
@@ -77,19 +77,20 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Link 
-                  to="/entries" 
-                  className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
+                <Button
+                  onClick={() => navigate('/entries')}
+                  variant="outline"
+                  className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white"
                 >
                   My Thoughts
-                </Link>
-                <Button
+                </Button>
+                <Link 
+                  to="/"
                   onClick={handleSignOut}
-                  variant="outline"
-                  className="px-6 py-2 rounded-full"
+                  className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
                 >
                   Sign Out
-                </Button>
+                </Link>
               </>
             ) : (
               <>
