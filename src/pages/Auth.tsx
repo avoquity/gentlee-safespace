@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -118,16 +117,6 @@ const Auth = () => {
   return (
     <Dialog open={true} onOpenChange={() => navigate('/')}>
       <DialogContent className="sm:max-w-md animate-fade-in">
-        <div className="absolute right-4 top-4">
-          <button
-            onClick={() => navigate('/')}
-            className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-        </div>
-        
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
