@@ -117,7 +117,7 @@ const Auth = () => {
 
   return (
     <Dialog open={true} onOpenChange={() => navigate('/')}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md animate-fade-in">
         <div className="absolute right-4 top-4">
           <button
             onClick={() => navigate('/')}
