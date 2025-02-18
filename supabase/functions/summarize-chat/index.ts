@@ -8,12 +8,24 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Verify OpenAI API key is available
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not found');
+    }
+
     const { messages } = await req.json();
+    
+    // Validate messages input
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new Error('Invalid or empty messages array');
+    }
 
     // Extract only user messages for summarization
     const userMessages = messages
@@ -21,10 +33,19 @@ serve(async (req) => {
       .map((msg: any) => msg.text)
       .join('\n');
 
+    if (!userMessages) {
+      return new Response(
+        JSON.stringify({ summary: "No user messages to summarize" }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Calling OpenAI API with messages:', userMessages);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -42,16 +63,32 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
     const data = await response.json();
+    console.log('OpenAI API response:', data);
+
     const summary = data.choices[0].message.content;
 
-    return new Response(JSON.stringify({ summary }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ summary }), 
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('Error in summarize-chat function:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Error in summarize-chat function' 
+      }), 
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
 });
