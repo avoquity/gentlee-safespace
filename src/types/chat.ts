@@ -10,6 +10,7 @@ export interface ChatEntry {
   id: number;
   created_at: string;
   theme: string | null;
+  summary: string | null;
 }
 
 export interface LocationState {

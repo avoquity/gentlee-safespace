@@ -119,11 +119,21 @@ const Chat = () => {
   const handleCloseConversation = async () => {
     if (messages.length > 0 && currentChatId) {
       const themes = identifyThemes(messages);
+      
       try {
+        // Get summary from OpenAI
+        const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-chat', {
+          body: { messages }
+        });
+
+        if (summaryError) throw summaryError;
+
+        // Update chat with themes and summary
         await supabase
           .from('chat')
           .update({ 
             theme: themes.join(', '),
+            summary: summaryData.summary,
             last_updated: new Date().toISOString()
           })
           .eq('id', currentChatId);

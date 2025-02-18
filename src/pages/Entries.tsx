@@ -23,7 +23,7 @@ const Entries = () => {
       
       const { data: chats, error } = await supabase
         .from('chat')
-        .select('id, created_at, theme')
+        .select('id, created_at, theme, summary')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -90,25 +90,32 @@ const Entries = () => {
               })}
               className="w-full text-left p-6 border-2 border-deep-charcoal rounded-xl hover:bg-gray-50 transition-colors group"
             >
-              <div className="flex justify-between items-start">
-                <h2 className="text-xl font-semibold text-deep-charcoal">
-                  {format(new Date(entry.created_at), 'd MMMM yyyy')}
-                </h2>
-                {entry.theme && (
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {entry.theme.split(',').map((theme) => {
-                      const borderColor = getThemeStyles(theme.trim(), entries);
-                      return (
-                        <span
-                          key={theme}
-                          className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow transition-colors duration-200"
-                          style={{ borderColor }}
-                        >
-                          {theme.trim()}
-                        </span>
-                      );
-                    })}
-                  </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <h2 className="text-xl font-semibold text-deep-charcoal">
+                    {format(new Date(entry.created_at), 'd MMMM yyyy')}
+                  </h2>
+                  {entry.theme && (
+                    <div className="flex flex-wrap gap-2 justify-end">
+                      {entry.theme.split(',').map((theme) => {
+                        const borderColor = getThemeStyles(theme.trim(), entries);
+                        return (
+                          <span
+                            key={theme}
+                            className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow transition-colors duration-200"
+                            style={{ borderColor }}
+                          >
+                            {theme.trim()}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                {entry.summary && (
+                  <p className="text-sm text-deep-charcoal/80 italic">
+                    {entry.summary}
+                  </p>
                 )}
               </div>
             </button>
