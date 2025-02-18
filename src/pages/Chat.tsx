@@ -121,19 +121,33 @@ const Chat = () => {
       const themes = identifyThemes(messages);
       
       try {
-        // Get summary from OpenAI
-        const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-chat', {
-          body: { messages }
-        });
+        // First, get the current chat data to check if summary exists
+        const { data: chatData, error: chatError } = await supabase
+          .from('chat')
+          .select('summary')
+          .eq('id', currentChatId)
+          .single();
 
-        if (summaryError) throw summaryError;
+        if (chatError) throw chatError;
 
-        // Update chat with themes and summary
+        let summary = chatData.summary;
+
+        // Only generate summary if it doesn't exist
+        if (!summary) {
+          const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-chat', {
+            body: { messages }
+          });
+
+          if (summaryError) throw summaryError;
+          summary = summaryData.summary;
+        }
+
+        // Update chat with themes and summary (if generated)
         await supabase
           .from('chat')
           .update({ 
             theme: themes.join(', '),
-            summary: summaryData.summary,
+            summary: summary,
             last_updated: new Date().toISOString()
           })
           .eq('id', currentChatId);
