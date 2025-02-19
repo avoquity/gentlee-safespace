@@ -286,7 +286,7 @@ const Chat = () => {
       setSelectedText(selection.toString());
       setSelectionPosition({
         x: rect.x + rect.width / 2,
-        y: rect.y - 10
+        y: rect.y - 30  // Increased offset from cursor
       });
       setShowHighlightTooltip(true);
     } else {
@@ -364,11 +364,10 @@ const Chat = () => {
           </div>
 
           <div className="space-y-8">
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <ChatMessage 
                 key={message.id} 
-                message={message} 
-                isFirstMessage={index === 0 && message.sender === 'ai'}
+                message={message}
               />
             ))}
             {isTyping && <ChatTypingIndicator />}
