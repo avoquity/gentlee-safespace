@@ -321,13 +321,24 @@ const Chat = () => {
   // Handle highlight action
   const handleHighlight = () => {
     const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
+    if (!selection || !selection.rangeCount > 0) return;
+
+    try {
       const range = selection.getRangeAt(0);
+      const contents = range.extractContents(); // Extract the selected content
       const span = document.createElement('span');
       span.className = 'bg-[#F5D76E]';
-      range.surroundContents(span);
+      span.appendChild(contents); // Add the content to the span
+      range.insertNode(span); // Insert the highlighted content
+      
+      // Clean up any empty text nodes
+      span.normalize();
+      
+      // Clear the selection
       setShowHighlightTooltip(false);
-      selection.removeAllRanges(); // Clear selection after highlighting
+      selection.removeAllRanges();
+    } catch (error) {
+      console.error('Error highlighting text:', error);
     }
   };
 
@@ -335,14 +346,19 @@ const Chat = () => {
   const handleRemoveHighlight = (element: HTMLElement) => {
     if (!element) return;
     
-    const parent = element.parentNode;
-    if (parent) {
-      while (element.firstChild) {
-        parent.insertBefore(element.firstChild, element);
+    try {
+      const parent = element.parentNode;
+      if (parent) {
+        const fragment = document.createDocumentFragment();
+        while (element.firstChild) {
+          fragment.appendChild(element.firstChild);
+        }
+        parent.replaceChild(fragment, element);
+        setShowHighlightTooltip(false);
+        window.getSelection()?.removeAllRanges();
       }
-      parent.removeChild(element);
-      setShowHighlightTooltip(false);
-      window.getSelection()?.removeAllRanges(); // Clear selection after removing highlight
+    } catch (error) {
+      console.error('Error removing highlight:', error);
     }
   };
 
