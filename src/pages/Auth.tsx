@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { X, Apple, Facebook, Twitter } from 'lucide-react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -114,6 +114,8 @@ const Auth = () => {
     }
   };
 
+  const handleSignInWithGoogle = () => handleSocialLogin('google');
+
   return (
     <Dialog open={true} onOpenChange={() => navigate('/')}>
       <DialogContent className="sm:max-w-md animate-fade-in">
@@ -161,7 +163,14 @@ const Auth = () => {
                   Forgot password?
                 </button>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button 
+                type="submit" 
+                className={cn(
+                  "w-full bg-black text-white hover:bg-black/90",
+                  email && password && "bg-green-600 hover:bg-green-700"
+                )} 
+                disabled={loading}
+              >
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
               
@@ -174,45 +183,20 @@ const Auth = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('google')}
-                >
-                  <span className="sr-only">Sign in with Google</span>
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                    />
-                  </svg>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('apple')}
-                >
-                  <span className="sr-only">Sign in with Apple</span>
-                  <Apple className="h-5 w-5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('facebook')}
-                >
-                  <span className="sr-only">Sign in with Facebook</span>
-                  <Facebook className="h-5 w-5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('twitter')}
-                >
-                  <span className="sr-only">Sign in with Twitter</span>
-                  <Twitter className="h-5 w-5" />
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSignInWithGoogle}
+                className="w-full"
+              >
+                <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                  />
+                </svg>
+                Sign in with Google
+              </Button>
             </form>
           </TabsContent>
 
@@ -253,7 +237,14 @@ const Auth = () => {
                   I agree with the Terms and Privacy Policy
                 </label>
               </div>
-              <Button type="submit" className="w-full" disabled={loading || !agreeToTerms}>
+              <Button 
+                type="submit" 
+                className={cn(
+                  "w-full bg-black text-white hover:bg-black/90",
+                  email && password && name && agreeToTerms && "bg-green-600 hover:bg-green-700"
+                )} 
+                disabled={loading || !agreeToTerms}
+              >
                 {loading ? 'Creating account...' : 'Sign Up'}
               </Button>
 
@@ -266,45 +257,20 @@ const Auth = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('google')}
-                >
-                  <span className="sr-only">Sign up with Google</span>
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                    />
-                  </svg>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('apple')}
-                >
-                  <span className="sr-only">Sign up with Apple</span>
-                  <Apple className="h-5 w-5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('facebook')}
-                >
-                  <span className="sr-only">Sign up with Facebook</span>
-                  <Facebook className="h-5 w-5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialLogin('twitter')}
-                >
-                  <span className="sr-only">Sign up with Twitter</span>
-                  <Twitter className="h-5 w-5" />
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSignInWithGoogle}
+                className="w-full"
+              >
+                <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                  />
+                </svg>
+                Sign up with Google
+              </Button>
             </form>
           </TabsContent>
         </Tabs>
