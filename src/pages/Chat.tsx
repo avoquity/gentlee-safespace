@@ -285,8 +285,8 @@ const Chat = () => {
       const rect = range.getBoundingClientRect();
       setSelectedText(selection.toString());
       setSelectionPosition({
-        x: rect.x + rect.width / 2,
-        y: rect.y - 30  // Increased offset from cursor
+        x: rect.x + rect.width,  // Position at the end of selected text
+        y: rect.y - 58  // 58px above the cursor
       });
       setShowHighlightTooltip(true);
     } else {
@@ -376,7 +376,7 @@ const Chat = () => {
 
           {showHighlightTooltip && (
             <div
-              className="fixed bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 z-50"
+              className="fixed bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 z-50 hover:bg-soft-yellow transition-colors duration-200"
               style={{
                 left: selectionPosition.x,
                 top: selectionPosition.y
@@ -384,7 +384,7 @@ const Chat = () => {
             >
               <button
                 onClick={handleHighlight}
-                className="text-sm text-deep-charcoal hover:text-dusty-rose"
+                className="text-sm text-deep-charcoal hover:text-dusty-rose text-[14px]"
               >
                 Highlight
               </button>
