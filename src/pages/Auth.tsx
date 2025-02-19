@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +25,16 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!agreeToTerms) {
+      toast({
+        title: "Terms Agreement Required",
+        description: "Please check the box to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const { error } = await supabase.auth.signUp({
@@ -231,7 +242,6 @@ const Auth = () => {
                   id="terms"
                   checked={agreeToTerms}
                   onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                  required
                 />
                 <label htmlFor="terms" className="text-sm text-deep-charcoal">
                   I agree with the Terms and Privacy Policy
@@ -243,7 +253,7 @@ const Auth = () => {
                   "w-full bg-black text-white hover:bg-black/90",
                   email && password && name && agreeToTerms && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
                 )} 
-                disabled={loading || !agreeToTerms}
+                disabled={loading}
               >
                 {loading ? 'Creating account...' : 'Sign Up'}
               </Button>
