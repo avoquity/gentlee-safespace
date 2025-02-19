@@ -1,7 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatMessageProps {
   message: Message;
@@ -9,6 +11,7 @@ interface ChatMessageProps {
 
 export const ChatMessage = ({ message }: ChatMessageProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [selectedRange, setSelectedRange] = useState<{ start: number; end: number } | null>(null);
 
@@ -29,16 +32,34 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
       if (error) {
         console.error('Error fetching highlights:', error);
+        if (error.code === 'PGRST116') {
+          toast({
+            title: "Authentication required",
+            description: "Please sign in to view highlights",
+            variant: "destructive"
+          });
+        }
         return;
       }
 
       setHighlights(data || []);
     };
 
-    fetchHighlights();
-  }, [message.id]);
+    if (user) {
+      fetchHighlights();
+    }
+  }, [message.id, user]);
 
   const handleHighlight = async (start: number, end: number) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to highlight text",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       // Convert string ID to number for Supabase query
       const messageId = parseInt(message.id);
@@ -56,7 +77,12 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error('You can only highlight messages from your own chats');
+        }
+        throw error;
+      }
 
       setHighlights(prev => [...prev, data]);
       toast({
@@ -74,13 +100,27 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
   };
 
   const handleRemoveHighlight = async (highlightId: number) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to remove highlights",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('highlights')
         .delete()
         .eq('id', highlightId);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error('You can only remove highlights from your own chats');
+        }
+        throw error;
+      }
 
       setHighlights(prev => prev.filter(h => h.id !== highlightId));
       toast({
