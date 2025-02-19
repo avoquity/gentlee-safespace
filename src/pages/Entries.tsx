@@ -58,6 +58,16 @@ const Entries = () => {
     return null;
   }
 
+  // Group entries by date
+  const groupedEntries = entries.reduce((acc, entry) => {
+    const date = format(new Date(entry.created_at), 'd MMMM yyyy');
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(entry);
+    return acc;
+  }, {} as Record<string, ChatEntry[]>);
+
   return (
     <div className="min-h-screen bg-soft-ivory">
       <div className="fixed top-0 w-full bg-white shadow-sm z-50">
@@ -83,44 +93,48 @@ const Entries = () => {
           </h1>
         </div>
 
-        <div className="space-y-4">
-          {entries.map((entry) => (
-            <button
-              key={entry.id}
-              onClick={() => navigate('/chat', { 
-                state: { chatId: entry.id }
-              })}
-              className="w-full text-left p-6 border-2 border-deep-charcoal rounded-xl hover:bg-gray-50 transition-colors group"
-            >
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <h2 className="text-xl font-semibold text-deep-charcoal">
-                    {format(new Date(entry.created_at), 'd MMMM yyyy')}
-                  </h2>
-                  {entry.theme && (
-                    <div className="flex flex-wrap gap-2 justify-end">
-                      {entry.theme.split(',').map((theme) => {
-                        const borderColor = getThemeStyles(theme.trim(), entries);
-                        return (
-                          <span
-                            key={theme}
-                            className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow transition-colors duration-200"
-                            style={{ borderColor }}
-                          >
-                            {theme.trim()}
-                          </span>
-                        );
-                      })}
+        <div className="space-y-8">
+          {Object.entries(groupedEntries).map(([date, dateEntries]) => (
+            <div key={date} className="space-y-4">
+              <h2 className="text-2xl font-semibold text-deep-charcoal">
+                {date}
+              </h2>
+              <div className="space-y-4">
+                {dateEntries.map((entry) => (
+                  <button
+                    key={entry.id}
+                    onClick={() => navigate('/chat', { 
+                      state: { chatId: entry.id }
+                    })}
+                    className="w-full text-left p-6 border-2 border-deep-charcoal rounded-xl hover:bg-gray-50 transition-colors group"
+                  >
+                    <div className="space-y-3">
+                      {entry.theme && (
+                        <div className="flex flex-wrap gap-2 justify-end">
+                          {entry.theme.split(',').map((theme) => {
+                            const borderColor = getThemeStyles(theme.trim(), entries);
+                            return (
+                              <span
+                                key={theme}
+                                className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow transition-colors duration-200"
+                                style={{ borderColor }}
+                              >
+                                {theme.trim()}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {entry.summary && (
+                        <p className="text-sm text-deep-charcoal/80 italic">
+                          {entry.summary}
+                        </p>
+                      )}
                     </div>
-                  )}
-                </div>
-                {entry.summary && (
-                  <p className="text-sm text-deep-charcoal/80 italic">
-                    {entry.summary}
-                  </p>
-                )}
+                  </button>
+                ))}
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </div>
