@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { X } from 'lucide-react';
+import { X, Volume2, VolumeX } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +25,10 @@ const Chat = () => {
   const [currentChatId, setCurrentChatId] = useState<number | null>(existingChatId || null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
+  const [isMuted, setIsMuted] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
+  const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
 
   // Fetch messages for existing chat
   const { data: chatMessages } = useQuery({
@@ -273,19 +277,72 @@ const Chat = () => {
     return null;
   }
 
+  // Handle text selection
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim()) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      setSelectedText(selection.toString());
+      setSelectionPosition({
+        x: rect.x + rect.width / 2,
+        y: rect.y - 10
+      });
+      setShowHighlightTooltip(true);
+    } else {
+      setShowHighlightTooltip(false);
+    }
+  };
+
+  // Handle highlight action
+  const handleHighlight = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const span = document.createElement('span');
+      span.className = 'bg-[#F5D76E]';
+      range.surroundContents(span);
+      setShowHighlightTooltip(false);
+    }
+  };
+
+  // Handle remove highlight
+  const handleRemoveHighlight = (element: HTMLElement) => {
+    const parent = element.parentNode;
+    if (parent) {
+      while (element.firstChild) {
+        parent.insertBefore(element.firstChild, element);
+      }
+      parent.removeChild(element);
+    }
+    setShowHighlightTooltip(false);
+  };
+
   return (
-    <div className="min-h-screen bg-soft-ivory flex flex-col">
+    <div 
+      className="min-h-screen bg-soft-ivory flex flex-col"
+      onMouseUp={handleTextSelection}
+    >
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
-          {/* Logo */}
           <Link 
             to="/"
             className="absolute left-6 top-8 text-2xl font-bold text-deep-charcoal hover:text-dusty-rose transition-colors"
           >
-            Lumi
+            Gentlee
           </Link>
 
-          {/* Close button */}
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className="absolute right-16 top-8 p-2 text-deep-charcoal/60 hover:text-dusty-rose transition-colors"
+          >
+            {isMuted ? (
+              <Volume2 className="w-6 h-6" />
+            ) : (
+              <VolumeX className="w-6 h-6" />
+            )}
+          </button>
+
           <button
             onClick={handleCloseConversation}
             className="absolute right-6 top-8 p-2 text-deep-charcoal/60 hover:text-dusty-rose transition-colors"
@@ -311,21 +368,25 @@ const Chat = () => {
               <ChatMessage key={message.id} message={message} />
             ))}
             {isTyping && <ChatTypingIndicator />}
-            {messages.length > 0 && messages[messages.length - 1].sender === 'ai' && (
-              <div className="flex justify-center mt-8">
-                <div className="text-xs text-dusty-rose">
-                  This is great. I feel much better. Thank you for the time and{' '}
-                  <button
-                    onClick={handleCloseConversation}
-                    className="text-dusty-rose underline hover:opacity-80 focus:outline-none"
-                  >
-                    close this conversation
-                  </button>
-                </div>
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
+
+          {showHighlightTooltip && (
+            <div
+              className="fixed bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 z-50"
+              style={{
+                left: selectionPosition.x,
+                top: selectionPosition.y
+              }}
+            >
+              <button
+                onClick={handleHighlight}
+                className="text-sm text-deep-charcoal hover:text-dusty-rose"
+              >
+                Highlight
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -338,6 +399,14 @@ const Chat = () => {
           />
         </div>
       </div>
+      
+      {/* Audio element for background music */}
+      <audio
+        src="/path-to-your-music.mp3"
+        autoPlay
+        loop
+        muted={isMuted}
+      />
     </div>
   );
 };

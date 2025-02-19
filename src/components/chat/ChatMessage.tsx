@@ -14,7 +14,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
           message.sender === 'user' ? 'bg-white shadow-sm' : 'bg-transparent'
         }`}
       >
-        <p className="text-deep-charcoal text-sm leading-relaxed whitespace-pre-wrap">
+        <p className="text-deep-charcoal text-[17px] leading-relaxed whitespace-pre-wrap">
           {message.text}
         </p>
       </div>
