@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,52 +27,74 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
   useEffect(() => {
     const fetchHighlights = async () => {
-      const messageId = parseInt(message.id);
-      if (isNaN(messageId)) {
-        console.error('Invalid message ID:', message.id);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('highlights')
-        .select('*')
-        .eq('message_id', messageId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching highlights:', error);
-        if (error.code === 'PGRST116') {
-          toast({
-            title: "Authentication required",
-            description: "Please sign in to view highlights",
-            variant: "destructive"
-          });
+      try {
+        if (!message?.id) {
+          console.error('No message ID provided');
+          return;
         }
-        return;
-      }
 
-      setHighlights(data || []);
+        const messageId = typeof message.id === 'string' ? parseInt(message.id) : message.id;
+        
+        if (isNaN(messageId)) {
+          console.error('Invalid message ID:', message.id);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('highlights')
+          .select('*')
+          .eq('message_id', messageId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching highlights:', error);
+          if (error.code === 'PGRST116') {
+            toast({
+              title: "Authentication required",
+              description: "Please sign in to view highlights",
+              variant: "destructive"
+            });
+          }
+          return;
+        }
+
+        setHighlights(data || []);
+      } catch (err) {
+        console.error('Error in fetchHighlights:', err);
+      }
     };
 
-    if (user) {
+    if (user && message?.id) {
       fetchHighlights();
     }
-  }, [message.id, user]);
+  }, [message?.id, user, toast]);
 
   const handleHighlight = async () => {
-    if (!user || !selectionRange) {
+    if (!user || !selectionRange || !message?.id) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to highlight text",
+        title: "Error",
+        description: !user ? "Please sign in to highlight text" : "Invalid selection or message",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      const messageId = parseInt(message.id);
+      const messageId = typeof message.id === 'string' ? parseInt(message.id) : message.id;
+      
       if (isNaN(messageId)) {
         throw new Error('Invalid message ID');
+      }
+
+      // First verify the message exists
+      const { data: messageExists, error: messageError } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('id', messageId)
+        .single();
+
+      if (messageError || !messageExists) {
+        throw new Error('Message not found');
       }
 
       const { data, error } = await supabase
