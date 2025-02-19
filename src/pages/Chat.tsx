@@ -29,6 +29,7 @@ const Chat = () => {
   const [selectedText, setSelectedText] = useState('');
   const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
   const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
 
   // Fetch messages for existing chat
   const { data: chatMessages } = useQuery({
@@ -280,17 +281,40 @@ const Chat = () => {
   // Handle text selection
   const handleTextSelection = () => {
     const selection = window.getSelection();
-    if (selection && selection.toString().trim()) {
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      setSelectedText(selection.toString());
-      setSelectionPosition({
-        x: rect.x + rect.width,  // Position at the end of selected text
-        y: rect.y - 58  // 58px above the cursor
-      });
-      setShowHighlightTooltip(true);
-    } else {
+    if (!selection || !selection.toString().trim()) {
       setShowHighlightTooltip(false);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    const selectedText = selection.toString();
+    
+    // Check if selection contains highlighted text
+    const parentElement = selection.anchorNode?.parentElement;
+    const isHighlightedText = parentElement?.classList.contains('bg-[#F5D76E]') && 
+      selection.toString() === parentElement.textContent;
+
+    // Get viewport height
+    const viewportHeight = window.innerHeight;
+    // Determine if there's more space above or below the selection
+    const spaceAbove = rect.top;
+    const spaceBelow = viewportHeight - rect.bottom;
+    
+    setSelectedText(selectedText);
+    setSelectionPosition({
+      x: rect.left + (rect.width / 2),  // Center horizontally
+      y: spaceBelow > spaceAbove 
+        ? rect.bottom + 10  // Show below with 10px gap
+        : rect.top - 40     // Show above with space for tooltip
+    });
+    setShowHighlightTooltip(true);
+    
+    // Update tooltip text based on selection
+    if (isHighlightedText) {
+      setSelectedElement(parentElement);
+    } else {
+      setSelectedElement(null);
     }
   };
 
@@ -303,19 +327,23 @@ const Chat = () => {
       span.className = 'bg-[#F5D76E]';
       range.surroundContents(span);
       setShowHighlightTooltip(false);
+      selection.removeAllRanges(); // Clear selection after highlighting
     }
   };
 
   // Handle remove highlight
   const handleRemoveHighlight = (element: HTMLElement) => {
+    if (!element) return;
+    
     const parent = element.parentNode;
     if (parent) {
       while (element.firstChild) {
         parent.insertBefore(element.firstChild, element);
       }
       parent.removeChild(element);
+      setShowHighlightTooltip(false);
+      window.getSelection()?.removeAllRanges(); // Clear selection after removing highlight
     }
-    setShowHighlightTooltip(false);
   };
 
   return (
@@ -383,10 +411,10 @@ const Chat = () => {
               }}
             >
               <button
-                onClick={handleHighlight}
-                className="text-sm text-deep-charcoal hover:text-dusty-rose text-[14px]"
+                onClick={() => selectedElement ? handleRemoveHighlight(selectedElement) : handleHighlight()}
+                className="text-sm text-deep-charcoal hover:text-white transition-colors duration-200 text-[14px]"
               >
-                Highlight
+                {selectedElement ? 'Remove highlight' : 'Highlight'}
               </button>
             </div>
           )}
