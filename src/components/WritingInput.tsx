@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const suggestedTopics = [
   "Stress", 
@@ -16,10 +17,22 @@ const suggestedTopics = [
 const WritingInput = () => {
   const [input, setInput] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
+      // If user is not authenticated, store message and redirect to auth
+      if (!user) {
+        // Store the message in sessionStorage
+        sessionStorage.setItem('pendingMessage', input);
+        navigate('/auth', {
+          state: { tab: 'signin', redirectTo: '/chat' }
+        });
+        return;
+      }
+
+      // If user is authenticated, proceed to chat
       navigate('/chat', {
         state: { initialMessage: input }
       });

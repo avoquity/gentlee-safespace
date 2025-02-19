@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +21,17 @@ const Auth = () => {
   const location = useLocation();
   const { toast } = useToast();
   const defaultTab = location.state?.tab || 'signin';
+  const redirectTo = location.state?.redirectTo || '/';
+
+  const handleSuccessfulAuth = () => {
+    const pendingMessage = sessionStorage.getItem('pendingMessage');
+    if (pendingMessage) {
+      sessionStorage.removeItem('pendingMessage');
+      navigate('/chat', { state: { initialMessage: pendingMessage } });
+    } else {
+      navigate(redirectTo);
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +62,7 @@ const Auth = () => {
         title: "Welcome!",
         description: "Check your email for the confirmation link."
       });
-      navigate('/');
+      handleSuccessfulAuth();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -73,7 +83,7 @@ const Auth = () => {
         password
       });
       if (error) throw error;
-      navigate('/');
+      handleSuccessfulAuth();
     } catch (error: any) {
       toast({
         title: "Error",

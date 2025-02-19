@@ -252,6 +252,19 @@ const Chat = () => {
     }
   }, [initialMessage, user]);
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      // If there's a message in progress, save it
+      if (location.state?.initialMessage) {
+        sessionStorage.setItem('pendingMessage', location.state.initialMessage);
+      }
+      navigate('/auth', {
+        state: { tab: 'signin', redirectTo: '/chat' }
+      });
+    }
+  }, [user, navigate, location.state]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
