@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,10 +14,17 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
   useEffect(() => {
     const fetchHighlights = async () => {
+      // Convert string ID to number for Supabase query
+      const messageId = parseInt(message.id);
+      if (isNaN(messageId)) {
+        console.error('Invalid message ID:', message.id);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('highlights')
         .select('*')
-        .eq('message_id', message.id)
+        .eq('message_id', messageId)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -34,10 +40,16 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
   const handleHighlight = async (start: number, end: number) => {
     try {
+      // Convert string ID to number for Supabase query
+      const messageId = parseInt(message.id);
+      if (isNaN(messageId)) {
+        throw new Error('Invalid message ID');
+      }
+
       const { data, error } = await supabase
         .from('highlights')
         .insert([{
-          message_id: Number(message.id),
+          message_id: messageId,
           start_index: start,
           end_index: end
         }])

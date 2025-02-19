@@ -321,7 +321,7 @@ const Chat = () => {
   // Handle highlight action
   const handleHighlight = () => {
     const selection = window.getSelection();
-    if (!selection || !selection.rangeCount > 0) return;
+    if (!selection || !(selection.rangeCount > 0)) return;
 
     try {
       const range = selection.getRangeAt(0);
