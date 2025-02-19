@@ -1,7 +1,7 @@
+
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { MessageSquarePlus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getThemeStyles } from '@/utils/themeUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,12 +46,36 @@ const Entries = () => {
     }
   }, [user, navigate]);
 
+  const startNewChat = () => {
+    navigate('/chat', {
+      state: {
+        initialMessage: "Hi there! How are you feeling today? I'm here to listen and chat about whatever's on your mind."
+      }
+    });
+  };
+
   if (!user) {
     return null;
   }
 
   return (
     <div className="min-h-screen bg-soft-ivory">
+      <div className="fixed top-0 w-full bg-white shadow-sm z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
+              Gentlee
+            </Link>
+            <Button
+              onClick={startNewChat}
+              className="px-6 py-2 rounded-full bg-deep-charcoal border-2 border-deep-charcoal text-white hover:bg-muted-sage hover:border-muted-sage"
+            >
+              New Chat
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-deep-charcoal">

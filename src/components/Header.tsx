@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { MessageSquarePlus } from 'lucide-react';
 
 const Header = () => {
   const [isScrollingUp, setIsScrollingUp] = useState(true);
@@ -82,14 +81,13 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                {location.pathname !== '/chat' && (
+                {location.pathname === '/' && (
                   <Button
-                    onClick={startNewChat}
+                    onClick={() => navigate('/entries')}
                     variant="outline"
-                    className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white flex items-center gap-2"
+                    className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white"
                   >
-                    <MessageSquarePlus size={20} />
-                    New Chat
+                    My thoughts
                   </Button>
                 )}
                 <Link 

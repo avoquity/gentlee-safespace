@@ -364,8 +364,12 @@ const Chat = () => {
           </div>
 
           <div className="space-y-8">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+            {messages.map((message, index) => (
+              <ChatMessage 
+                key={message.id} 
+                message={message} 
+                isFirstMessage={index === 0 && message.sender === 'ai'}
+              />
             ))}
             {isTyping && <ChatTypingIndicator />}
             <div ref={messagesEndRef} />
