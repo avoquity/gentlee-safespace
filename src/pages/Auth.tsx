@@ -167,7 +167,7 @@ const Auth = () => {
                 type="submit" 
                 className={cn(
                   "w-full bg-black text-white hover:bg-black/90",
-                  email && password && "bg-green-600 hover:bg-green-700"
+                  email && password && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
                 )} 
                 disabled={loading}
               >
@@ -241,7 +241,7 @@ const Auth = () => {
                 type="submit" 
                 className={cn(
                   "w-full bg-black text-white hover:bg-black/90",
-                  email && password && name && agreeToTerms && "bg-green-600 hover:bg-green-700"
+                  email && password && name && agreeToTerms && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
                 )} 
                 disabled={loading || !agreeToTerms}
               >
