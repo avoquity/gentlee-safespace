@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { supabase } from '@/integrations/supabase/client';
@@ -169,39 +168,6 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     }
   };
 
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-      setIsPopoverOpen(false);
-      return;
-    }
-
-    const range = selection.getRangeAt(0);
-    const text = selection.toString().trim();
-
-    if (!text) {
-      setIsPopoverOpen(false);
-      return;
-    }
-
-    // Calculate the start and end indices relative to the message text
-    const preSelectionRange = range.cloneRange();
-    preSelectionRange.selectNodeContents(range.startContainer.parentElement!);
-    preSelectionRange.setEnd(range.startContainer, range.startOffset);
-    const start = preSelectionRange.toString().length;
-
-    setSelectedText(text);
-    setSelectionRange({ start, end: start + text.length });
-
-    // Get the selection coordinates for the popover
-    const rect = range.getBoundingClientRect();
-    setPopoverPosition({
-      x: rect.left + (rect.width / 2),
-      y: rect.top - 10
-    });
-    setIsPopoverOpen(true);
-  };
-
   const renderTextWithHighlights = () => {
     const text = message.text;
     const parts: JSX.Element[] = [];
@@ -247,6 +213,39 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     }
 
     return parts;
+  };
+
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const text = selection.toString().trim();
+
+    if (!text) {
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    // Calculate the start and end indices relative to the message text
+    const preSelectionRange = range.cloneRange();
+    preSelectionRange.selectNodeContents(range.startContainer.parentElement!);
+    preSelectionRange.setEnd(range.startContainer, range.startOffset);
+    const start = preSelectionRange.toString().length;
+
+    setSelectedText(text);
+    setSelectionRange({ start, end: start + text.length });
+
+    // Get the selection coordinates for the popover
+    const rect = range.getBoundingClientRect();
+    setPopoverPosition({
+      x: rect.left + (rect.width / 2),
+      y: rect.top - 10
+    });
+    setIsPopoverOpen(true);
   };
 
   return (
