@@ -1,9 +1,15 @@
-
 import React, { useEffect, useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { Highlighter } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessageProps {
   message: Message;
@@ -13,7 +19,10 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [selectedRange, setSelectedRange] = useState<{ start: number; end: number } | null>(null);
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   useEffect(() => {
     const fetchHighlights = async () => {
@@ -49,8 +58,8 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     }
   }, [message.id, user]);
 
-  const handleHighlight = async (start: number, end: number) => {
-    if (!user) {
+  const handleHighlight = async () => {
+    if (!user || !selectionRange) {
       toast({
         title: "Authentication required",
         description: "Please sign in to highlight text",
@@ -69,9 +78,9 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         .from('highlights')
         .insert([{
           message_id: messageId,
-          start_index: start,
-          end_index: end,
-          user_id: user.id // Add the user_id when creating a highlight
+          start_index: selectionRange.start,
+          end_index: selectionRange.end,
+          user_id: user.id
         }])
         .select()
         .single();
@@ -84,6 +93,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
       }
 
       setHighlights(prev => [...prev, data]);
+      setIsPopoverOpen(false);
       toast({
         title: "Text highlighted",
         description: "The selected text has been highlighted successfully."
@@ -136,6 +146,39 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     }
   };
 
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const text = selection.toString().trim();
+
+    if (!text) {
+      setIsPopoverOpen(false);
+      return;
+    }
+
+    // Calculate the start and end indices relative to the message text
+    const preSelectionRange = range.cloneRange();
+    preSelectionRange.selectNodeContents(range.startContainer.parentElement!);
+    preSelectionRange.setEnd(range.startContainer, range.startOffset);
+    const start = preSelectionRange.toString().length;
+
+    setSelectedText(text);
+    setSelectionRange({ start, end: start + text.length });
+
+    // Get the selection coordinates for the popover
+    const rect = range.getBoundingClientRect();
+    setPopoverPosition({
+      x: rect.left + (rect.width / 2),
+      y: rect.top - 10
+    });
+    setIsPopoverOpen(true);
+  };
+
   const renderTextWithHighlights = () => {
     const text = message.text;
     const parts: JSX.Element[] = [];
@@ -183,40 +226,55 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     return parts;
   };
 
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    const text = selection.toString().trim();
-
-    if (!text) return;
-
-    // Calculate the start and end indices relative to the message text
-    const preSelectionRange = range.cloneRange();
-    preSelectionRange.selectNodeContents(range.startContainer.parentElement!);
-    preSelectionRange.setEnd(range.startContainer, range.startOffset);
-    const start = preSelectionRange.toString().length;
-    const end = start + text.length;
-
-    setSelectedRange({ start, end });
-    handleHighlight(start, end);
-    selection.removeAllRanges();
-  };
-
   return (
-    <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-[80%] px-6 py-4 rounded-2xl ${
-          message.sender === 'user' ? 'bg-white shadow-sm' : 'bg-transparent'
-        }`}
-        onMouseUp={handleTextSelection}
-      >
-        <p className="text-deep-charcoal text-[17px] leading-relaxed whitespace-pre-wrap">
-          {renderTextWithHighlights()}
-        </p>
+    <>
+      <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+        <div
+          className={`max-w-[80%] px-6 py-4 rounded-2xl ${
+            message.sender === 'user' ? 'bg-white shadow-sm' : 'bg-transparent'
+          }`}
+          onMouseUp={handleTextSelection}
+        >
+          <p className="text-deep-charcoal text-[17px] leading-relaxed whitespace-pre-wrap">
+            {renderTextWithHighlights()}
+          </p>
+        </div>
       </div>
-    </div>
+
+      {isPopoverOpen && selectedText && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${popoverPosition.x}px`,
+            top: `${popoverPosition.y}px`,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 50
+          }}
+        >
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-white border-none shadow-lg hover:bg-soft-yellow transition-colors duration-200"
+              >
+                <Highlighter className="w-4 h-4 mr-2" />
+                Highlight
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-4">
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">Selected text:</p>
+                <p className="text-sm font-medium">{selectedText}</p>
+                <div className="flex justify-end">
+                  <Button onClick={handleHighlight} className="bg-soft-yellow hover:bg-soft-yellow/90 text-deep-charcoal">
+                    Add Highlight
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+    </>
   );
 };
-
