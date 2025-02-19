@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,19 +25,12 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
       const { data, error } = await supabase
         .from('highlights')
-        .select('*')
+        .select('id, message_id, start_index, end_index, created_at')
         .eq('message_id', messageId)
         .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching highlights:', error);
-        if (error.code === 'PGRST116') {
-          toast({
-            title: "Authentication required",
-            description: "Please sign in to view highlights",
-            variant: "destructive"
-          });
-        }
         return;
       }
 
@@ -47,6 +39,8 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
     if (user) {
       fetchHighlights();
+    } else {
+      setHighlights([]);
     }
   }, [message.id, user]);
 
@@ -61,7 +55,6 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     }
 
     try {
-      // Convert string ID to number for Supabase query
       const messageId = parseInt(message.id);
       if (isNaN(messageId)) {
         throw new Error('Invalid message ID');
@@ -78,17 +71,19 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === '42501') {
           throw new Error('You can only highlight messages from your own chats');
         }
         throw error;
       }
 
-      setHighlights(prev => [...prev, data]);
-      toast({
-        title: "Text highlighted",
-        description: "The selected text has been highlighted successfully."
-      });
+      if (data) {
+        setHighlights(prev => [...prev, data]);
+        toast({
+          title: "Text highlighted",
+          description: "The selected text has been highlighted successfully."
+        });
+      }
     } catch (error: any) {
       console.error('Error saving highlight:', error);
       toast({
@@ -116,7 +111,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         .eq('id', highlightId);
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === '42501') {
           throw new Error('You can only remove highlights from your own chats');
         }
         throw error;
