@@ -126,9 +126,6 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     setSelectedText(text);
     setSelectionRange({ start, end: start + text.length });
     setIsPopoverOpen(true);
-
-    // Clear the selection after getting the text
-    selection.removeAllRanges();
   };
 
   return (
