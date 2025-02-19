@@ -36,6 +36,38 @@ export type Database = {
         }
         Relationships: []
       }
+      highlights: {
+        Row: {
+          created_at: string
+          end_index: number
+          id: number
+          message_id: number
+          start_index: number
+        }
+        Insert: {
+          created_at?: string
+          end_index: number
+          id?: number
+          message_id: number
+          start_index: number
+        }
+        Update: {
+          created_at?: string
+          end_index?: number
+          id?: number
+          message_id?: number
+          start_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlights_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       idea: {
         Row: {
           company_name: string

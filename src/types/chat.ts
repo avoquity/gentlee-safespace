@@ -26,3 +26,12 @@ export interface DatabaseMessage {
   chat_id: number;
   sender_id: string | null;
 }
+
+export interface Highlight {
+  id: number;
+  message_id: number;
+  start_index: number;
+  end_index: number;
+  created_at: string;
+}
+
