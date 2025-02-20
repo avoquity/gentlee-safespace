@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -49,7 +48,7 @@ const Chat = () => {
       }
 
       return data.map(msg => ({
-        id: msg.id,
+        id: msg.id.toString(),
         text: msg.content,
         sender: msg.user_role as 'user' | 'ai',
         timestamp: new Date(msg.created_at)
@@ -203,28 +202,6 @@ const Chat = () => {
     }
   };
 
-  const simulateAIResponse = async (userMessage: string, chatId: number) => {
-    setIsTyping(true);
-    
-    try {
-      const aiResponse = await getAIResponse(userMessage);
-      
-      const aiMessage = {
-        id: Date.now().toString(),
-        text: aiResponse,
-        sender: 'ai' as const,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-      await saveMessage(aiMessage, chatId);
-    } catch (error) {
-      console.error('Error in AI response:', error);
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !user) return;
@@ -234,8 +211,28 @@ const Chat = () => {
 
     setCurrentChatId(chatId);
 
+    const { data: messageData, error: messageError } = await supabase
+      .from('messages')
+      .insert([{
+        chat_id: chatId,
+        content: input,
+        user_role: 'user',
+        sender_id: user.id,
+      }])
+      .select()
+      .single();
+
+    if (messageError) {
+      toast({
+        title: "Error saving message",
+        description: messageError.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newMessage = {
-      id: Date.now().toString(),
+      id: messageData.id.toString(),
       text: input,
       sender: 'user' as const,
       timestamp: new Date()
@@ -243,8 +240,46 @@ const Chat = () => {
 
     setMessages(prev => [...prev, newMessage]);
     setInput('');
-    await saveMessage(newMessage, chatId);
     await simulateAIResponse(input, chatId);
+  };
+
+  const simulateAIResponse = async (userMessage: string, chatId: number) => {
+    setIsTyping(true);
+    
+    try {
+      const aiResponse = await getAIResponse(userMessage);
+      
+      const { data: messageData, error: messageError } = await supabase
+        .from('messages')
+        .insert([{
+          chat_id: chatId,
+          content: aiResponse,
+          user_role: 'ai',
+          sender_id: null,
+        }])
+        .select()
+        .single();
+
+      if (messageError) throw messageError;
+
+      const aiMessage = {
+        id: messageData.id.toString(),
+        text: aiResponse,
+        sender: 'ai' as const,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (error: any) {
+      console.error('Error in AI response:', error);
+      toast({
+        title: "Error saving AI response",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   useEffect(() => {
@@ -254,15 +289,35 @@ const Chat = () => {
         if (!chatId) return;
 
         setCurrentChatId(chatId);
+
+        const { data: messageData, error: messageError } = await supabase
+          .from('messages')
+          .insert([{
+            chat_id: chatId,
+            content: initialMessage,
+            user_role: 'user',
+            sender_id: user.id,
+          }])
+          .select()
+          .single();
+
+        if (messageError) {
+          toast({
+            title: "Error saving message",
+            description: messageError.message,
+            variant: "destructive"
+          });
+          return;
+        }
+
         const firstMessage = {
-          id: Date.now().toString(),
+          id: messageData.id.toString(),
           text: initialMessage,
           sender: 'user' as const,
           timestamp: new Date()
         };
         
         setMessages([firstMessage]);
-        await saveMessage(firstMessage, chatId);
         await simulateAIResponse(initialMessage, chatId);
       };
 
