@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, startOfDay, isToday } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { getThemeStyles } from '@/utils/themeUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,7 +46,21 @@ const Entries = () => {
     }
   }, [user, navigate]);
 
-  const startNewChat = () => {
+  const startNewChat = async () => {
+    // Check if there's already a chat from today
+    const todayChat = entries.find(entry => 
+      isToday(new Date(entry.created_at))
+    );
+
+    if (todayChat) {
+      // If there's a chat from today, navigate to it
+      navigate('/chat', {
+        state: { chatId: todayChat.id }
+      });
+      return;
+    }
+
+    // If no chat exists for today, start a new one
     navigate('/chat', {
       state: {
         initialMessage: "Hi there! How are you feeling today? I'm here to listen and chat about whatever's on your mind."
