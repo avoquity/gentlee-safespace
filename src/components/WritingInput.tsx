@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { startOfDay } from 'date-fns';
 
 const suggestedTopics = [
   "Stress", 
@@ -19,23 +21,61 @@ const WritingInput = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (input.trim()) {
-      // If user is not authenticated, store message and redirect to auth
-      if (!user) {
-        // Store the message in sessionStorage
-        sessionStorage.setItem('pendingMessage', input);
-        navigate('/auth', {
-          state: { tab: 'signin', redirectTo: '/chat' }
-        });
-        return;
-      }
+  const findTodayChat = async () => {
+    if (!user) return null;
+    
+    const today = startOfDay(new Date());
+    
+    const { data: existingChat, error } = await supabase
+      .from('chat')
+      .select('id')
+      .eq('user_id', user.id)
+      .gte('created_at', today.toISOString())
+      .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .maybeSingle();
 
-      // If user is authenticated, proceed to chat
-      navigate('/chat', {
-        state: { initialMessage: input }
+    if (error) {
+      console.error('Error finding today\'s chat:', error);
+      return null;
+    }
+
+    return existingChat;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    // If user is not authenticated, store message and redirect to auth
+    if (!user) {
+      sessionStorage.setItem('pendingMessage', input);
+      navigate('/auth', {
+        state: { tab: 'signin', redirectTo: '/chat' }
       });
+      return;
+    }
+
+    try {
+      // Check if there's a chat for today
+      const todayChat = await findTodayChat();
+
+      if (todayChat) {
+        // If chat exists, navigate to it with the message
+        navigate('/chat', {
+          state: { 
+            chatId: todayChat.id,
+            initialMessage: input 
+          }
+        });
+      } else {
+        // If no chat exists for today, create a new one
+        navigate('/chat', {
+          state: { initialMessage: input }
+        });
+      }
+    } catch (error) {
+      console.error('Error handling chat submission:', error);
     }
   };
 
