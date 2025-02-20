@@ -35,7 +35,7 @@ const Chat = () => {
       
       const { data, error } = await supabase
         .from('messages')
-        .select('content, user_role, created_at')
+        .select('id, content, user_role, created_at')
         .eq('chat_id', currentChatId)
         .order('created_at', { ascending: true });
 
@@ -49,7 +49,7 @@ const Chat = () => {
       }
 
       return data.map(msg => ({
-        id: msg.created_at,
+        id: msg.id,
         text: msg.content,
         sender: msg.user_role as 'user' | 'ai',
         timestamp: new Date(msg.created_at)
