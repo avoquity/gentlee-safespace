@@ -34,11 +34,11 @@ const QuoteRotator = () => {
           timeout = setTimeout(typeText, 100);
         } else {
           setIsTyping(false);
-          // Wait for 30 seconds before starting deletion
+          // Reduced wait time to 20 seconds before starting deletion
           timeout = setTimeout(() => {
             setIsTyping(true);
             setIsDeleting(true);
-          }, 30000);
+          }, 20000);
         }
       }
     };
@@ -55,8 +55,8 @@ const QuoteRotator = () => {
       <h1 className="text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight">
         {currentText}
         <span 
-          className="inline-block w-1 h-12 ml-2 bg-deep-charcoal animate-[blink_1s_infinite]" 
-          style={{ verticalAlign: 'middle' }}
+          className="inline-block w-1 ml-2 bg-deep-charcoal animate-[blink_1s_infinite]" 
+          style={{ height: '1em', verticalAlign: 'middle' }}
         />
       </h1>
     </div>

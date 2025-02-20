@@ -20,9 +20,6 @@ const Index = () => {
             
             <div className="grid lg:grid-cols-2 gap-12 items-start">
               <div className="space-y-4 animate-fade-in">
-                <h2 className="text-4xl md:text-5xl font-bold text-deep-charcoal">
-                  Your space to untangle thoughts.
-                </h2>
                 <p className="text-xl text-deep-charcoal/80 font-poppins">
                   Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
