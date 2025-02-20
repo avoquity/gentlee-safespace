@@ -51,13 +51,18 @@ const QuoteRotator = () => {
 
   return (
     <div className="w-[75vw]">
-      <h1 className="text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight">
-        {currentText}
-        <span 
-          className="inline-block w-1 ml-2 bg-deep-charcoal animate-[blink_1s_infinite]" 
-          style={{ height: '1em', verticalAlign: 'middle' }}
-        />
-      </h1>
+      <div 
+        className="min-h-[12rem] md:min-h-[16rem] lg:min-h-[20rem] flex items-center"
+        style={{ opacity: isTyping ? 0.7 : 1, transition: 'opacity 0.3s ease-in-out' }}
+      >
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-montserrat font-extrabold text-deep-charcoal leading-tight">
+          {currentText}
+          <span 
+            className="inline-block w-1 ml-2 bg-deep-charcoal animate-[blink_1s_infinite]" 
+            style={{ height: '1em', verticalAlign: 'middle' }}
+          />
+        </h1>
+      </div>
     </div>
   );
 };
