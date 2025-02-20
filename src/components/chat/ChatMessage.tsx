@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { HighlightPopover } from './HighlightPopover';
 import { HighlightedText } from './HighlightedText';
 import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
 
@@ -24,8 +23,6 @@ export const ChatMessage = ({
   const { user } = useAuth();
   const [selectedText, setSelectedText] = useState('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
-  const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const handleHighlight = async () => {
     if (!user || !selectionRange || !message?.id) {
@@ -46,7 +43,6 @@ export const ChatMessage = ({
       );
       
       onHighlightChange(newHighlight);
-      setIsPopoverOpen(false);
       toast({
         title: "Success",
         description: "Text has been highlighted"
@@ -81,18 +77,12 @@ export const ChatMessage = ({
     }
   };
 
-  const handleTextSelection = (event: React.MouseEvent) => {
+  const handleTextSelection = () => {
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-      setIsPopoverOpen(false);
-      return;
-    }
+    if (!selection || selection.rangeCount === 0) return;
 
     const text = selection.toString().trim();
-    if (!text) {
-      setIsPopoverOpen(false);
-      return;
-    }
+    if (!text) return;
 
     // Get the selection range
     const range = selection.getRangeAt(0);
@@ -101,16 +91,9 @@ export const ChatMessage = ({
     preSelectionRange.setEnd(range.startContainer, range.startOffset);
     const start = preSelectionRange.toString().length;
 
-    // Set position for the popover
-    const rect = range.getBoundingClientRect();
-    setPopoverPosition({
-      x: rect.left + (rect.width / 2),
-      y: rect.top - 10
-    });
-
     setSelectedText(text);
     setSelectionRange({ start, end: start + text.length });
-    setIsPopoverOpen(true);
+    handleHighlight();
   };
 
   return (
@@ -127,16 +110,6 @@ export const ChatMessage = ({
           onRemoveHighlight={handleRemoveHighlight}
         />
       </div>
-
-      {isPopoverOpen && (
-        <HighlightPopover
-          isOpen={isPopoverOpen}
-          onOpenChange={setIsPopoverOpen}
-          selectedText={selectedText}
-          position={popoverPosition}
-          onHighlight={handleHighlight}
-        />
-      )}
     </div>
   );
 };
