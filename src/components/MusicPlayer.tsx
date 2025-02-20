@@ -21,12 +21,12 @@ const MusicPlayer = () => {
           </button>
         </div>
         
-        <div className="flex-1">
-          <div className="flex space-x-1.5">
+        <div className="flex-1 w-full">
+          <div className="flex w-full space-x-1">
             {[...Array(20)].map((_, i) => (
               <div
                 key={i}
-                className={`w-1.5 h-24 rounded-full bg-soft-yellow/30 animate-wave`}
+                className={`flex-1 h-24 rounded-full bg-soft-yellow/30 animate-wave`}
                 style={{
                   animationDelay: `${i * 0.1}s`,
                   opacity: isPlaying ? 1 : 0.5,

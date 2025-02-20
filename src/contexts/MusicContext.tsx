@@ -52,7 +52,10 @@ export const MusicProvider = ({ children }: { children: React.ReactNode }) => {
     return stored ? JSON.parse(stored) : true;
   });
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => {
+    const stored = localStorage.getItem('musicIsMuted');
+    return stored ? JSON.parse(stored) : false;
+  });
   const [audio] = useState(new Audio(tracks[0].url));
 
   const togglePlay = () => {
@@ -65,12 +68,17 @@ export const MusicProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    localStorage.setItem('musicIsMuted', JSON.stringify(newMutedState));
   };
 
   useEffect(() => {
-    audio.loop = true;
+    audio.loop = false; // Disable loop to allow auto-next track
+    audio.addEventListener('ended', nextTrack);
+    
     return () => {
+      audio.removeEventListener('ended', nextTrack);
       audio.pause();
       audio.src = '';
     };
@@ -78,9 +86,12 @@ export const MusicProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (isPlaying) {
-      audio.play().catch(error => {
-        console.log('Audio playback was prevented:', error);
-      });
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Audio playback was prevented:', error);
+        });
+      }
     } else {
       audio.pause();
     }
@@ -93,7 +104,8 @@ export const MusicProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const oldAudio = audio;
     const newAudio = new Audio(tracks[currentTrackIndex].url);
-    newAudio.loop = true;
+    newAudio.loop = false; // Disable loop to allow auto-next track
+    newAudio.muted = isMuted; // Apply current mute state
     
     // Crossfade effect
     let fade = 0;
@@ -112,10 +124,14 @@ export const MusicProvider = ({ children }: { children: React.ReactNode }) => {
       newAudio.play().catch(console.error);
     }
 
+    // Set up ended event for auto-next
+    newAudio.addEventListener('ended', nextTrack);
+
     return () => {
       clearInterval(fadeInterval);
       oldAudio.pause();
       newAudio.pause();
+      newAudio.removeEventListener('ended', nextTrack);
     };
   }, [currentTrackIndex]);
 
