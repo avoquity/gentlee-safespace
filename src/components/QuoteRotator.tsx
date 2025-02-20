@@ -34,18 +34,17 @@ const QuoteRotator = () => {
           timeout = setTimeout(typeText, 100);
         } else {
           setIsTyping(false);
-          // Reduced wait time to 20 seconds before starting deletion
+          // After quote is fully typed, wait 20 seconds then start deletion
           timeout = setTimeout(() => {
             setIsTyping(true);
             setIsDeleting(true);
+            typeText(); // Start the deletion immediately after timeout
           }, 20000);
         }
       }
     };
 
-    if (isTyping) {
-      timeout = setTimeout(typeText, 100);
-    }
+    timeout = setTimeout(typeText, 100);
 
     return () => clearTimeout(timeout);
   }, [currentText, currentQuote, isTyping, isDeleting]);
