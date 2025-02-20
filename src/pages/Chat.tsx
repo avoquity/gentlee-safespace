@@ -1,14 +1,13 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { format } from 'date-fns';
-import { X, Volume2, VolumeX } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ChatMessage } from '@/components/chat/ChatMessage';
-import { ChatThemes } from '@/components/chat/ChatThemes';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { ChatTypingIndicator } from '@/components/chat/ChatTypingIndicator';
+import { ChatHeader } from '@/components/chat/ChatHeader';
+import { ChatDateHeader } from '@/components/chat/ChatDateHeader';
+import { ChatMessages } from '@/components/chat/ChatMessages';
 import { identifyThemes } from '@/utils/themeUtils';
 import { Message, LocationState, Highlight } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
@@ -27,13 +26,8 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedText, setSelectedText] = useState('');
-  const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
-  const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
-  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
 
-  // Fetch messages for existing chat
   const { data: chatMessages } = useQuery({
     queryKey: ['messages', currentChatId],
     queryFn: async () => {
@@ -64,7 +58,6 @@ const Chat = () => {
     enabled: !!currentChatId
   });
 
-  // Handle successful messages fetch
   useEffect(() => {
     if (chatMessages) {
       setMessages(chatMessages);
@@ -76,6 +69,27 @@ const Chat = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    const loadHighlights = async () => {
+      if (!currentChatId) return;
+      
+      try {
+        const chatHighlights = await fetchChatHighlights(currentChatId);
+        setHighlights(chatHighlights);
+      } catch (error: any) {
+        toast({
+          title: "Error loading highlights",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    };
+
+    if (currentChatId) {
+      loadHighlights();
+    }
+  }, [currentChatId, toast]);
 
   const createNewChat = async () => {
     try {
@@ -128,7 +142,6 @@ const Chat = () => {
       const themes = identifyThemes(messages);
       
       try {
-        // First, get the current chat data to check if summary exists
         const { data: chatData, error: chatError } = await supabase
           .from('chat')
           .select('summary')
@@ -139,7 +152,6 @@ const Chat = () => {
 
         let summary = chatData.summary;
 
-        // Only generate summary if it doesn't exist
         if (!summary) {
           const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-chat', {
             body: { messages }
@@ -149,7 +161,6 @@ const Chat = () => {
           summary = summaryData.summary;
         }
 
-        // Update chat with themes and summary (if generated)
         await supabase
           .from('chat')
           .update({ 
@@ -259,19 +270,6 @@ const Chat = () => {
     }
   }, [initialMessage, user]);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!user) {
-      // If there's a message in progress, save it
-      if (location.state?.initialMessage) {
-        sessionStorage.setItem('pendingMessage', location.state.initialMessage);
-      }
-      navigate('/auth', {
-        state: { tab: 'signin', redirectTo: '/chat' }
-      });
-    }
-  }, [user, navigate, location.state]);
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -280,190 +278,33 @@ const Chat = () => {
     return null;
   }
 
-  // Handle text selection
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (!selection || !selection.toString().trim()) {
-      setShowHighlightTooltip(false);
-      return;
-    }
-
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    const selectedText = selection.toString();
-    
-    // Check if selection contains highlighted text
-    const parentElement = selection.anchorNode?.parentElement;
-    const isHighlightedText = parentElement?.classList.contains('bg-[#F5D76E]') && 
-      selection.toString() === parentElement.textContent;
-
-    // Get viewport height
-    const viewportHeight = window.innerHeight;
-    // Determine if there's more space above or below the selection
-    const spaceAbove = rect.top;
-    const spaceBelow = viewportHeight - rect.bottom;
-    
-    setSelectedText(selectedText);
-    setSelectionPosition({
-      x: rect.left + (rect.width / 2),  // Center horizontally
-      y: spaceBelow > spaceAbove 
-        ? rect.bottom + 10  // Show below with 10px gap
-        : rect.top - 40     // Show above with space for tooltip
-    });
-    setShowHighlightTooltip(true);
-    
-    // Update tooltip text based on selection
-    if (isHighlightedText) {
-      setSelectedElement(parentElement);
-    } else {
-      setSelectedElement(null);
-    }
-  };
-
-  // Handle highlight action
-  const handleHighlight = () => {
-    const selection = window.getSelection();
-    if (!selection || !(selection.rangeCount > 0)) return;
-
-    try {
-      const range = selection.getRangeAt(0);
-      const contents = range.extractContents(); // Extract the selected content
-      const span = document.createElement('span');
-      span.className = 'bg-[#F5D76E]';
-      span.appendChild(contents); // Add the content to the span
-      range.insertNode(span); // Insert the highlighted content
-      
-      // Clean up any empty text nodes
-      span.normalize();
-      
-      // Clear the selection
-      setShowHighlightTooltip(false);
-      selection.removeAllRanges();
-    } catch (error) {
-      console.error('Error highlighting text:', error);
-    }
-  };
-
-  // Handle remove highlight
-  const handleRemoveHighlight = (element: HTMLElement) => {
-    if (!element) return;
-    
-    try {
-      const parent = element.parentNode;
-      if (parent) {
-        const fragment = document.createDocumentFragment();
-        while (element.firstChild) {
-          fragment.appendChild(element.firstChild);
-        }
-        parent.replaceChild(fragment, element);
-        setShowHighlightTooltip(false);
-        window.getSelection()?.removeAllRanges();
-      }
-    } catch (error) {
-      console.error('Error removing highlight:', error);
-    }
-  };
-
-  // Fetch highlights when chat ID changes
-  useEffect(() => {
-    const loadHighlights = async () => {
-      if (!currentChatId) return;
-      
-      try {
-        const chatHighlights = await fetchChatHighlights(currentChatId);
-        setHighlights(chatHighlights);
-      } catch (error: any) {
-        toast({
-          title: "Error loading highlights",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    };
-
-    if (currentChatId) {
-      loadHighlights();
-    }
-  }, [currentChatId, toast]);
-
   return (
-    <div 
-      className="min-h-screen bg-soft-ivory flex flex-col"
-    >
+    <div className="min-h-screen bg-soft-ivory flex flex-col">
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
-          <Link 
-            to="/"
-            className="absolute left-6 top-8 text-2xl font-bold text-deep-charcoal hover:text-dusty-rose transition-colors"
-          >
-            Gentlee
-          </Link>
+          <ChatHeader 
+            isMuted={isMuted}
+            onMuteToggle={() => setIsMuted(!isMuted)}
+            onClose={handleCloseConversation}
+          />
 
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            className="absolute right-16 top-8 p-2 text-deep-charcoal/60 hover:text-dusty-rose transition-colors"
-          >
-            {isMuted ? (
-              <Volume2 className="w-6 h-6" />
-            ) : (
-              <VolumeX className="w-6 h-6" />
-            )}
-          </button>
+          <ChatDateHeader 
+            currentDate={currentDate}
+            messages={messages}
+          />
 
-          <button
-            onClick={handleCloseConversation}
-            className="absolute right-6 top-8 p-2 text-deep-charcoal/60 hover:text-dusty-rose transition-colors"
-            aria-label="Close conversation"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          <div className="mb-10">
-            <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
-              {format(currentDate, 'd MMMM yyyy')}
-            </h1>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <ChatThemes 
-                themes={identifyThemes(messages)} 
-                hasMessages={messages.length > 0} 
-              />
-            </div>
-          </div>
-
-          <div className="space-y-8" onMouseUp={handleTextSelection}>
-            {messages.map((message) => (
-              <ChatMessage 
-                key={message.id} 
-                message={message}
-                highlights={highlights.filter(h => h.message_id.toString() === message.id)}
-                onHighlightChange={(newHighlight) => {
-                  setHighlights(prev => [...prev, newHighlight]);
-                }}
-                onHighlightRemove={(highlightId) => {
-                  setHighlights(prev => prev.filter(h => h.id !== highlightId));
-                }}
-              />
-            ))}
-            {isTyping && <ChatTypingIndicator />}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {showHighlightTooltip && (
-            <div
-              className="fixed bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 z-50 hover:bg-soft-yellow transition-colors duration-200"
-              style={{
-                left: selectionPosition.x,
-                top: selectionPosition.y
-              }}
-            >
-              <button
-                onClick={() => selectedElement ? handleRemoveHighlight(selectedElement) : handleHighlight()}
-                className="text-sm text-deep-charcoal hover:text-white transition-colors duration-200 text-[14px]"
-              >
-                {selectedElement ? 'Remove highlight' : 'Highlight'}
-              </button>
-            </div>
-          )}
+          <ChatMessages 
+            messages={messages}
+            highlights={highlights}
+            isTyping={isTyping}
+            onHighlightChange={(newHighlight) => {
+              setHighlights(prev => [...prev, newHighlight]);
+            }}
+            onHighlightRemove={(highlightId) => {
+              setHighlights(prev => prev.filter(h => h.id !== highlightId));
+            }}
+            messagesEndRef={messagesEndRef}
+          />
         </div>
       </div>
 
@@ -477,7 +318,6 @@ const Chat = () => {
         </div>
       </div>
       
-      {/* Audio element for background music */}
       <audio
         src="/path-to-your-music.mp3"
         autoPlay

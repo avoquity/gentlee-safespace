@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Highlight } from '@/types/chat';
 
-export const fetchChatHighlights = async (chatId: number | string) => {
+export const fetchChatHighlights = async (chatId: number) => {
   const { data: messages, error: messagesError } = await supabase
     .from('messages')
     .select('id')
