@@ -10,8 +10,9 @@ import { ChatThemes } from '@/components/chat/ChatThemes';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatTypingIndicator } from '@/components/chat/ChatTypingIndicator';
 import { identifyThemes } from '@/utils/themeUtils';
-import { Message, LocationState } from '@/types/chat';
+import { Message, LocationState, Highlight } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
+import { fetchChatHighlights } from '@/utils/highlightUtils';
 
 const Chat = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ const Chat = () => {
   const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
   const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
   const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
 
   // Fetch messages for existing chat
   const { data: chatMessages } = useQuery({
@@ -362,10 +364,31 @@ const Chat = () => {
     }
   };
 
+  // Fetch highlights when chat ID changes
+  useEffect(() => {
+    const loadHighlights = async () => {
+      if (!currentChatId) return;
+      
+      try {
+        const chatHighlights = await fetchChatHighlights(currentChatId);
+        setHighlights(chatHighlights);
+      } catch (error: any) {
+        toast({
+          title: "Error loading highlights",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    };
+
+    if (currentChatId) {
+      loadHighlights();
+    }
+  }, [currentChatId, toast]);
+
   return (
     <div 
       className="min-h-screen bg-soft-ivory flex flex-col"
-      onMouseUp={handleTextSelection}
     >
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
@@ -407,11 +430,18 @@ const Chat = () => {
             </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-8" onMouseUp={handleTextSelection}>
             {messages.map((message) => (
               <ChatMessage 
                 key={message.id} 
                 message={message}
+                highlights={highlights.filter(h => h.message_id.toString() === message.id)}
+                onHighlightChange={(newHighlight) => {
+                  setHighlights(prev => [...prev, newHighlight]);
+                }}
+                onHighlightRemove={(highlightId) => {
+                  setHighlights(prev => prev.filter(h => h.id !== highlightId));
+                }}
               />
             ))}
             {isTyping && <ChatTypingIndicator />}

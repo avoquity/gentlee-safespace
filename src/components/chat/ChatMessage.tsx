@@ -1,46 +1,31 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { HighlightPopover } from './HighlightPopover';
 import { HighlightedText } from './HighlightedText';
-import { fetchMessageHighlights, createHighlight, removeHighlight } from '@/utils/highlightUtils';
+import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
 
 interface ChatMessageProps {
   message: Message;
+  highlights: Highlight[];
+  onHighlightChange: (highlight: Highlight) => void;
+  onHighlightRemove: (highlightId: number) => void;
 }
 
-export const ChatMessage = ({ message }: ChatMessageProps) => {
+export const ChatMessage = ({ 
+  message, 
+  highlights, 
+  onHighlightChange, 
+  onHighlightRemove 
+}: ChatMessageProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [selectedText, setSelectedText] = useState('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-  // Fetch existing highlights on mount
-  useEffect(() => {
-    const loadHighlights = async () => {
-      try {
-        if (!message?.id || !user) return;
-        const data = await fetchMessageHighlights(message.id);
-        setHighlights(data);
-      } catch (err: any) {
-        console.error('Error loading highlights:', err);
-        toast({
-          title: "Error loading highlights",
-          description: err.message,
-          variant: "destructive"
-        });
-      }
-    };
-
-    if (user && message?.id) {
-      loadHighlights();
-    }
-  }, [message?.id, user, toast]);
 
   const handleHighlight = async () => {
     if (!user || !selectionRange || !message?.id) {
@@ -60,7 +45,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         user.id
       );
       
-      setHighlights(prev => [...prev, newHighlight]);
+      onHighlightChange(newHighlight);
       setIsPopoverOpen(false);
       toast({
         title: "Success",
@@ -81,7 +66,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
     try {
       await removeHighlight(highlightId);
-      setHighlights(prev => prev.filter(h => h.id !== highlightId));
+      onHighlightRemove(highlightId);
       toast({
         title: "Success",
         description: "Highlight removed"
@@ -116,7 +101,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
     preSelectionRange.setEnd(range.startContainer, range.startOffset);
     const start = preSelectionRange.toString().length;
 
-    // Set position for the single popover
+    // Set position for the popover
     const rect = range.getBoundingClientRect();
     setPopoverPosition({
       x: rect.left + (rect.width / 2),
@@ -143,7 +128,6 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         />
       </div>
 
-      {/* Single popover instance */}
       {isPopoverOpen && (
         <HighlightPopover
           isOpen={isPopoverOpen}
