@@ -2,11 +2,17 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Highlight } from '@/types/chat';
 
-export const fetchChatHighlights = async (chatId: number) => {
+export const fetchChatHighlights = async (chatId: number | string) => {
+  const parsedChatId = typeof chatId === 'string' ? parseInt(chatId) : chatId;
+  
+  if (isNaN(parsedChatId)) {
+    throw new Error('Invalid chat ID');
+  }
+
   const { data: messages, error: messagesError } = await supabase
     .from('messages')
     .select('id')
-    .eq('chat_id', chatId);
+    .eq('chat_id', parsedChatId);
 
   if (messagesError) {
     throw messagesError;
