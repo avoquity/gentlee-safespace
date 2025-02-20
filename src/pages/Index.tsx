@@ -38,7 +38,7 @@ const Index = () => {
 
           <div className="mt-16 px-4">
             <p className="text-xs text-deep-charcoal/60 text-center max-w-3xl mx-auto">
-              Disclaimer: Solura is designed for reflection, self-exploration, and emotional support. It is not a substitute for professional therapy, counseling, or medical treatment. If you are in crisis or require professional mental health care, please seek guidance from a licensed therapist or healthcare provider. By using this platform, you acknowledge that Solura is for informational and personal growth purposes only and does not provide medical or psychological diagnoses, treatment, or advice.
+              Disclaimer: Gentlee is designed for reflection, self-exploration, and emotional support. It is not a substitute for professional therapy, counseling, or medical treatment. If you are in crisis or require professional mental health care, please seek guidance from a licensed therapist or healthcare provider. By using this platform, you acknowledge that Gentlee is for informational and personal growth purposes only and does not provide medical or psychological diagnoses, treatment, or advice.
             </p>
           </div>
         </div>
