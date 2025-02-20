@@ -5,6 +5,7 @@ import QuoteRotator from '../components/QuoteRotator';
 import MusicPlayer from '../components/MusicPlayer';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
+import TypingHeadline from '../components/TypingHeadline';
 
 const Index = () => {
   return (
@@ -20,6 +21,7 @@ const Index = () => {
             
             <div className="grid lg:grid-cols-2 gap-12 items-start">
               <div className="space-y-4 animate-fade-in">
+                <TypingHeadline />
                 <p className="text-xl text-deep-charcoal/80 font-poppins">
                   Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
