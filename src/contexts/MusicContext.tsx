@@ -8,9 +8,31 @@ type Track = {
 };
 
 const tracks: Track[] = [
-  { id: '1', title: 'Gentle Rain', url: '/music/gentle-rain.mp3' },
-  { id: '2', title: 'Ocean Waves', url: '/music/ocean-waves.mp3' },
-  { id: '3', title: 'Forest Ambience', url: '/music/forest-ambience.mp3' }
+  { 
+    id: '1', 
+    title: 'By Clavier Music', 
+    url: 'https://www.dropbox.com/scl/fi/zhhsziofxc7krcpoil1by/By-Clavier-Music.mp3?rlkey=ryi1nvnw6ojv3gwzcs9sdsm8u&dl=1'
+  },
+  { 
+    id: '2', 
+    title: 'Calm Piano', 
+    url: 'https://www.dropbox.com/scl/fi/vcgmw1mi4ce1jpv2xggxh/Calm-Piano-By-Clavier-Music.mp3?rlkey=3kkkgg22utcmkdeop4pz4x2je&dl=1'
+  },
+  { 
+    id: '3', 
+    title: 'Prelude', 
+    url: 'https://www.dropbox.com/scl/fi/yja7ywsp667o7h0w5sk8n/Prelude-By-Sigma-Music-Art.mp3?rlkey=vf4xrg1g4hzyg976lnfejjhl3&dl=1'
+  },
+  { 
+    id: '4', 
+    title: 'Reverie', 
+    url: 'https://www.dropbox.com/scl/fi/ssbgl0j8u95r6n1ijshmx/Reverie-By-Clavier-Music.mp3?rlkey=eakliyc9tut9ks51br5w5v69n&dl=1'
+  },
+  { 
+    id: '5', 
+    title: 'Uplifting Piano', 
+    url: 'https://www.dropbox.com/scl/fi/pt16sp977dzgikn7a6sgl/Uplifting-Piano-By-Clavier-Music.mp3?rlkey=97qwr1vl30azr78shhpc101k0&dl=1'
+  }
 ];
 
 interface MusicContextType {
