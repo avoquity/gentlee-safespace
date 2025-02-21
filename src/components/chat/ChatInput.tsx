@@ -11,8 +11,11 @@ interface ChatInputProps {
 export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => {
   return (
     <form onSubmit={handleSubmit} className="relative mt-10">
-      <div className="absolute -top-40 left-0 right-0 h-40 pointer-events-none bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent" 
-        style={{ opacity: '0.9' }} 
+      <div 
+        className="absolute -top-40 left-0 right-0 h-40 pointer-events-none" 
+        style={{ 
+          background: 'linear-gradient(to top, rgba(253, 251, 248, 1) 0%, rgba(253, 251, 248, 0.9) 50%, rgba(253, 251, 248, 0) 100%)'
+        }} 
       />
       <textarea
         value={input}
