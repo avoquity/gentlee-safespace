@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format, startOfDay, isToday } from 'date-fns';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -19,6 +19,17 @@ const Entries = () => {
   const { toast } = useToast();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const { ref: loadMoreRef, inView } = useInView();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const fetchEntries = async ({ pageParam = 0 }) => {
     if (!user) return { entries: [], nextPage: null };
@@ -96,6 +107,11 @@ const Entries = () => {
     });
   };
 
+  const handleThemeClick = (e: React.MouseEvent, theme: string) => {
+    e.stopPropagation(); // Prevent entry card click
+    setSelectedTheme(theme.trim());
+  };
+
   if (!user) {
     return null;
   }
@@ -120,7 +136,9 @@ const Entries = () => {
 
   return (
     <div className="min-h-screen bg-soft-ivory">
-      <div className="fixed top-0 w-full bg-white shadow-sm z-50">
+      <div className={`fixed top-0 w-full transition-colors duration-200 z-50 ${
+        isScrolled ? 'bg-white shadow-sm' : 'bg-transparent'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
@@ -143,46 +161,13 @@ const Entries = () => {
           </h1>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-8" role="tablist">
-          <button
-            role="tab"
-            aria-selected={!selectedTheme}
-            onClick={() => setSelectedTheme(null)}
-            className={`px-4 py-1.5 rounded-full border transition-colors duration-200 ${
-              !selectedTheme 
-                ? 'bg-muted-sage text-white border-muted-sage' 
-                : 'border-deep-charcoal/20 text-deep-charcoal/60 hover:border-deep-charcoal/40'
-            }`}
-          >
-            All entries
-          </button>
-          {Array.from(allThemes).map((theme) => {
-            const borderColor = getThemeStyles(theme, entries);
-            return (
-              <button
-                key={theme}
-                role="tab"
-                aria-selected={selectedTheme === theme}
-                onClick={() => setSelectedTheme(theme)}
-                className={`px-4 py-1.5 rounded-full border text-deep-charcoal transition-colors duration-200 hover:bg-soft-yellow/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-muted-sage`}
-                style={{ 
-                  borderColor,
-                  backgroundColor: selectedTheme === theme ? borderColor : 'transparent',
-                }}
-              >
-                {theme}
-              </button>
-            );
-          })}
-        </div>
-
         <div className="space-y-8">
           {Object.entries(groupedEntries).map(([date, dateEntries]) => (
             <div key={date} className="space-y-4">
               {dateEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="w-full p-6 border-2 border-deep-charcoal rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer"
+                  className="w-full p-6 border-2 border-deep-charcoal rounded-xl transition-colors group cursor-pointer hover:bg-[#E9E9E3]/50"
                   onClick={() => navigate('/chat', { state: { chatId: entry.id } })}
                   role="button"
                   tabIndex={0}
@@ -193,7 +178,7 @@ const Entries = () => {
                   }}
                 >
                   <div className="space-y-3">
-                    <h2 className="text-2xl font-semibold text-muted-sage mb-4">
+                    <h2 className="text-2xl font-semibold text-deep-charcoal mb-4">
                       {date}
                     </h2>
                     {entry.theme && (
@@ -201,13 +186,14 @@ const Entries = () => {
                         {entry.theme.split(',').map((theme) => {
                           const borderColor = getThemeStyles(theme.trim(), entries);
                           return (
-                            <span
+                            <button
                               key={theme}
-                              className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal group-hover:bg-soft-yellow/10 transition-colors duration-200"
+                              onClick={(e) => handleThemeClick(e, theme)}
+                              className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal transition-colors duration-200 hover:bg-soft-yellow/10"
                               style={{ borderColor }}
                             >
                               {theme.trim()}
-                            </span>
+                            </button>
                           );
                         })}
                       </div>
@@ -232,6 +218,18 @@ const Entries = () => {
               variant="outline"
             >
               {isFetchingNextPage ? 'Loading more...' : 'Load more entries'}
+            </Button>
+          </div>
+        )}
+
+        {selectedTheme && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
+            <Button
+              onClick={() => setSelectedTheme(null)}
+              variant="outline"
+              className="shadow-lg"
+            >
+              Clear filter: {selectedTheme}
             </Button>
           </div>
         )}
