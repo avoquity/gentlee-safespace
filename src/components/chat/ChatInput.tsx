@@ -10,7 +10,10 @@ interface ChatInputProps {
 
 export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => {
   return (
-    <form onSubmit={handleSubmit} className="relative">
+    <form onSubmit={handleSubmit} className="relative mt-10">
+      <div className="absolute -top-40 left-0 right-0 h-40 pointer-events-none bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent" 
+        style={{ opacity: '0.9' }} 
+      />
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -38,7 +41,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
             const lastMessage = chatContainer.lastElementChild;
             if (lastMessage) {
               const lastMessageBottom = lastMessage.getBoundingClientRect().bottom;
-              const minGap = 30; // minimum gap in pixels
+              const minGap = 40; // increased minimum gap to 40px
               if (inputTop - lastMessageBottom < minGap) {
                 chatContainer.scrollTop += minGap - (inputTop - lastMessageBottom);
               }

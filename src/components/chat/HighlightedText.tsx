@@ -56,7 +56,7 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
   };
 
   return (
-    <p className="text-deep-charcoal text-[17px] leading-relaxed whitespace-pre-wrap">
+    <p className="text-deep-charcoal text-lg leading-relaxed whitespace-pre-wrap">
       {renderTextWithHighlights()}
     </p>
   );
