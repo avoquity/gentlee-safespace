@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { format, startOfDay, isToday } from 'date-fns';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getThemeStyles } from '@/utils/themeUtils';
@@ -14,10 +14,13 @@ import { ArrowLeft } from 'lucide-react';
 const ENTRIES_PER_PAGE = 10;
 
 const Entries = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(
+    location.state?.selectedTheme || null
+  );
   const { ref: loadMoreRef, inView } = useInView();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -177,17 +180,27 @@ const Entries = () => {
                 <div
                   key={entry.id}
                   className="w-full p-6 border-2 border-deep-charcoal rounded-xl transition-colors group cursor-pointer hover:bg-[#E9E9E3]/50"
-                  onClick={() => navigate('/chat', { state: { chatId: entry.id } })}
+                  onClick={() => navigate('/chat', { 
+                    state: { 
+                      chatId: entry.id,
+                      entryDate: date
+                    } 
+                  })}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      navigate('/chat', { state: { chatId: entry.id } });
+                      navigate('/chat', { 
+                        state: { 
+                          chatId: entry.id,
+                          entryDate: date
+                        } 
+                      });
                     }
                   }}
                 >
-                  <div className="space-y-3">
-                    <h2 className="text-2xl font-semibold text-deep-charcoal mb-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <h2 className="text-2xl font-semibold text-deep-charcoal">
                       {date}
                     </h2>
                     {entry.theme && (
@@ -198,8 +211,11 @@ const Entries = () => {
                             <button
                               key={theme}
                               onClick={(e) => handleThemeClick(e, theme)}
-                              className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal transition-colors duration-200 hover:bg-soft-yellow/10"
-                              style={{ borderColor }}
+                              className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal transition-colors duration-200 hover:brightness-95"
+                              style={{ 
+                                borderColor,
+                                backgroundColor: borderColor
+                              }}
                             >
                               {theme.trim()}
                             </button>
@@ -207,12 +223,12 @@ const Entries = () => {
                         })}
                       </div>
                     )}
-                    {entry.summary && (
-                      <p className="text-sm text-deep-charcoal/80 italic">
-                        {entry.summary}
-                      </p>
-                    )}
                   </div>
+                  {entry.summary && (
+                    <p className="text-sm text-deep-charcoal/80 italic mt-3">
+                      {entry.summary}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
