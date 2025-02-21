@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format, startOfDay, isToday } from 'date-fns';
@@ -10,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { ChatEntry } from '@/types/chat';
 import { useInView } from 'react-intersection-observer';
+import { ArrowLeft } from 'lucide-react';
 
 const ENTRIES_PER_PAGE = 10;
 
@@ -156,9 +156,18 @@ const Entries = () => {
 
       <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
         <div className="mb-12">
-          <h1 className="text-5xl font-bold text-deep-charcoal">
+          <h1 className="text-5xl font-bold text-deep-charcoal mb-4">
             Looking back, to move forward.
           </h1>
+          {selectedTheme && (
+            <button
+              onClick={() => setSelectedTheme(null)}
+              className="flex items-center gap-2 text-deep-charcoal hover:text-muted-sage transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>My thoughts</span>
+            </button>
+          )}
         </div>
 
         <div className="space-y-8">
