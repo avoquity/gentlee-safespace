@@ -22,7 +22,7 @@ export const ChatMessages = ({
   messagesEndRef 
 }: ChatMessagesProps) => {
   return (
-    <div className="space-y-8">
+    <div className="chat-messages-container space-y-8">
       {messages.map((message) => (
         <ChatMessage 
           key={message.id} 
