@@ -60,6 +60,7 @@ const Entries = () => {
   } = useInfiniteQuery({
     queryKey: ['chats', user?.id, selectedTheme],
     queryFn: fetchEntries,
+    initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextPage,
     enabled: !!user
   });
