@@ -51,14 +51,6 @@ const Header = () => {
     }
   };
 
-  const startNewChat = () => {
-    navigate('/chat', {
-      state: {
-        initialMessage: "Hi there! How are you feeling today? I'm here to listen and chat about whatever's on your mind."
-      }
-    });
-  };
-
   return (
     <header 
       className={`fixed top-0 w-full z-50 ${
@@ -72,7 +64,7 @@ const Header = () => {
             Gentlee
           </Link>
           
-          <nav className="hidden md:flex items-center space-x-10">
+          <nav className="flex items-center space-x-10">
             <Link to="/about" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
               About
             </Link>
@@ -81,6 +73,13 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
+                <Link 
+                  to="/"
+                  onClick={handleSignOut}
+                  className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
+                >
+                  Sign Out
+                </Link>
                 {location.pathname === '/' && (
                   <Button
                     onClick={() => navigate('/entries')}
@@ -90,13 +89,6 @@ const Header = () => {
                     My thoughts
                   </Button>
                 )}
-                <Link 
-                  to="/"
-                  onClick={handleSignOut}
-                  className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
-                >
-                  Sign Out
-                </Link>
               </>
             ) : (
               <>

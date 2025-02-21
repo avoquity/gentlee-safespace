@@ -11,8 +11,8 @@ const Index = () => {
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <Header />
       
-      <main className="flex-1 pt-40 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col min-h-screen">
+        <div className="pt-40 max-w-7xl mx-auto w-full">
           <div className="space-y-16">
             <div className="animate-fade-in">
               <QuoteRotator />
@@ -31,16 +31,18 @@ const Index = () => {
               </div>
             </div>
           </div>
+        </div>
           
-          <div className="mt-24 animate-fade-up delay-300">
+        <div className="sticky bottom-8 w-full max-w-7xl mx-auto mt-auto pt-8">
+          <div className="animate-fade-up delay-300">
             <WritingInput />
           </div>
+        </div>
 
-          <div className="mt-16 px-4">
-            <p className="text-xs text-deep-charcoal/60 text-center max-w-3xl mx-auto">
-              Disclaimer: Gentlee is designed for reflection, self-exploration, and emotional support. It is not a substitute for professional therapy, counseling, or medical treatment. If you are in crisis or require professional mental health care, please seek guidance from a licensed therapist or healthcare provider. By using this platform, you acknowledge that Gentlee is for informational and personal growth purposes only and does not provide medical or psychological diagnoses, treatment, or advice.
-            </p>
-          </div>
+        <div className="mt-8 px-4">
+          <p className="text-xs text-deep-charcoal/60 text-center max-w-3xl mx-auto">
+            Disclaimer: Gentlee is designed for reflection, self-exploration, and emotional support. It is not a substitute for professional therapy, counseling, or medical treatment. If you are in crisis or require professional mental health care, please seek guidance from a licensed therapist or healthcare provider. By using this platform, you acknowledge that Gentlee is for informational and personal growth purposes only and does not provide medical or psychological diagnoses, treatment, or advice.
+          </p>
         </div>
       </main>
 
