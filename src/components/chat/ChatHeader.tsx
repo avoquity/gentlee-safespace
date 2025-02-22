@@ -14,7 +14,7 @@ export const ChatHeader = ({ isMuted, onMuteToggle, onClose }: ChatHeaderProps) 
 
   return (
     <div className="flex justify-between items-center mb-8">
-      <h1 className="text-2xl font-semibold text-deep-charcoal">
+      <h1 className="text-[68px] font-semibold text-deep-charcoal">
         {entryDate || 'New Entry'}
       </h1>
       <div className="flex items-center gap-4">

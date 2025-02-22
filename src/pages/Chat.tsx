@@ -373,13 +373,6 @@ const Chat = () => {
             onClose={handleCloseConversation}
           />
 
-          {chatData && (
-            <ChatDateHeader 
-              createdAt={chatData.created_at}
-              messages={messages}
-            />
-          )}
-
           <ChatMessages 
             messages={messages}
             highlights={highlights}
