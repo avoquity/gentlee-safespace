@@ -1,4 +1,6 @@
+
 import { useLocation } from 'react-router-dom';
+import { X, Volume2, VolumeX } from 'lucide-react';
 
 interface ChatHeaderProps {
   isMuted: boolean;
@@ -20,13 +22,13 @@ export const ChatHeader = ({ isMuted, onMuteToggle, onClose }: ChatHeaderProps) 
           onClick={onMuteToggle}
           className="p-2 rounded-full hover:bg-deep-charcoal/10 transition-colors duration-200"
         >
-          {isMuted ? 'Unmute' : 'Mute'}
+          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
         </button>
         <button
           onClick={onClose}
-          className="bg-dusty-rose text-white px-4 py-2 rounded-full hover:bg-rose-600 transition-colors duration-200"
+          className="p-2 rounded-full hover:bg-deep-charcoal/10 transition-colors duration-200"
         >
-          Close
+          <X size={24} />
         </button>
       </div>
     </div>

@@ -6,15 +6,15 @@ import { Message } from '@/types/chat';
 import { identifyThemes } from '@/utils/themeUtils';
 
 interface ChatDateHeaderProps {
-  currentDate: Date;
+  createdAt: string;
   messages: Message[];
 }
 
-export const ChatDateHeader = ({ currentDate, messages }: ChatDateHeaderProps) => {
+export const ChatDateHeader = ({ createdAt, messages }: ChatDateHeaderProps) => {
   return (
     <div className="mb-10">
       <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
-        {format(currentDate, 'd MMMM yyyy')}
+        {format(new Date(createdAt), 'd MMMM yyyy')}
       </h1>
       <div className="mt-3 flex flex-wrap gap-2">
         <ChatThemes 

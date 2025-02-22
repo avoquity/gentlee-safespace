@@ -33,7 +33,7 @@ const Index = () => {
           </div>
         </div>
           
-        <div className="sticky bottom-8 w-full max-w-7xl mx-auto mt-auto pt-8">
+        <div className="w-full max-w-7xl mx-auto mt-auto pt-8">
           <div className="animate-fade-up delay-300">
             <WritingInput />
           </div>

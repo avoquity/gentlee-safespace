@@ -27,6 +27,23 @@ const Chat = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
 
+  const { data: chatData } = useQuery({
+    queryKey: ['chat', currentChatId],
+    queryFn: async () => {
+      if (!currentChatId) return null;
+      
+      const { data, error } = await supabase
+        .from('chat')
+        .select('*')
+        .eq('id', currentChatId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!currentChatId
+  });
+
   const { data: chatMessages } = useQuery({
     queryKey: ['messages', currentChatId],
     queryFn: async () => {
@@ -339,14 +356,29 @@ const Chat = () => {
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
           <ChatHeader 
             isMuted={isMuted}
-            onMuteToggle={() => setIsMuted(!isMuted)}
+            onMuteToggle={() => {
+              setIsMuted(!isMuted);
+              if (!isMuted) {
+                const audio = document.querySelector('audio');
+                if (audio) {
+                  audio.muted = true;
+                }
+              } else {
+                const audio = document.querySelector('audio');
+                if (audio) {
+                  audio.muted = false;
+                }
+              }
+            }}
             onClose={handleCloseConversation}
           />
 
-          <ChatDateHeader 
-            currentDate={currentDate}
-            messages={messages}
-          />
+          {chatData && (
+            <ChatDateHeader 
+              createdAt={chatData.created_at}
+              messages={messages}
+            />
+          )}
 
           <ChatMessages 
             messages={messages}
