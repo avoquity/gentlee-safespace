@@ -24,12 +24,14 @@ export const ChatMessage = ({
   const [selectedText, setSelectedText] = useState('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
 
-  const handleHighlight = async () => {
+  const handleHighlight = async (range: { start: number; end: number }) => {
+    if (!user || !range) return;
+
     try {
       const newHighlight = await createHighlight(
         message.id,
-        selectionRange.start,
-        selectionRange.end,
+        range.start,
+        range.end,
         user.id
       );
       
@@ -81,10 +83,15 @@ export const ChatMessage = ({
     preSelectionRange.selectNodeContents(range.startContainer.parentElement!);
     preSelectionRange.setEnd(range.startContainer, range.startOffset);
     const start = preSelectionRange.toString().length;
+    const end = start + text.length;
 
+    // Set the selected text and range
     setSelectedText(text);
-    setSelectionRange({ start, end: start + text.length });
-    handleHighlight();
+    const newRange = { start, end };
+    setSelectionRange(newRange);
+    
+    // Immediately handle the highlight with the newly created range
+    handleHighlight(newRange);
   };
 
   return (
