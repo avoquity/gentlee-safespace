@@ -25,15 +25,6 @@ export const ChatMessage = ({
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
 
   const handleHighlight = async () => {
-    if (!user || !selectionRange || !message?.id) {
-      toast({
-        title: "Error",
-        description: !user ? "Please sign in to highlight text" : "Invalid selection or message",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
       const newHighlight = await createHighlight(
         message.id,
