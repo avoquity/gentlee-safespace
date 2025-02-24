@@ -96,13 +96,41 @@ export const ChatMessage = ({
     setSelectedText(text);
     setSelectionRange({ start, end });
     
-    // Position the tooltip near the selection
+    // Get accurate position for the tooltip
     const rect = range.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
     setTooltipPosition({
       x: rect.left + (rect.width / 2),
-      y: rect.top - 10
+      y: rect.top + scrollTop // Add scroll position for accurate placement
     });
     setShowHighlightTooltip(true);
+  };
+
+  const renderMarkdownContent = (content: string) => {
+    return (
+      <div className="text-deep-charcoal text-lg leading-relaxed">
+        <ReactMarkdown
+          components={{
+            p: ({ children }) => {
+              const textContent = React.Children.toArray(children)
+                .map(child => (typeof child === 'string' ? child : ''))
+                .join('');
+              
+              return (
+                <HighlightedText
+                  text={textContent}
+                  highlights={highlights}
+                  onRemoveHighlight={handleRemoveHighlight}
+                />
+              );
+            },
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   return (
@@ -114,23 +142,7 @@ export const ChatMessage = ({
         onMouseUp={handleTextSelection}
         onMouseDown={() => setShowHighlightTooltip(false)}
       >
-        {message.sender === 'ai' ? (
-          <div className="text-deep-charcoal text-lg leading-relaxed whitespace-pre-wrap">
-            <ReactMarkdown
-              components={{
-                p: ({ children }) => (
-                  <HighlightedText
-                    text={String(children)}
-                    highlights={highlights}
-                    onRemoveHighlight={handleRemoveHighlight}
-                  />
-                ),
-              }}
-            >
-              {message.text}
-            </ReactMarkdown>
-          </div>
-        ) : (
+        {message.sender === 'ai' ? renderMarkdownContent(message.text) : (
           <HighlightedText
             text={message.text}
             highlights={highlights}
@@ -140,10 +152,10 @@ export const ChatMessage = ({
 
         {showHighlightTooltip && selectionRange && (
           <div 
-            className="absolute z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
+            className="fixed z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
             style={{
               left: tooltipPosition.x,
-              top: tooltipPosition.y - 40,
+              top: Math.max(0, tooltipPosition.y - 40), // Ensure tooltip doesn't go off-screen
             }}
             onClick={() => handleHighlight(selectionRange)}
           >

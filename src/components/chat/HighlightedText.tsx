@@ -26,26 +26,28 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
         );
       }
 
-      // Add highlighted text
+      // Add highlighted text with tooltip container
       parts.push(
-        <div
+        <span
           key={`highlight-${highlight.id}`}
-          className="inline-block relative group"
+          className="relative inline-block group"
         >
           <span className="bg-[#F5D76E] cursor-pointer">
             {text.slice(highlight.start_index, highlight.end_index)}
           </span>
-          <div
-            className="invisible group-hover:visible absolute z-50 -top-12 left-1/2 transform -translate-x-1/2 min-w-max"
+          <span
+            className="opacity-0 group-hover:opacity-100 absolute left-1/2 -translate-x-1/2 -top-10 
+                     bg-white shadow-lg rounded-lg px-4 py-2 text-sm text-deep-charcoal 
+                     hover:text-white hover:bg-soft-yellow transition-all duration-200 cursor-pointer
+                     pointer-events-none group-hover:pointer-events-auto z-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveHighlight(highlight.id);
+            }}
           >
-            <button
-              onClick={() => onRemoveHighlight(highlight.id)}
-              className="bg-white shadow-lg rounded-lg px-4 py-2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200"
-            >
-              Remove highlight
-            </button>
-          </div>
-        </div>
+            Remove highlight
+          </span>
+        </span>
       );
 
       lastIndex = highlight.end_index;
