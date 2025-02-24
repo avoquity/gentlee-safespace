@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { HighlightedText } from './HighlightedText';
 import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: Message;
@@ -23,6 +24,8 @@ export const ChatMessage = ({
   const { user } = useAuth();
   const [selectedText, setSelectedText] = useState('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
+  const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   const handleHighlight = async (range: { start: number; end: number }) => {
     if (!user || !range) return;
@@ -40,6 +43,7 @@ export const ChatMessage = ({
         title: "Success",
         description: "Text has been highlighted"
       });
+      setShowHighlightTooltip(false);
     } catch (error: any) {
       console.error('Error creating highlight:', error);
       toast({
@@ -75,7 +79,10 @@ export const ChatMessage = ({
     if (!selection || selection.rangeCount === 0) return;
 
     const text = selection.toString().trim();
-    if (!text) return;
+    if (!text) {
+      setShowHighlightTooltip(false);
+      return;
+    }
 
     // Get the selection range
     const range = selection.getRangeAt(0);
@@ -87,26 +94,61 @@ export const ChatMessage = ({
 
     // Set the selected text and range
     setSelectedText(text);
-    const newRange = { start, end };
-    setSelectionRange(newRange);
+    setSelectionRange({ start, end });
     
-    // Immediately handle the highlight with the newly created range
-    handleHighlight(newRange);
+    // Position the tooltip near the selection
+    const rect = range.getBoundingClientRect();
+    setTooltipPosition({
+      x: rect.left + (rect.width / 2),
+      y: rect.top - 10
+    });
+    setShowHighlightTooltip(true);
   };
 
   return (
     <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[80%] px-6 py-4 rounded-2xl ${
+        className={`max-w-[80%] px-6 py-4 rounded-2xl relative ${
           message.sender === 'user' ? 'bg-white shadow-sm' : 'bg-transparent'
         }`}
         onMouseUp={handleTextSelection}
+        onMouseDown={() => setShowHighlightTooltip(false)}
       >
-        <HighlightedText
-          text={message.text}
-          highlights={highlights}
-          onRemoveHighlight={handleRemoveHighlight}
-        />
+        {message.sender === 'ai' ? (
+          <ReactMarkdown
+            className="text-deep-charcoal text-lg leading-relaxed whitespace-pre-wrap"
+            components={{
+              p: ({ children }) => (
+                <HighlightedText
+                  text={String(children)}
+                  highlights={highlights}
+                  onRemoveHighlight={handleRemoveHighlight}
+                />
+              ),
+            }}
+          >
+            {message.text}
+          </ReactMarkdown>
+        ) : (
+          <HighlightedText
+            text={message.text}
+            highlights={highlights}
+            onRemoveHighlight={handleRemoveHighlight}
+          />
+        )}
+
+        {showHighlightTooltip && selectionRange && (
+          <div 
+            className="absolute z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
+            style={{
+              left: tooltipPosition.x,
+              top: tooltipPosition.y - 40,
+            }}
+            onClick={() => handleHighlight(selectionRange)}
+          >
+            Highlight text
+          </div>
+        )}
       </div>
     </div>
   );

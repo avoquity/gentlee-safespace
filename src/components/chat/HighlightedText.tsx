@@ -28,18 +28,24 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
 
       // Add highlighted text
       parts.push(
-        <span
+        <div
           key={`highlight-${highlight.id}`}
-          className="bg-[#F5D76E] relative group cursor-pointer"
+          className="inline-block relative group"
         >
-          {text.slice(highlight.start_index, highlight.end_index)}
-          <button
-            onClick={() => onRemoveHighlight(highlight.id)}
-            className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg px-4 py-2 -top-10 left-1/2 transform -translate-x-1/2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200"
+          <span className="bg-[#F5D76E] cursor-pointer">
+            {text.slice(highlight.start_index, highlight.end_index)}
+          </span>
+          <div
+            className="invisible group-hover:visible absolute z-50 -top-12 left-1/2 transform -translate-x-1/2 min-w-max"
           >
-            Remove highlight
-          </button>
-        </span>
+            <button
+              onClick={() => onRemoveHighlight(highlight.id)}
+              className="bg-white shadow-lg rounded-lg px-4 py-2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200"
+            >
+              Remove highlight
+            </button>
+          </div>
+        </div>
       );
 
       lastIndex = highlight.end_index;
