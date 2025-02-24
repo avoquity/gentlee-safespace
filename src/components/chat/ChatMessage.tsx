@@ -115,20 +115,21 @@ export const ChatMessage = ({
         onMouseDown={() => setShowHighlightTooltip(false)}
       >
         {message.sender === 'ai' ? (
-          <ReactMarkdown
-            className="text-deep-charcoal text-lg leading-relaxed whitespace-pre-wrap"
-            components={{
-              p: ({ children }) => (
-                <HighlightedText
-                  text={String(children)}
-                  highlights={highlights}
-                  onRemoveHighlight={handleRemoveHighlight}
-                />
-              ),
-            }}
-          >
-            {message.text}
-          </ReactMarkdown>
+          <div className="text-deep-charcoal text-lg leading-relaxed whitespace-pre-wrap">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => (
+                  <HighlightedText
+                    text={String(children)}
+                    highlights={highlights}
+                    onRemoveHighlight={handleRemoveHighlight}
+                  />
+                ),
+              }}
+            >
+              {message.text}
+            </ReactMarkdown>
+          </div>
         ) : (
           <HighlightedText
             text={message.text}
