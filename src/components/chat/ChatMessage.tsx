@@ -28,6 +28,8 @@ export const ChatMessage = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   const handleHighlight = async (range: { start: number; end: number }) => {
+    console.log(range);
+    console.log(user);
     if (!user || !range) return;
 
     try {
