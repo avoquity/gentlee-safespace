@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
@@ -161,7 +160,10 @@ export const ChatMessage = ({
               left: tooltipPosition.x,
               top: Math.max(0, tooltipPosition.y - 40), // Ensure tooltip doesn't go off-screen
             }}
-            onClick={() => handleHighlight(selectionRange)}
+            onClick={() => {
+              console.log('Tooltip clicked'); // Debugging log
+              handleHighlight(selectionRange);
+            }}
           >
             Highlight text
           </div>
