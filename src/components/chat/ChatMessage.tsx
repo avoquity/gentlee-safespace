@@ -78,6 +78,7 @@ export const ChatMessage = ({
 
   const handleTextSelection = () => {
     const selection = window.getSelection();
+    console.log(selection)
     if (!selection || selection.rangeCount === 0) return;
 
     const text = selection.toString().trim();
@@ -96,6 +97,7 @@ export const ChatMessage = ({
 
     // Set the selected text and range
     setSelectedText(text);
+    console.log({start, end})
     setSelectionRange({ start, end });
     
     // Get accurate position for the tooltip
