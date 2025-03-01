@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,42 +19,65 @@ const Auth = () => {
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [termsError, setTermsError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailAttempts, setEmailAttempts] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [canResendVerification, setCanResendVerification] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(30);
   const [isOpen, setIsOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('signin');
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const defaultTab = location.state?.tab || 'signin';
   const redirectTo = location.state?.redirectTo || '/';
 
+  // Handle tab changes
+  useEffect(() => {
+    setActiveTab(defaultTab);
+    // Clear any errors when switching tabs
+    setEmailError('');
+    setTermsError('');
+    
+    // Clear signup form fields when switching to signup tab
+    if (defaultTab === 'signup') {
+      setName('');
+      
+      // Don't prefill email/password from saved credentials on signup tab
+      if (!location.state?.prefillEmail) {
+        setEmail('');
+      } else {
+        // If we're coming from "sign in instead" link, prefill the email
+        setEmail(location.state.prefillEmail);
+      }
+      setPassword('');
+    }
+  }, [defaultTab, location.state]);
+
   // Handle "Remember Me" persistence
   useEffect(() => {
-    // Check if we should prefill from localStorage
-    if (localStorage.getItem('rememberMe') === 'true') {
+    // Check if we should prefill from localStorage (only for signin tab)
+    if (activeTab === 'signin' && localStorage.getItem('rememberMe') === 'true') {
       const savedEmail = localStorage.getItem('userEmail');
-      const savedPassword = localStorage.getItem('userPassword');
       
       if (savedEmail) setEmail(savedEmail);
-      if (savedPassword) setPassword(savedPassword);
+      // Never restore password for security reasons
     }
-  }, []);
+  }, [activeTab]);
 
   // Save credentials if "Remember Me" is checked
   useEffect(() => {
     if (rememberMe) {
       localStorage.setItem('rememberMe', 'true');
       localStorage.setItem('userEmail', email);
-      if (password) localStorage.setItem('userPassword', password);
+      // We no longer store password for security reasons
     } else {
       localStorage.removeItem('rememberMe');
       localStorage.removeItem('userEmail');
-      localStorage.removeItem('userPassword');
     }
-  }, [rememberMe, email, password]);
+  }, [rememberMe, email]);
 
   // Timer for resend verification button
   useEffect(() => {
@@ -116,6 +138,9 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear any previous errors
+    setEmailError('');
+    
     if (!agreeToTerms) {
       setTermsError('Please agree to the Terms & Conditions to continue.');
       return;
@@ -123,7 +148,7 @@ const Auth = () => {
 
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -133,6 +158,24 @@ const Auth = () => {
           }
         }
       });
+      
+      // Check for email already registered error
+      if (error?.message?.includes('already registered') || 
+         (data?.user && data?.user?.identities?.length === 0)) {
+        
+        // Increment attempts counter
+        const newAttempts = emailAttempts + 1;
+        setEmailAttempts(newAttempts);
+        
+        // Check if multiple attempts
+        if (newAttempts >= 3) {
+          setEmailError('Something went wrong. Please try signing in or resetting your password.');
+        } else {
+          setEmailError('This email is already registered. Try signing in instead or reset your password.');
+        }
+        return;
+      }
+      
       if (error) throw error;
       
       // Set verification sent state to show the verification message
@@ -254,6 +297,23 @@ const Auth = () => {
 
   const handleSignInWithGoogle = () => handleSocialLogin('google');
 
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    // Clear form fields and errors when switching to signup tab
+    if (value === 'signup') {
+      setName('');
+      // Don't clear email if we're switching from "sign in instead" link
+      if (!location.state?.prefillEmail) {
+        setEmail('');
+      }
+      setPassword('');
+      setEmailError('');
+      setTermsError('');
+    }
+  };
+
   // This forces the modal to stay open until user verifies
   const handleDialogOpenChange = (open: boolean) => {
     if (verificationSent) {
@@ -265,6 +325,15 @@ const Auth = () => {
         navigate('/');
       }
     }
+  };
+
+  // Handle "Sign in instead" link click
+  const handleSignInInstead = () => {
+    // Switch to sign in tab
+    setActiveTab('signin');
+    // Keep the email filled in
+    // Don't pass the password for security
+    navigate('/auth', { state: { tab: 'signin', prefillEmail: email, redirectTo } });
   };
 
   return (
@@ -307,7 +376,7 @@ const Auth = () => {
             </div>
           </div>
         ) : (
-          <Tabs defaultValue={defaultTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -399,13 +468,40 @@ const Auth = () => {
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <div className="space-y-1">
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError(''); // Clear error when user types
+                      }}
+                      className={emailError ? "border-red-500" : ""}
+                      required
+                    />
+                    {emailError && (
+                      <div className="space-y-2">
+                        <p className="text-red-500 text-sm">{emailError}</p>
+                        <div className="flex gap-4 text-sm">
+                          <button 
+                            type="button" 
+                            onClick={handleSignInInstead}
+                            className="text-dusty-rose hover:underline"
+                          >
+                            Sign in instead
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setShowForgotPassword(true)}
+                            className="text-dusty-rose hover:underline"
+                          >
+                            Forgot your password?
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <Input
                     type="password"
                     placeholder="Password"
