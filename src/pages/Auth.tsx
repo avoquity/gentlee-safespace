@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -13,15 +14,93 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    // Initialize from localStorage if available
+    return localStorage.getItem('rememberMe') === 'true';
+  });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [termsError, setTermsError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [canResendVerification, setCanResendVerification] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(30);
+  const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const defaultTab = location.state?.tab || 'signin';
   const redirectTo = location.state?.redirectTo || '/';
+
+  // Handle "Remember Me" persistence
+  useEffect(() => {
+    // Check if we should prefill from localStorage
+    if (localStorage.getItem('rememberMe') === 'true') {
+      const savedEmail = localStorage.getItem('userEmail');
+      const savedPassword = localStorage.getItem('userPassword');
+      
+      if (savedEmail) setEmail(savedEmail);
+      if (savedPassword) setPassword(savedPassword);
+    }
+  }, []);
+
+  // Save credentials if "Remember Me" is checked
+  useEffect(() => {
+    if (rememberMe) {
+      localStorage.setItem('rememberMe', 'true');
+      localStorage.setItem('userEmail', email);
+      if (password) localStorage.setItem('userPassword', password);
+    } else {
+      localStorage.removeItem('rememberMe');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userPassword');
+    }
+  }, [rememberMe, email, password]);
+
+  // Timer for resend verification button
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (verificationSent && !canResendVerification) {
+      timer = setInterval(() => {
+        setResendCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setCanResendVerification(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [verificationSent, canResendVerification]);
+
+  // Listen for auth state changes to detect verification
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // If user is verified and signs in, redirect
+          handleSuccessfulAuth();
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Clear terms error when checkbox is checked
+  useEffect(() => {
+    if (agreeToTerms) {
+      setTermsError('');
+    }
+  }, [agreeToTerms]);
 
   const handleSuccessfulAuth = () => {
     const pendingMessage = sessionStorage.getItem('pendingMessage');
@@ -31,17 +110,14 @@ const Auth = () => {
     } else {
       navigate(redirectTo);
     }
+    setIsOpen(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!agreeToTerms) {
-      toast({
-        title: "Terms Agreement Required",
-        description: "Please check the box to continue.",
-        variant: "destructive"
-      });
+      setTermsError('Please agree to the Terms & Conditions to continue.');
       return;
     }
 
@@ -58,11 +134,52 @@ const Auth = () => {
         }
       });
       if (error) throw error;
+      
+      // Set verification sent state to show the verification message
+      setVerificationSent(true);
+      
+      // Start the countdown for resend button
+      setResendCountdown(30);
+      setCanResendVerification(false);
+      
+    } catch (error: any) {
       toast({
-        title: "Welcome!",
-        description: "Check your email for the confirmation link."
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
       });
-      handleSuccessfulAuth();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!canResendVerification) return;
+    
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: name.split(' ')[0],
+            last_name: name.split(' ').slice(1).join(' ')
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Verification email resent",
+        description: "Please check your inbox"
+      });
+      
+      // Reset the countdown
+      setCanResendVerification(false);
+      setResendCountdown(30);
+      
     } catch (error: any) {
       toast({
         title: "Error",
@@ -137,163 +254,222 @@ const Auth = () => {
 
   const handleSignInWithGoogle = () => handleSocialLogin('google');
 
+  // This forces the modal to stay open until user verifies
+  const handleDialogOpenChange = (open: boolean) => {
+    if (verificationSent) {
+      // If verification message is showing, don't allow closing
+      setIsOpen(true);
+    } else {
+      setIsOpen(open);
+      if (!open) {
+        navigate('/');
+      }
+    }
+  };
+
   return (
-    <Dialog open={true} onOpenChange={() => navigate('/')}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md animate-fade-in">
-        <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="signin">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <h2 className="text-2xl font-bold text-deep-charcoal mb-6">Welcome back!</h2>
-              <div className="space-y-2">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+        {verificationSent ? (
+          <div className="space-y-4 py-4">
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Almost there!</h2>
+            <p className="text-deep-charcoal">
+              Please check your email to verify your account. Once verified, you'll be redirected to your homepage where you can start chatting.
+            </p>
+            {canResendVerification ? (
+              <Button 
+                onClick={handleResendVerification} 
+                variant="outline" 
+                className="w-full mt-4"
+              >
+                Resend verification email
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                disabled 
+                className="w-full mt-4 opacity-70"
+              >
+                Resend in {resendCountdown}s
+              </Button>
+            )}
+            <div className="mt-8 text-sm text-center text-gray-500">
+              <button 
+                onClick={() => {
+                  setVerificationSent(false);
+                  setIsOpen(false);
+                  navigate('/');
+                }}
+                className="text-muted-sage hover:underline"
+              >
+                I'll verify later
+              </button>
+            </div>
+          </div>
+        ) : (
+          <Tabs defaultValue={defaultTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <h2 className="text-2xl font-bold text-deep-charcoal mb-6">Welcome back!</h2>
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                  <label htmlFor="remember" className="text-sm text-deep-charcoal">
-                    Save my details
-                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-sm text-dusty-rose hover:underline"
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    />
+                    <label htmlFor="remember" className="text-sm text-deep-charcoal">
+                      Save my details
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-dusty-rose hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <Button 
+                  type="submit" 
+                  className={cn(
+                    "w-full bg-black text-white hover:bg-black/90",
+                    email && password && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
+                  )} 
+                  disabled={loading}
                 >
-                  Forgot password?
-                </button>
-              </div>
-              <Button 
-                type="submit" 
-                className={cn(
-                  "w-full bg-black text-white hover:bg-black/90",
-                  email && password && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
-                )} 
-                disabled={loading}
-              >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </Button>
-              
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </Button>
+                
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-gray-500">Or continue with</span>
-                </div>
-              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSignInWithGoogle}
-                className="w-full"
-              >
-                <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSignInWithGoogle}
+                  className="w-full"
+                >
+                  <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                    />
+                  </svg>
+                  Sign in with Google
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <h2 className="text-2xl font-bold text-deep-charcoal mb-6">Join us</h2>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    placeholder="Full Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
                   />
-                </svg>
-                Sign in with Google
-              </Button>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <h2 className="text-2xl font-bold text-deep-charcoal mb-6">Join us</h2>
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="Full Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="terms"
-                  checked={agreeToTerms}
-                  onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                />
-                <label htmlFor="terms" className="text-sm text-deep-charcoal">
-                  I agree with the Terms and Privacy Policy
-                </label>
-              </div>
-              <Button 
-                type="submit" 
-                className={cn(
-                  "w-full bg-black text-white hover:bg-black/90",
-                  email && password && name && agreeToTerms && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
-                )} 
-                disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Sign Up'}
-              </Button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-gray-500">Or continue with</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSignInWithGoogle}
-                className="w-full"
-              >
-                <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                </svg>
-                Sign up with Google
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex flex-col items-start gap-2">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="terms"
+                      checked={agreeToTerms}
+                      onCheckedChange={(checked) => {
+                        setAgreeToTerms(checked as boolean);
+                        if (checked) setTermsError('');
+                      }}
+                    />
+                    <label htmlFor="terms" className="text-sm text-deep-charcoal">
+                      I agree with the Terms and Privacy Policy
+                    </label>
+                  </div>
+                  {termsError && (
+                    <p className="text-red-500 text-sm ml-6">{termsError}</p>
+                  )}
+                </div>
+                <Button 
+                  type="submit" 
+                  className={cn(
+                    "w-full bg-black text-white hover:bg-black/90",
+                    email && password && name && agreeToTerms && "!bg-[#A8BFA5] hover:!bg-[#A8BFA5]/90"
+                  )} 
+                  disabled={loading}
+                >
+                  {loading ? 'Creating account...' : 'Sign Up'}
+                </Button>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSignInWithGoogle}
+                  className="w-full"
+                >
+                  <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                    />
+                  </svg>
+                  Sign up with Google
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        )}
 
         {showForgotPassword && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center">

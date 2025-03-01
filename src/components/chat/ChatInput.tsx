@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 
 interface ChatInputProps {
@@ -9,8 +9,19 @@ interface ChatInputProps {
 }
 
 export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize the textarea when content changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = Math.min(textareaRef.current.scrollHeight, 192);
+      textareaRef.current.style.height = `${scrollHeight}px`;
+    }
+  }, [input]);
+
   return (
-    <form onSubmit={handleSubmit} className="relative mt-10">
+    <form onSubmit={handleSubmit} className="relative mt-16"> {/* Increased from mt-10 to mt-16 */}
       <div 
         className="absolute -top-40 left-0 right-0 h-40 pointer-events-none" 
         style={{ 
@@ -19,6 +30,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
       />
       <div className="relative bg-[#FDFBF8]">
         <textarea
+          ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Continue your thoughts here..."
@@ -31,25 +43,6 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               handleSubmit(e);
-            }
-          }}
-          onInput={(e) => {
-            const target = e.target as HTMLTextAreaElement;
-            target.style.height = 'auto';
-            target.style.height = `${Math.min(target.scrollHeight, 192)}px`;
-            
-            // Scroll chat up when typing near existing messages
-            const chatContainer = document.querySelector('.chat-messages-container');
-            if (chatContainer) {
-              const inputTop = target.getBoundingClientRect().top;
-              const lastMessage = chatContainer.lastElementChild;
-              if (lastMessage) {
-                const lastMessageBottom = lastMessage.getBoundingClientRect().bottom;
-                const minGap = 40; // increased minimum gap to 40px
-                if (inputTop - lastMessageBottom < minGap) {
-                  chatContainer.scrollTop += minGap - (inputTop - lastMessageBottom);
-                }
-              }
             }
           }}
         />
