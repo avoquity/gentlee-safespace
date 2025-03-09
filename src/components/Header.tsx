@@ -41,6 +41,9 @@ const Header = () => {
         title: "Signed out",
         description: "Come back soon!"
       });
+      // Clear saved credentials when user manually signs out
+      localStorage.removeItem('rememberMe');
+      localStorage.removeItem('userEmail');
       navigate('/');
     } catch (error: any) {
       toast({
