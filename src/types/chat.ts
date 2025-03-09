@@ -16,6 +16,7 @@ export interface ChatEntry {
 export interface LocationState {
   initialMessage?: string;
   chatId?: number;
+  entryDate?: string;
 }
 
 export interface DatabaseMessage {
@@ -34,4 +35,3 @@ export interface Highlight {
   end_index: number;
   created_at: string;
 }
-

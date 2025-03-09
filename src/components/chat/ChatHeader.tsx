@@ -1,6 +1,7 @@
 
 import { useLocation } from 'react-router-dom';
 import { X, Volume2, VolumeX } from 'lucide-react';
+import { LocationState } from '@/types/chat';
 
 interface ChatHeaderProps {
   isMuted: boolean;
@@ -11,10 +12,10 @@ interface ChatHeaderProps {
 
 export const ChatHeader = ({ isMuted, onMuteToggle, onClose, entryDate }: ChatHeaderProps) => {
   const location = useLocation();
-  const dateFromLocation = location.state?.entryDate;
+  const locationState = location.state as LocationState;
   
   // Use either provided entryDate, or date from location state, or 'New Entry'
-  const displayDate = entryDate || dateFromLocation || 'New Entry';
+  const displayDate = entryDate || 'New Entry';
 
   return (
     <div className="flex justify-between items-center mb-8">
