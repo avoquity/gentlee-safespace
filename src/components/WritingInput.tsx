@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfDay } from 'date-fns';
+import { startOfDay, format } from 'date-fns';
 
 const suggestedTopics = [
   "Stress", 
@@ -65,13 +65,17 @@ const WritingInput = () => {
         navigate('/chat', {
           state: { 
             chatId: todayChat.id,
-            initialMessage: input 
+            initialMessage: input,
+            entryDate: format(new Date(), 'd MMMM yyyy') // Add today's date for header
           }
         });
       } else {
         // If no chat exists for today, create a new one
         navigate('/chat', {
-          state: { initialMessage: input }
+          state: { 
+            initialMessage: input,
+            entryDate: format(new Date(), 'd MMMM yyyy') // Add today's date for header
+          }
         });
       }
     } catch (error) {

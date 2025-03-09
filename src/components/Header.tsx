@@ -79,7 +79,7 @@ const Header = () => {
                 <Link 
                   to="/"
                   onClick={handleSignOut}
-                  className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
+                  className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins text-base"
                 >
                   Sign Out
                 </Link>
@@ -87,7 +87,7 @@ const Header = () => {
                   <Button
                     onClick={() => navigate('/entries')}
                     variant="outline"
-                    className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white"
+                    className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white text-base"
                   >
                     My thoughts
                   </Button>

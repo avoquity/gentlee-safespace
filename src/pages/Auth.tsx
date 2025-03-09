@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const Auth = () => {
@@ -245,6 +246,8 @@ const Auth = () => {
       if (error) throw error;
       handleSuccessfulAuth();
     } catch (error: any) {
+      // Show inline error message
+      setEmailError('Invalid login credentials. Please check your email and password.');
       toast({
         title: "Error",
         description: error.message,
@@ -345,6 +348,7 @@ const Auth = () => {
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md animate-fade-in">
+        <DialogTitle className="sr-only">Authentication</DialogTitle>
         {verificationSent ? (
           <div className="space-y-4 py-4">
             <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Almost there!</h2>
@@ -392,18 +396,30 @@ const Auth = () => {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <h2 className="text-2xl font-bold text-deep-charcoal mb-6">Welcome back!</h2>
                 <div className="space-y-2">
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <div className="space-y-1">
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError(''); // Clear error when user types
+                      }}
+                      className={emailError ? "border-red-500" : ""}
+                      required
+                    />
+                    {emailError && (
+                      <p className="text-red-500 text-sm">{emailError}</p>
+                    )}
+                  </div>
                   <Input
                     type="password"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setEmailError(''); // Clear error when user types
+                    }}
                     required
                   />
                 </div>

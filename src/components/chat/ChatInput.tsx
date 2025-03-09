@@ -34,10 +34,11 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Continue your thoughts here..."
-          className="w-full px-1 py-2 pr-48 text-sm bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed"
+          className="w-full px-1 py-2 pr-48 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed"
           style={{
             minHeight: '3rem',
-            maxHeight: '12rem'
+            maxHeight: '12rem',
+            fontSize: '1.125rem'
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {

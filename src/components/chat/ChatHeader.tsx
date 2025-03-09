@@ -6,16 +6,20 @@ interface ChatHeaderProps {
   isMuted: boolean;
   onMuteToggle: () => void;
   onClose: () => void;
+  entryDate?: string;
 }
 
-export const ChatHeader = ({ isMuted, onMuteToggle, onClose }: ChatHeaderProps) => {
+export const ChatHeader = ({ isMuted, onMuteToggle, onClose, entryDate }: ChatHeaderProps) => {
   const location = useLocation();
-  const entryDate = location.state?.entryDate;
+  const dateFromLocation = location.state?.entryDate;
+  
+  // Use either provided entryDate, or date from location state, or 'New Entry'
+  const displayDate = entryDate || dateFromLocation || 'New Entry';
 
   return (
     <div className="flex justify-between items-center mb-8">
       <h1 className="text-[68px] font-semibold text-deep-charcoal">
-        {entryDate || 'New Entry'}
+        {displayDate}
       </h1>
       <div className="flex items-center gap-4">
         <button

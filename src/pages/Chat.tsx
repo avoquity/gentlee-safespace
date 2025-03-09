@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -17,15 +19,15 @@ const Chat = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { initialMessage, chatId: existingChatId } = (location.state as LocationState) || {};
+  const { initialMessage, chatId: existingChatId, entryDate } = (location.state as LocationState) || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<number | null>(existingChatId || null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const currentDate = new Date();
   const [isMuted, setIsMuted] = useState(false);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [displayDate, setDisplayDate] = useState(entryDate || format(new Date(), 'd MMMM yyyy'));
 
   const { data: chatData } = useQuery({
     queryKey: ['chat', currentChatId],
@@ -177,6 +179,7 @@ const Chat = () => {
           summary = summaryData.summary;
         }
 
+        // Update theme and summary before navigating away
         await supabase
           .from('chat')
           .update({ 
@@ -302,7 +305,30 @@ const Chat = () => {
   useEffect(() => {
     if (initialMessage && user) {
       const setupInitialChat = async () => {
-        const chatId = await createNewChat();
+        // First check if today's chat already exists
+        const today = new Date();
+        const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+        
+        const { data: existingChats, error: chatError } = await supabase
+          .from('chat')
+          .select('id')
+          .eq('user_id', user.id)
+          .gte('created_at', startOfToday.toISOString())
+          .lt('created_at', new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false });
+          
+        if (chatError) {
+          console.error('Error checking for existing chat:', chatError);
+        }
+        
+        // Use existing chat or create new one
+        let chatId;
+        if (existingChats && existingChats.length > 0) {
+          chatId = existingChats[0].id;
+        } else {
+          chatId = await createNewChat();
+        }
+        
         if (!chatId) return;
 
         setCurrentChatId(chatId);
@@ -371,6 +397,7 @@ const Chat = () => {
               }
             }}
             onClose={handleCloseConversation}
+            entryDate={displayDate}
           />
 
           <ChatMessages 
