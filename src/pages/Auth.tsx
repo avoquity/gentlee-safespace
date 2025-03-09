@@ -28,12 +28,20 @@ const Auth = () => {
 
   const handleSuccessfulAuth = () => {
     const pendingMessage = sessionStorage.getItem('pendingMessage');
+    
     if (pendingMessage) {
       sessionStorage.removeItem('pendingMessage');
-      navigate('/chat', { state: { initialMessage: pendingMessage } });
+      // Navigate to chat with the initial message as a state parameter
+      navigate('/chat', { 
+        state: { 
+          initialMessage: pendingMessage,
+          entryDate: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
+        } 
+      });
     } else {
       navigate(location.state?.redirectTo || '/');
     }
+    
     setIsOpen(false);
   };
 

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -23,6 +23,7 @@ export const useChat = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [displayDate, setDisplayDate] = useState(entryDate || format(new Date(), 'd MMMM yyyy'));
+  const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
 
   const { data: chatData } = useQuery({
     queryKey: ['chat', currentChatId],
@@ -104,10 +105,13 @@ export const useChat = () => {
     }
   }, [currentChatId, toast]);
 
-  useEffect(() => {
-    if (initialMessage && user) {
-      const setupInitialChat = async () => {
-        // First check if today's chat already exists
+  // Process initial message function, memoized with useCallback
+  const processInitialMessage = useCallback(async () => {
+    if (initialMessage && user && !initialMessageProcessed) {
+      setInitialMessageProcessed(true);
+      
+      try {
+        // Check if today's chat already exists
         const today = new Date();
         const startOfToday = new Date(today.setHours(0, 0, 0, 0));
         
@@ -164,11 +168,16 @@ export const useChat = () => {
         
         setMessages([firstMessage]);
         await simulateAIResponse(initialMessage, chatId);
-      };
-
-      setupInitialChat();
+      } catch (error: any) {
+        console.error('Error processing initial message:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process your message. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
-  }, [initialMessage, user]);
+  }, [initialMessage, user, initialMessageProcessed]);
 
   const createNewChat = async () => {
     try {
@@ -387,6 +396,7 @@ export const useChat = () => {
     handleCloseConversation,
     handleHighlightChange,
     handleHighlightRemove,
-    handleMuteToggle
+    handleMuteToggle,
+    processInitialMessage
   };
 };

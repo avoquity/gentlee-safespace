@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 
@@ -16,8 +16,14 @@ const Chat = () => {
     handleCloseConversation,
     handleHighlightChange,
     handleHighlightRemove,
-    handleMuteToggle
+    handleMuteToggle,
+    processInitialMessage
   } = useChat();
+
+  // Effect to process initial message once when component mounts
+  useEffect(() => {
+    processInitialMessage();
+  }, [processInitialMessage]);
 
   return (
     <ChatContainer
