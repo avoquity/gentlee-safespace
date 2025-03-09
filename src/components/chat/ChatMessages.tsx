@@ -13,7 +13,7 @@ interface ChatMessagesProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
-export const ChatMessages = ({ 
+export const ChatMessages: React.FC<ChatMessagesProps> = ({ 
   messages, 
   highlights, 
   isTyping, 

@@ -3,10 +3,10 @@ import React, { useRef } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
-import { Highlight } from '@/types/chat';
+import { Highlight, Message } from '@/types/chat';
 
 interface ChatContainerProps {
-  messages: React.ReactNode[];
+  messages: Message[];
   input: string;
   setInput: (input: string) => void;
   isTyping: boolean;
