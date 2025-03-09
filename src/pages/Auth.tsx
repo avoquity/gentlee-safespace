@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -281,10 +280,13 @@ const Auth = () => {
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook' | 'twitter') => {
     try {
       setLoading(true);
+      // Get the current domain for proper redirection
+      const redirectUrl = window.location.origin + '/auth/callback';
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: redirectUrl
         }
       });
       if (error) throw error;
