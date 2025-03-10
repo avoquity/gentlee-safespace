@@ -127,7 +127,7 @@ Gentlee is a **friend, not a fixer**. Every response is designed to make users f
           },
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.7,
+        temperature: 0.8,
         max_tokens: 500,
       }),
     });
