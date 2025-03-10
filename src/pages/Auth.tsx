@@ -30,7 +30,6 @@ const Auth = () => {
     const pendingMessage = sessionStorage.getItem('pendingMessage');
     
     if (pendingMessage) {
-      sessionStorage.removeItem('pendingMessage');
       // Navigate to chat with the initial message as a state parameter
       navigate('/chat', { 
         state: { 

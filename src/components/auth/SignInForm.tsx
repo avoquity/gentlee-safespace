@@ -56,7 +56,6 @@ export const SignInForm = ({
   const handleSuccessfulAuth = () => {
     const pendingMessage = sessionStorage.getItem('pendingMessage');
     if (pendingMessage) {
-      sessionStorage.removeItem('pendingMessage');
       navigate('/chat', { state: { initialMessage: pendingMessage } });
     } else {
       navigate(redirectTo);
