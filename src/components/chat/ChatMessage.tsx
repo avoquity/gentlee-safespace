@@ -155,6 +155,8 @@ export const ChatMessage = ({
     });
     
     setShowHighlightTooltip(true);
+    console.log(showHighlightTooltip);
+    console.log(selectionRange);
   };
 
   return (
