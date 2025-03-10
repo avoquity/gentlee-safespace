@@ -1,18 +1,20 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Message, LocationState } from '@/types/chat';
 import { UseChatReturn } from './chat/types';
 import { useChatManagement } from './chat/useChatManagement';
 import { useMessageHandling } from './chat/useMessageHandling';
 import { useHighlights } from './chat/useHighlights';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useChat = (): UseChatReturn => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { initialMessage, chatId: existingChatId, entryDate } = (location.state as LocationState) || {};
   
   // State
@@ -225,7 +227,7 @@ export const useChat = (): UseChatReturn => {
         });
       }
     }
-  }, [initialMessage, user, initialMessageProcessed, findTodaysChat, createNewChat, setCurrentChatId, simulateAIResponse]);
+  }, [initialMessage, user, initialMessageProcessed, findTodaysChat, createNewChat, setCurrentChatId, simulateAIResponse, toast]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -326,7 +328,3 @@ export const useChat = (): UseChatReturn => {
     loadTodaysChat
   };
 };
-
-// Import supabase and toast here to avoid circular dependencies
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
