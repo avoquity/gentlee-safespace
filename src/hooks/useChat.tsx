@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -24,7 +24,9 @@ export const useChat = () => {
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [displayDate, setDisplayDate] = useState(entryDate || format(new Date(), 'd MMMM yyyy'));
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
+  const [todaysChatChecked, setTodaysChatChecked] = useState(false);
 
+  // Query for current chat data
   const { data: chatData } = useQuery({
     queryKey: ['chat', currentChatId],
     queryFn: async () => {
@@ -42,6 +44,7 @@ export const useChat = () => {
     enabled: !!currentChatId
   });
 
+  // Query for chat messages
   const { data: chatMessages } = useQuery({
     queryKey: ['messages', currentChatId],
     queryFn: async () => {
@@ -72,18 +75,21 @@ export const useChat = () => {
     enabled: !!currentChatId
   });
 
+  // Update messages when chat messages data changes
   useEffect(() => {
     if (chatMessages) {
       setMessages(chatMessages);
     }
   }, [chatMessages]);
 
+  // Redirect to auth if not authenticated
   useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
   }, [user, navigate]);
 
+  // Load highlights for current chat
   useEffect(() => {
     const loadHighlights = async () => {
       if (!currentChatId) return;
@@ -105,32 +111,84 @@ export const useChat = () => {
     }
   }, [currentChatId, toast]);
 
+  // Function to find today's chat
+  const findTodaysChat = async () => {
+    if (!user) return null;
+    
+    try {
+      const today = startOfDay(new Date());
+      
+      const { data: existingChats, error } = await supabase
+        .from('chat')
+        .select('id, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', today.toISOString())
+        .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error checking for existing chat:', error);
+        return null;
+      }
+      
+      if (existingChats && existingChats.length > 0) {
+        return existingChats[0].id;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error finding today\'s chat:', error);
+      return null;
+    }
+  };
+
+  // Function to load today's chat if it exists
+  const loadTodaysChat = useCallback(async () => {
+    // Skip if we already have a chat ID from location state or if we've already checked
+    if (existingChatId || currentChatId || todaysChatChecked || !user) {
+      return;
+    }
+
+    try {
+      setTodaysChatChecked(true);
+      const todaysChatId = await findTodaysChat();
+      
+      if (todaysChatId) {
+        setCurrentChatId(todaysChatId);
+        
+        // Update the display date
+        setDisplayDate(format(new Date(), 'd MMMM yyyy'));
+        
+        // Update the URL state to include the chat ID without changing the URL
+        navigate(
+          '/chat', 
+          { 
+            state: { 
+              chatId: todaysChatId,
+              entryDate: format(new Date(), 'd MMMM yyyy')
+            },
+            replace: true 
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error loading today\'s chat:', error);
+    }
+  }, [user, existingChatId, currentChatId, todaysChatChecked, navigate]);
+
   // Process initial message function, memoized with useCallback
   const processInitialMessage = useCallback(async () => {
     if (initialMessage && user && !initialMessageProcessed) {
       setInitialMessageProcessed(true);
       
       try {
-        // Check if today's chat already exists
-        const today = new Date();
-        const startOfToday = new Date(today.setHours(0, 0, 0, 0));
-        
-        const { data: existingChats, error: chatError } = await supabase
-          .from('chat')
-          .select('id')
-          .eq('user_id', user.id)
-          .gte('created_at', startOfToday.toISOString())
-          .lt('created_at', new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000).toISOString())
-          .order('created_at', { ascending: false });
-          
-        if (chatError) {
-          console.error('Error checking for existing chat:', chatError);
-        }
+        // First check if today's chat already exists
+        const todaysChatId = await findTodaysChat();
         
         // Use existing chat or create new one
         let chatId;
-        if (existingChats && existingChats.length > 0) {
-          chatId = existingChats[0].id;
+        if (todaysChatId) {
+          chatId = todaysChatId;
         } else {
           chatId = await createNewChat();
         }
@@ -179,6 +237,7 @@ export const useChat = () => {
     }
   }, [initialMessage, user, initialMessageProcessed]);
 
+  // Create a new chat
   const createNewChat = async () => {
     try {
       const { data, error } = await supabase
@@ -204,6 +263,7 @@ export const useChat = () => {
     }
   };
 
+  // Save message to database
   const saveMessage = async (message: Message, chatId: number) => {
     try {
       const { error } = await supabase
@@ -225,6 +285,7 @@ export const useChat = () => {
     }
   };
 
+  // Handle closing the conversation
   const handleCloseConversation = async () => {
     if (messages.length > 0 && currentChatId) {
       const themes = identifyThemes(messages);
@@ -269,6 +330,7 @@ export const useChat = () => {
     navigate('/entries');
   };
 
+  // Get AI response
   const getAIResponse = async (userMessage: string): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('chat-completion', {
@@ -288,47 +350,71 @@ export const useChat = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !user) return;
 
-    const chatId = currentChatId || await createNewChat();
-    if (!chatId) return;
+    try {
+      // First check if today's chat already exists
+      let chatId = currentChatId;
+      
+      // If no current chat ID, check for today's chat
+      if (!chatId) {
+        const todaysChatId = await findTodaysChat();
+        
+        if (todaysChatId) {
+          chatId = todaysChatId;
+        } else {
+          // If no chat for today, create a new one
+          chatId = await createNewChat();
+        }
+        
+        if (!chatId) return;
+        setCurrentChatId(chatId);
+      }
 
-    setCurrentChatId(chatId);
+      const { data: messageData, error: messageError } = await supabase
+        .from('messages')
+        .insert([{
+          chat_id: chatId,
+          content: input,
+          user_role: 'user',
+          sender_id: user.id,
+        }])
+        .select()
+        .single();
 
-    const { data: messageData, error: messageError } = await supabase
-      .from('messages')
-      .insert([{
-        chat_id: chatId,
-        content: input,
-        user_role: 'user',
-        sender_id: user.id,
-      }])
-      .select()
-      .single();
+      if (messageError) {
+        toast({
+          title: "Error saving message",
+          description: messageError.message,
+          variant: "destructive"
+        });
+        return;
+      }
 
-    if (messageError) {
+      const newMessage = {
+        id: messageData.id.toString(),
+        text: input,
+        sender: 'user' as const,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, newMessage]);
+      setInput('');
+      await simulateAIResponse(input, chatId);
+    } catch (error: any) {
+      console.error('Error submitting message:', error);
       toast({
-        title: "Error saving message",
-        description: messageError.message,
+        title: "Error",
+        description: "Failed to send your message. Please try again.",
         variant: "destructive"
       });
-      return;
     }
-
-    const newMessage = {
-      id: messageData.id.toString(),
-      text: input,
-      sender: 'user' as const,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setInput('');
-    await simulateAIResponse(input, chatId);
   };
 
+  // Simulate AI response
   const simulateAIResponse = async (userMessage: string, chatId: number) => {
     setIsTyping(true);
     
@@ -368,6 +454,7 @@ export const useChat = () => {
     }
   };
 
+  // Highlight handling
   const handleHighlightChange = (newHighlight: Highlight) => {
     setHighlights(prev => [...prev, newHighlight]);
   };
@@ -376,6 +463,7 @@ export const useChat = () => {
     setHighlights(prev => prev.filter(h => h.id !== highlightId));
   };
 
+  // Mute toggle handling
   const handleMuteToggle = () => {
     setIsMuted(!isMuted);
     const audio = document.querySelector('audio');
@@ -397,6 +485,7 @@ export const useChat = () => {
     handleHighlightChange,
     handleHighlightRemove,
     handleMuteToggle,
-    processInitialMessage
+    processInitialMessage,
+    loadTodaysChat
   };
 };

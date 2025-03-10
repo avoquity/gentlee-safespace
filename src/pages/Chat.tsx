@@ -17,13 +17,18 @@ const Chat = () => {
     handleHighlightChange,
     handleHighlightRemove,
     handleMuteToggle,
-    processInitialMessage
+    processInitialMessage,
+    loadTodaysChat
   } = useChat();
 
-  // Effect to process initial message once when component mounts
+  // Effect to process initial message from redirect and check for today's chat
   useEffect(() => {
+    // First try to process any initial message (from WritingInput)
     processInitialMessage();
-  }, [processInitialMessage]);
+    
+    // Then check if we need to load today's existing chat
+    loadTodaysChat();
+  }, [processInitialMessage, loadTodaysChat]);
 
   return (
     <ChatContainer
