@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +10,7 @@ import { identifyThemes } from '@/utils/themeUtils';
 import { fetchChatHighlights } from '@/utils/highlightUtils';
 
 export const useChat = () => {
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -144,7 +144,6 @@ export const useChat = () => {
 
   // Function to load today's chat if it exists
   const loadTodaysChat = useCallback(async () => {
-    // Skip if we already have a chat ID from location state or if we've already checked
     if (existingChatId || currentChatId || todaysChatChecked || !user) {
       return;
     }
@@ -178,7 +177,11 @@ export const useChat = () => {
 
   // Process initial message function, memoized with useCallback
   const processInitialMessage = useCallback(async () => {
-    if (initialMessage && user && !initialMessageProcessed) {
+    // Check for pending message in session storage first, take priority over initialMessage from location state
+    const pendingMessage = sessionStorage.getItem('pendingMessage');
+    const messageToProcess = pendingMessage || initialMessage;
+    
+    if (messageToProcess && user && !initialMessageProcessed) {
       setInitialMessageProcessed(true);
       
       try {
@@ -201,7 +204,7 @@ export const useChat = () => {
           .from('messages')
           .insert([{
             chat_id: chatId,
-            content: initialMessage,
+            content: messageToProcess,
             user_role: 'user',
             sender_id: user.id,
           }])
@@ -219,13 +222,19 @@ export const useChat = () => {
 
         const firstMessage = {
           id: messageData.id.toString(),
-          text: initialMessage,
+          text: messageToProcess,
           sender: 'user' as const,
           timestamp: new Date()
         };
         
         setMessages([firstMessage]);
-        await simulateAIResponse(initialMessage, chatId);
+        
+        // Only remove pendingMessage after successfully processing it
+        if (pendingMessage) {
+          sessionStorage.removeItem('pendingMessage');
+        }
+        
+        await simulateAIResponse(messageToProcess, chatId);
       } catch (error: any) {
         console.error('Error processing initial message:', error);
         toast({
