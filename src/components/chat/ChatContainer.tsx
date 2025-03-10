@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
@@ -18,6 +18,7 @@ interface ChatContainerProps {
   onMuteToggle: () => void;
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
+  messagesEndRef: React.RefObject<HTMLDivElement>; // Add this prop
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -32,14 +33,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onClose,
   onMuteToggle,
   onHighlightChange,
-  onHighlightRemove
+  onHighlightRemove,
+  messagesEndRef // Add this to the destructured props
 }) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Remove the local ref since we're now using the one passed as a prop
+  // const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, messagesEndRef]);
 
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col">
