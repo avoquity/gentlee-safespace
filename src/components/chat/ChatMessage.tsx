@@ -28,16 +28,19 @@ export const ChatMessage = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const messageRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
-        setShowHighlightTooltip(false);
-      }
-    };
+  // Reset tooltip when clicking outside
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
+  //       setShowHighlightTooltip(false);
+  //     }
+  //   };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, []);
 
   const handleHighlight = async () => {
     if (!user || !selectionRange) return;
