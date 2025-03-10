@@ -20,7 +20,7 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
       // Add non-highlighted text before this highlight
       if (highlight.start_index > lastIndex) {
         parts.push(
-          <span key={`text-${index}`}>
+          <span key={`text-${index}`} className="selection-text">
             {text.slice(lastIndex, highlight.start_index)}
           </span>
         );
@@ -32,7 +32,7 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
           key={`highlight-${highlight.id}`}
           className="relative inline-block group"
         >
-          <span className="bg-[#F5D76E] cursor-pointer">
+          <span className="bg-[#F5D76E] cursor-pointer selection-text">
             {text.slice(highlight.start_index, highlight.end_index)}
           </span>
           <span
@@ -56,7 +56,7 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
     // Add any remaining non-highlighted text
     if (lastIndex < text.length) {
       parts.push(
-        <span key="text-last">{text.slice(lastIndex)}</span>
+        <span key="text-last" className="selection-text">{text.slice(lastIndex)}</span>
       );
     }
 

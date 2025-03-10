@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { HighlightedText } from './HighlightedText';
 import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
 import ReactMarkdown from 'react-markdown';
+import { Highlighter } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
@@ -25,10 +27,23 @@ export const ChatMessage = ({
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
   const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  // Reset tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
+        setShowHighlightTooltip(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleHighlight = async (range: { start: number; end: number }) => {
-    console.log(range);
-    console.log(user);
     if (!user || !range) return;
 
     try {
@@ -77,7 +92,6 @@ export const ChatMessage = ({
 
   const handleTextSelection = () => {
     const selection = window.getSelection();
-    console.log(selection)
     if (!selection || selection.rangeCount === 0) return;
 
     const text = selection.toString().trim();
@@ -86,27 +100,61 @@ export const ChatMessage = ({
       return;
     }
 
-    // Get the selection range
+    // Get selection coordinates
     const range = selection.getRangeAt(0);
-    const preSelectionRange = range.cloneRange();
-    preSelectionRange.selectNodeContents(range.startContainer.parentElement!);
-    preSelectionRange.setEnd(range.startContainer, range.startOffset);
-    const start = preSelectionRange.toString().length;
-    const end = start + text.length;
+    const rect = range.getBoundingClientRect();
+    
+    // Calculate the start and end offsets of the selection
+    const startNode = selection.anchorNode;
+    const endNode = selection.focusNode;
 
-    // Set the selected text and range
+    if (!startNode || !endNode || !messageRef.current) return;
+    
+    // Find all text nodes in the message element
+    const textNodes: Node[] = [];
+    const findTextNodes = (node: Node) => {
+      if (node.nodeType === 3) { // Text node
+        textNodes.push(node);
+      } else {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          findTextNodes(node.childNodes[i]);
+        }
+      }
+    };
+    
+    findTextNodes(messageRef.current);
+    
+    // Calculate start and end indices
+    let startOffset = selection.anchorOffset;
+    let endOffset = selection.focusOffset;
+    
+    // Add lengths of previous text nodes to get absolute indices
+    for (let i = 0; i < textNodes.length; i++) {
+      if (textNodes[i] === startNode) {
+        break;
+      }
+      startOffset += textNodes[i].textContent?.length || 0;
+    }
+    
+    // If start and end nodes are the same, adjust end offset
+    if (startNode === endNode) {
+      endOffset = startOffset + (selection.focusOffset - selection.anchorOffset);
+    } else {
+      endOffset = startOffset + text.length;
+    }
+    
+    // Set selection range and tooltip position
     setSelectedText(text);
-    console.log({start, end})
-    setSelectionRange({ start, end });
+    setSelectionRange({ start: startOffset, end: endOffset });
     
     // Get accurate position for the tooltip
-    const rect = range.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
     setTooltipPosition({
       x: rect.left + (rect.width / 2),
-      y: rect.top + scrollTop // Add scroll position for accurate placement
+      y: rect.top + scrollTop - 10 // Position above the text with a small gap
     });
+    
     setShowHighlightTooltip(true);
   };
 
@@ -139,11 +187,11 @@ export const ChatMessage = ({
   return (
     <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
       <div
+        ref={messageRef}
         className={`max-w-[80%] px-6 py-4 rounded-2xl relative ${
           message.sender === 'user' ? 'bg-white shadow-sm' : 'bg-transparent'
         }`}
         onMouseUp={handleTextSelection}
-        onMouseDown={() => setShowHighlightTooltip(false)}
       >
         {message.sender === 'ai' ? renderMarkdownContent(message.text) : (
           <HighlightedText
@@ -155,16 +203,14 @@ export const ChatMessage = ({
 
         {showHighlightTooltip && selectionRange && (
           <div 
-            className="fixed z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
+            className="fixed z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 flex items-center gap-2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
             style={{
               left: tooltipPosition.x,
               top: Math.max(0, tooltipPosition.y - 40), // Ensure tooltip doesn't go off-screen
             }}
-            onClick={() => {
-              console.log('Tooltip clicked'); // Debugging log
-              handleHighlight(selectionRange);
-            }}
+            onClick={() => handleHighlight(selectionRange)}
           >
+            <Highlighter size={16} />
             Highlight text
           </div>
         )}

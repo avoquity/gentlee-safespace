@@ -1,9 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 
 const Chat = () => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const {
     messages,
     input,
@@ -30,6 +31,13 @@ const Chat = () => {
     loadTodaysChat();
   }, [processInitialMessage, loadTodaysChat]);
 
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping]);
+
   return (
     <ChatContainer
       messages={messages}
@@ -44,6 +52,7 @@ const Chat = () => {
       onMuteToggle={handleMuteToggle}
       onHighlightChange={handleHighlightChange}
       onHighlightRemove={handleHighlightRemove}
+      messagesEndRef={messagesEndRef}
     />
   );
 };

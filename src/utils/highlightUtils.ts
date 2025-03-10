@@ -37,7 +37,7 @@ export const fetchChatHighlights = async (chatId: number | string) => {
   return data || [];
 };
 
-export const createHighlight = async (messageId: number | string, start: number, end: number, userId: string) => {
+export const createHighlight = async (messageId: string | number, start: number, end: number, userId: string) => {
   const parsedMessageId = typeof messageId === 'string' ? parseInt(messageId) : messageId;
   
   if (isNaN(parsedMessageId)) {
@@ -51,35 +51,48 @@ export const createHighlight = async (messageId: number | string, start: number,
     .eq('id', parsedMessageId)
     .single();
 
-  if (messageError || !messageExists) {
+  if (messageError) {
+    console.error('Message verification error:', messageError);
     throw new Error('Message not found');
   }
 
-  const { data, error } = await supabase
-    .from('highlights')
-    .insert([{
-      message_id: parsedMessageId,
-      start_index: start,
-      end_index: end,
-      user_id: userId
-    }])
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('highlights')
+      .insert([{
+        message_id: parsedMessageId,
+        start_index: start,
+        end_index: end,
+        user_id: userId
+      }])
+      .select()
+      .single();
 
-  if (error) {
-    throw error;
+    if (error) {
+      console.error('Highlight creation error:', error);
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error('Highlight creation exception:', error);
+    throw new Error('Failed to create highlight');
   }
-
-  return data;
 };
 
 export const removeHighlight = async (highlightId: number) => {
-  const { error } = await supabase
-    .from('highlights')
-    .delete()
-    .eq('id', highlightId);
+  try {
+    const { error } = await supabase
+      .from('highlights')
+      .delete()
+      .eq('id', highlightId);
 
-  if (error) {
-    throw error;
+    if (error) {
+      console.error('Highlight removal error:', error);
+      throw new Error(error.message);
+    }
+  } catch (error: any) {
+    console.error('Highlight removal exception:', error);
+    throw new Error('Failed to remove highlight');
   }
 };
