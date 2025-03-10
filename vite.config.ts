@@ -22,10 +22,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Improved SSR configuration
+  // Build configuration optimized for Netlify
   build: {
     ssrManifest: true,
     outDir: 'dist',
+    // Ensure sourcemaps for better debugging
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
