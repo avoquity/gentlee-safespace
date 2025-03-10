@@ -5,7 +5,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { HighlightedText } from './HighlightedText';
 import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
-import ReactMarkdown from 'react-markdown';
 import { Highlighter } from 'lucide-react';
 
 interface ChatMessageProps {
@@ -158,32 +157,6 @@ export const ChatMessage = ({
     setShowHighlightTooltip(true);
   };
 
-  const renderMarkdownContent = (content: string) => {
-    return (
-      <div className="text-deep-charcoal text-lg leading-relaxed">
-        <ReactMarkdown
-          components={{
-            p: ({ children }) => {
-              const textContent = React.Children.toArray(children)
-                .map(child => (typeof child === 'string' ? child : ''))
-                .join('');
-              
-              return (
-                <HighlightedText
-                  text={textContent}
-                  highlights={highlights}
-                  onRemoveHighlight={handleRemoveHighlight}
-                />
-              );
-            },
-          }}
-        >
-          {content}
-        </ReactMarkdown>
-      </div>
-    );
-  };
-
   return (
     <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
       <div
@@ -193,13 +166,11 @@ export const ChatMessage = ({
         }`}
         onMouseUp={handleTextSelection}
       >
-        {message.sender === 'ai' ? renderMarkdownContent(message.text) : (
-          <HighlightedText
-            text={message.text}
-            highlights={highlights}
-            onRemoveHighlight={handleRemoveHighlight}
-          />
-        )}
+        <HighlightedText
+          text={message.text}
+          highlights={highlights}
+          onRemoveHighlight={handleRemoveHighlight}
+        />
 
         {showHighlightTooltip && selectionRange && (
           <div 
