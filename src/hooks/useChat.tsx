@@ -1,32 +1,64 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { format, startOfDay } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { Message, LocationState, Highlight } from '@/types/chat';
-import { identifyThemes } from '@/utils/themeUtils';
-import { fetchChatHighlights } from '@/utils/highlightUtils';
+import { Message, LocationState } from '@/types/chat';
+import { UseChatReturn } from './chat/types';
+import { useChatManagement } from './chat/useChatManagement';
+import { useMessageHandling } from './chat/useMessageHandling';
+import { useHighlights } from './chat/useHighlights';
 
-export const useChat = () => {
-  
+export const useChat = (): UseChatReturn => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const { initialMessage, chatId: existingChatId, entryDate } = (location.state as LocationState) || {};
+  
+  // State
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState<number | null>(existingChatId || null);
   const [isMuted, setIsMuted] = useState(false);
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [displayDate, setDisplayDate] = useState(entryDate || format(new Date(), 'd MMMM yyyy'));
+  const [displayDate, setDisplayDate] = useState(entryDate || '');
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   const [todaysChatChecked, setTodaysChatChecked] = useState(false);
 
-  // Query for current chat data
+  // Custom hooks
+  const {
+    currentChatId,
+    setCurrentChatId,
+    findTodaysChat,
+    createNewChat,
+    handleCloseConversation: closeConversation,
+    getTodayFormattedDate
+  } = useChatManagement(user?.id);
+
+  const {
+    isTyping,
+    simulateAIResponse
+  } = useMessageHandling(user?.id);
+
+  const {
+    highlights,
+    handleHighlightChange,
+    handleHighlightRemove
+  } = useHighlights(currentChatId);
+
+  // Initialize currentChatId from props if available
+  useEffect(() => {
+    if (existingChatId && !currentChatId) {
+      setCurrentChatId(existingChatId);
+    }
+  }, [existingChatId, currentChatId, setCurrentChatId]);
+
+  // Set display date on initialization
+  useEffect(() => {
+    if (!displayDate) {
+      setDisplayDate(getTodayFormattedDate());
+    }
+  }, [displayDate, getTodayFormattedDate]);
+
+  // Query for chat data
   const { data: chatData } = useQuery({
     queryKey: ['chat', currentChatId],
     queryFn: async () => {
@@ -89,59 +121,6 @@ export const useChat = () => {
     }
   }, [user, navigate]);
 
-  // Load highlights for current chat
-  useEffect(() => {
-    const loadHighlights = async () => {
-      if (!currentChatId) return;
-      
-      try {
-        const chatHighlights = await fetchChatHighlights(currentChatId);
-        setHighlights(chatHighlights);
-      } catch (error: any) {
-        toast({
-          title: "Error loading highlights",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    };
-
-    if (currentChatId) {
-      loadHighlights();
-    }
-  }, [currentChatId, toast]);
-
-  // Function to find today's chat
-  const findTodaysChat = async () => {
-    if (!user) return null;
-    
-    try {
-      const today = startOfDay(new Date());
-      
-      const { data: existingChats, error } = await supabase
-        .from('chat')
-        .select('id, created_at')
-        .eq('user_id', user.id)
-        .gte('created_at', today.toISOString())
-        .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false });
-        
-      if (error) {
-        console.error('Error checking for existing chat:', error);
-        return null;
-      }
-      
-      if (existingChats && existingChats.length > 0) {
-        return existingChats[0].id;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error finding today\'s chat:', error);
-      return null;
-    }
-  };
-
   // Function to load today's chat if it exists
   const loadTodaysChat = useCallback(async () => {
     if (existingChatId || currentChatId || todaysChatChecked || !user) {
@@ -156,7 +135,7 @@ export const useChat = () => {
         setCurrentChatId(todaysChatId);
         
         // Update the display date
-        setDisplayDate(format(new Date(), 'd MMMM yyyy'));
+        setDisplayDate(getTodayFormattedDate());
         
         // Update the URL state to include the chat ID without changing the URL
         navigate(
@@ -164,7 +143,7 @@ export const useChat = () => {
           { 
             state: { 
               chatId: todaysChatId,
-              entryDate: format(new Date(), 'd MMMM yyyy')
+              entryDate: getTodayFormattedDate()
             },
             replace: true 
           }
@@ -173,11 +152,11 @@ export const useChat = () => {
     } catch (error) {
       console.error('Error loading today\'s chat:', error);
     }
-  }, [user, existingChatId, currentChatId, todaysChatChecked, navigate]);
+  }, [user, existingChatId, currentChatId, todaysChatChecked, navigate, findTodaysChat, setCurrentChatId, getTodayFormattedDate]);
 
   // Process initial message function, memoized with useCallback
   const processInitialMessage = useCallback(async () => {
-    // Check for pending message in session storage first, take priority over initialMessage from location state
+    // Check for pending message in session storage first, take priority over initialMessage
     const pendingMessage = sessionStorage.getItem('pendingMessage');
     const messageToProcess = pendingMessage || initialMessage;
     
@@ -234,7 +213,9 @@ export const useChat = () => {
           sessionStorage.removeItem('pendingMessage');
         }
         
-        await simulateAIResponse(messageToProcess, chatId);
+        await simulateAIResponse(messageToProcess, chatId, (aiMessage) => {
+          setMessages(prev => [...prev, aiMessage]);
+        });
       } catch (error: any) {
         console.error('Error processing initial message:', error);
         toast({
@@ -244,120 +225,7 @@ export const useChat = () => {
         });
       }
     }
-  }, [initialMessage, user, initialMessageProcessed]);
-
-  // Create a new chat
-  const createNewChat = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('chat')
-        .insert([{ 
-          last_updated: new Date().toISOString(),
-          theme: null,
-          summary: null,
-          user_id: user?.id
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data.id;
-    } catch (error: any) {
-      toast({
-        title: "Error creating chat",
-        description: error.message,
-        variant: "destructive"
-      });
-      return null;
-    }
-  };
-
-  // Save message to database
-  const saveMessage = async (message: Message, chatId: number) => {
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .insert([{
-          chat_id: chatId,
-          content: message.text,
-          user_role: message.sender,
-          sender_id: user?.id || null,
-        }]);
-
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Error saving message",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Handle closing the conversation
-  const handleCloseConversation = async () => {
-    if (messages.length > 0 && currentChatId) {
-      const themes = identifyThemes(messages);
-      
-      try {
-        const { data: chatData, error: chatError } = await supabase
-          .from('chat')
-          .select('summary')
-          .eq('id', currentChatId)
-          .single();
-
-        if (chatError) throw chatError;
-
-        let summary = chatData.summary;
-
-        if (!summary) {
-          const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-chat', {
-            body: { messages }
-          });
-
-          if (summaryError) throw summaryError;
-          summary = summaryData.summary;
-        }
-
-        // Update theme and summary before navigating away
-        await supabase
-          .from('chat')
-          .update({ 
-            theme: themes.join(', '),
-            summary: summary,
-            last_updated: new Date().toISOString()
-          })
-          .eq('id', currentChatId);
-      } catch (error: any) {
-        toast({
-          title: "Error saving chat",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    }
-    navigate('/entries');
-  };
-
-  // Get AI response
-  const getAIResponse = async (userMessage: string): Promise<string> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('chat-completion', {
-        body: { userMessage }
-      });
-
-      if (error) throw error;
-      return data.response;
-    } catch (error: any) {
-      console.error('Error getting AI response:', error);
-      toast({
-        title: "Error getting AI response",
-        description: error.message,
-        variant: "destructive"
-      });
-      return "I apologize, but I'm having trouble responding right now. Could you please try again?";
-    }
-  };
+  }, [initialMessage, user, initialMessageProcessed, findTodaysChat, createNewChat, setCurrentChatId, simulateAIResponse]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -412,7 +280,9 @@ export const useChat = () => {
 
       setMessages(prev => [...prev, newMessage]);
       setInput('');
-      await simulateAIResponse(input, chatId);
+      await simulateAIResponse(input, chatId, (aiMessage) => {
+        setMessages(prev => [...prev, aiMessage]);
+      });
     } catch (error: any) {
       console.error('Error submitting message:', error);
       toast({
@@ -423,53 +293,11 @@ export const useChat = () => {
     }
   };
 
-  // Simulate AI response
-  const simulateAIResponse = async (userMessage: string, chatId: number) => {
-    setIsTyping(true);
-    
-    try {
-      const aiResponse = await getAIResponse(userMessage);
-      
-      const { data: messageData, error: messageError } = await supabase
-        .from('messages')
-        .insert([{
-          chat_id: chatId,
-          content: aiResponse,
-          user_role: 'ai',
-          sender_id: null,
-        }])
-        .select()
-        .single();
-
-      if (messageError) throw messageError;
-
-      const aiMessage = {
-        id: messageData.id.toString(),
-        text: aiResponse,
-        sender: 'ai' as const,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-    } catch (error: any) {
-      console.error('Error in AI response:', error);
-      toast({
-        title: "Error saving AI response",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsTyping(false);
+  // Handle closing the conversation wrapper
+  const handleCloseConversation = async () => {
+    if (await closeConversation(messages, currentChatId)) {
+      navigate('/entries');
     }
-  };
-
-  // Highlight handling
-  const handleHighlightChange = (newHighlight: Highlight) => {
-    setHighlights(prev => [...prev, newHighlight]);
-  };
-
-  const handleHighlightRemove = (highlightId: number) => {
-    setHighlights(prev => prev.filter(h => h.id !== highlightId));
   };
 
   // Mute toggle handling
@@ -498,3 +326,7 @@ export const useChat = () => {
     loadTodaysChat
   };
 };
+
+// Import supabase and toast here to avoid circular dependencies
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
