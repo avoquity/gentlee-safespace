@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -65,7 +66,23 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const renderNavLinks = () => (
+  const renderDesktopNavLinks = () => (
+    <>
+      <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
+        Home
+      </Link>
+      <a 
+        href="https://lumi-studios.canny.io/feature-requests" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
+      >
+        Feature Requests
+      </a>
+    </>
+  );
+
+  const renderMobileNavLinks = () => (
     <>
       <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
         Home
@@ -170,7 +187,7 @@ const Header = () => {
                 </Link>
                 
                 <nav className="flex items-center space-x-10">
-                  {renderNavLinks()}
+                  {renderDesktopNavLinks()}
                 </nav>
                 
                 <div className="flex items-center space-x-4">
@@ -186,7 +203,7 @@ const Header = () => {
         <MobileMenu 
           isOpen={mobileMenuOpen} 
           onClose={() => setMobileMenuOpen(false)} 
-          renderNavLinks={renderNavLinks}
+          renderNavLinks={renderMobileNavLinks}
           renderAuthButtons={renderAuthButtons}
         />
       )}
