@@ -84,8 +84,8 @@ const WritingInput = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col gap-4">
-      <form onSubmit={handleSubmit} className="relative w-4/5 mx-auto mb-3">
+    <div className="w-full mx-auto flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="relative w-full mx-auto mb-3">
         <div className="relative max-h-48 overflow-hidden">
           <textarea
             value={input}
