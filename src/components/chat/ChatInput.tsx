@@ -23,7 +23,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
   return (
     <form onSubmit={handleSubmit} className="relative mt-16"> {/* Increased from mt-10 to mt-16 */}
       <div 
-        className="absolute -top-40 left-0 right-0 h-40 pointer-events-none" 
+        className="absolute -top-20 left-0 right-0 h-40 pointer-events-none" 
         style={{ 
           background: 'linear-gradient(to top, rgba(253, 251, 248, 0) 0%, rgba(253, 251, 248, 0.9) 50%, rgba(253, 251, 248, 0) 100%)'
         }} 
