@@ -86,25 +86,25 @@ const WritingInput = () => {
   return (
     <div className="w-full mx-auto flex flex-col gap-4">
       <form onSubmit={handleSubmit} className="relative w-full mx-auto mb-3">
-        <div className="relative max-h-48 overflow-hidden">
+        <div className="relative">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="What's on your mind lately?"
-            className="w-full px-1 py-2 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 min-h-[3rem] resize-none overflow-hidden"
+            className="w-full px-1 py-2 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 resize-none overflow-hidden"
             style={{
-              height: 'auto',
+              height: '3rem',
               minHeight: '3rem'
             }}
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = `${target.scrollHeight}px`;
+              target.style.height = '3rem';
+              if (target.value) {
+                target.style.height = 'auto';
+                target.style.height = `${Math.min(target.scrollHeight, 192)}px`;
+              }
             }}
           />
-          {input.split('\n').length > 3 && (
-            <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-soft-ivory to-transparent pointer-events-none" />
-          )}
         </div>
         <button
           type="submit"

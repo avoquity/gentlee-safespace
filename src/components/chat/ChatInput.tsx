@@ -23,7 +23,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
   }, [input]);
 
   return (
-    <form onSubmit={handleSubmit} className="relative mt-16"> {/* Increased from mt-10 to mt-16 */}
+    <form onSubmit={handleSubmit} className="relative mt-16">
       <div 
         className="absolute -top-20 left-0 right-0 h-40 pointer-events-none" 
         style={{ 
@@ -38,9 +38,9 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
           placeholder="Continue your thoughts here..."
           className="w-full px-1 py-2 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
           style={{
+            height: '3rem',
             minHeight: '3rem',
             maxHeight: '12rem',
-            fontSize: '1.125rem'
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
