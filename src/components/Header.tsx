@@ -39,6 +39,7 @@ const Header = () => {
     };
   }, [lastScrollY]);
 
+  // Close mobile menu when route changes
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
@@ -50,6 +51,7 @@ const Header = () => {
         title: "Signed out",
         description: "Come back soon!"
       });
+      // Clear saved credentials when user manually signs out
       localStorage.removeItem('rememberMe');
       localStorage.removeItem('userEmail');
       navigate('/');
@@ -66,23 +68,8 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const renderDesktopNavLinks = () => (
-    <>
-      <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
-        Home
-      </Link>
-      <a 
-        href="https://lumi-studios.canny.io/feature-requests" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
-      >
-        Feature Requests
-      </a>
-    </>
-  );
-
-  const renderMobileNavLinks = () => (
+  // Links shown in both desktop nav and mobile menu
+  const renderNavLinks = () => (
     <>
       <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
         Home
@@ -98,9 +85,18 @@ const Header = () => {
       >
         Feature Requests
       </a>
+      <a 
+        href="https://lumi-studios.canny.io/feedback" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
+      >
+        Feedback
+      </a>
     </>
   );
 
+  // Auth buttons shown in both desktop and mobile menu
   const renderAuthButtons = () => (
     <>
       {user ? (
@@ -152,6 +148,7 @@ const Header = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
+            {/* Mobile Layout - Hamburger on left, Logo centered, Sign In on right */}
             {isMobile && (
               <>
                 <button
@@ -180,6 +177,7 @@ const Header = () => {
               </>
             )}
             
+            {/* Desktop Layout */}
             {!isMobile && (
               <>
                 <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
@@ -187,7 +185,7 @@ const Header = () => {
                 </Link>
                 
                 <nav className="flex items-center space-x-10">
-                  {renderDesktopNavLinks()}
+                  {renderNavLinks()}
                 </nav>
                 
                 <div className="flex items-center space-x-4">
@@ -199,11 +197,12 @@ const Header = () => {
         </div>
       </header>
 
+      {/* Mobile Menu */}
       {isMobile && (
         <MobileMenu 
           isOpen={mobileMenuOpen} 
           onClose={() => setMobileMenuOpen(false)} 
-          renderNavLinks={renderMobileNavLinks}
+          renderNavLinks={renderNavLinks}
           renderAuthButtons={renderAuthButtons}
         />
       )}
