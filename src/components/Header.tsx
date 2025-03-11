@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -71,9 +70,11 @@ const Header = () => {
   // Links shown in both desktop nav and mobile menu
   const renderNavLinks = () => (
     <>
-      <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
-        Home
-      </Link>
+      {isMobile && (
+        <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
+          Home
+        </Link>
+      )}
       <Link to="/about" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
         About
       </Link>
@@ -84,14 +85,6 @@ const Header = () => {
         className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
       >
         Feature Requests
-      </a>
-      <a 
-        href="https://lumi-studios.canny.io/feedback" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
-      >
-        Feedback
       </a>
     </>
   );
