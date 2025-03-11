@@ -54,15 +54,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     >
       <div 
         ref={menuRef}
-        className={`fixed top-0 right-0 h-full w-3/4 max-w-xs bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 left-0 h-full w-3/4 max-w-xs bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="p-6 h-full flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <Link 
               to="/" 
-              className="text-deep-charcoal font-montserrat font-bold text-2xl"
+              className="text-deep-charcoal font-montserrat font-bold text-xl"
               onClick={onClose}
             >
               Gentlee
@@ -72,7 +72,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               className="p-2 text-deep-charcoal hover:text-muted-sage focus:outline-none"
               aria-label="Close menu"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
           </div>
           

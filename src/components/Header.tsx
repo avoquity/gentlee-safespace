@@ -71,6 +71,9 @@ const Header = () => {
   // Links shown in both desktop nav and mobile menu
   const renderNavLinks = () => (
     <>
+      <Link to="/" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
+        Home
+      </Link>
       <Link to="/about" className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins">
         About
       </Link>
@@ -81,6 +84,14 @@ const Header = () => {
         className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
       >
         Feature Requests
+      </a>
+      <a 
+        href="https://lumi-studios.canny.io/feedback" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins"
+      >
+        Feedback
       </a>
     </>
   );
@@ -136,14 +147,43 @@ const Header = () => {
         style={{ transition: 'transform 300ms, box-shadow 300ms' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
-              Gentlee
-            </Link>
+          <div className="flex justify-between items-center py-4">
+            {/* Mobile Layout - Hamburger on left, Logo centered, Sign In on right */}
+            {isMobile && (
+              <>
+                <button
+                  onClick={toggleMobileMenu}
+                  className="p-2 text-deep-charcoal focus:outline-none"
+                  aria-label="Toggle menu"
+                >
+                  <Menu size={20} />
+                </button>
+                
+                <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 text-deep-charcoal font-montserrat font-bold text-xl">
+                  Gentlee
+                </Link>
+                
+                <div>
+                  {!user && (
+                    <Button
+                      onClick={() => navigate('/auth', { state: { tab: 'signin' } })}
+                      variant="outline"
+                      className="px-4 py-1.5 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white text-sm"
+                    >
+                      Sign In
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
             
-            {/* Desktop Navigation */}
+            {/* Desktop Layout */}
             {!isMobile && (
               <>
+                <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
+                  Gentlee
+                </Link>
+                
                 <nav className="flex items-center space-x-10">
                   {renderNavLinks()}
                 </nav>
@@ -152,28 +192,6 @@ const Header = () => {
                   {renderAuthButtons()}
                 </div>
               </>
-            )}
-            
-            {/* Mobile UI */}
-            {isMobile && (
-              <div className="flex items-center space-x-4">
-                {!user && (
-                  <Button
-                    onClick={() => navigate('/auth', { state: { tab: 'signin' } })}
-                    variant="outline"
-                    className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white"
-                  >
-                    Sign In
-                  </Button>
-                )}
-                <button
-                  onClick={toggleMobileMenu}
-                  className="p-2 text-deep-charcoal focus:outline-none"
-                  aria-label="Toggle menu"
-                >
-                  <Menu size={24} />
-                </button>
-              </div>
             )}
           </div>
         </div>
