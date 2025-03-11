@@ -36,9 +36,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Continue your thoughts here..."
-          className={`w-full px-1 py-2 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed ${
-            isMobile ? 'pr-4' : 'pr-48'
-          }`}
+          className="w-full px-1 py-2 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
           style={{
             minHeight: '3rem',
             maxHeight: '12rem',
@@ -52,22 +50,22 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
           }}
         />
         
-        {/* Desktop Send Button */}
-        {!isMobile && (
+        {/* Mobile Full-Width Send Button */}
+        {isMobile && (
           <button
             type="submit"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
+            className="w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
           >
             <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         )}
         
-        {/* Mobile Full-Width Send Button */}
-        {isMobile && (
+        {/* Desktop Send Button */}
+        {!isMobile && (
           <button
             type="submit"
-            className="w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
           >
             <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
