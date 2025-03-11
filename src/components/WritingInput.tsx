@@ -91,7 +91,7 @@ const WritingInput = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="What's on your mind lately?"
-            className="w-full px-1 py-3 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 resize-none overflow-hidden"
+            className="w-full px-1 py-2 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 resize-none overflow-hidden"
             style={{
               height: '3rem',
               minHeight: '3rem'
@@ -108,7 +108,7 @@ const WritingInput = () => {
         </div>
         <button
           type="submit"
-          className="absolute right-0 top-1/2 -translate-y-1/2 px-6 py-2.5 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
+          className="absolute right-0 top-1/2 -translate-y-1/2 px-6 py-2 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
         >
           <span className="font-poppins text-base">Send</span>
           <ArrowRight className="w-4 h-4" />
