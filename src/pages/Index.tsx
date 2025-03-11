@@ -19,11 +19,16 @@ const Index = () => {
             </div>
             
             <div className="grid lg:grid-cols-2 gap-12 items-start">
-              <div className="space-y-4 animate-fade-in">
-                <p className="text-xl text-deep-charcoal/80 font-poppins">
+              <div className="space-y-8 animate-fade-in">
+                <p className="text-xl text-deep-charcoal/80 font-poppins mb-8">
                   Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
+                
+                <div className="animate-fade-up">
+                  <WritingInput />
+                </div>
               </div>
+              
               <div className="flex justify-end animate-fade-up">
                 <div className="max-w-md w-full">
                   <MusicPlayer />
@@ -33,12 +38,6 @@ const Index = () => {
           </div>
         </div>
           
-        <div className="w-full max-w-7xl mx-auto mt-auto pt-8">
-          <div className="animate-fade-up delay-300">
-            <WritingInput />
-          </div>
-        </div>
-
         <div className="mt-16 px-4 mb-8">
           <p className="text-xs text-deep-charcoal/60 text-center max-w-3xl mx-auto">
             Disclaimer: Gentlee is designed for reflection, self-exploration, and emotional support. It is not a substitute for professional therapy, counseling, or medical treatment. If you are in crisis or require professional mental health care, please seek guidance from a licensed therapist or healthcare provider. By using this platform, you acknowledge that Gentlee is for informational and personal growth purposes only and does not provide medical or psychological diagnoses, treatment, or advice.
