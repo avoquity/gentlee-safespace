@@ -36,7 +36,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Continue your thoughts here..."
-          className="w-full px-1 py-2 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
+          className="w-full px-1 py-2 text-lg bg-transparent border-b-[8px] border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
           style={{
             height: '3rem',
             minHeight: '3rem',
