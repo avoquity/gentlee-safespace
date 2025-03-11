@@ -62,9 +62,8 @@ const WritingInput = () => {
 
       if (todayChat) {
         // If chat exists, navigate to it with the message
-        navigate('/chat', {
+        navigate(`/chat/${todayChat.id}`, {
           state: { 
-            chatId: todayChat.id,
             initialMessage: input,
             entryDate: format(new Date(), 'd MMMM yyyy') // Add today's date for header
           }

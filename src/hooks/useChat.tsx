@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -10,12 +11,18 @@ import { useMessageHandling } from './chat/useMessageHandling';
 import { useHighlights } from './chat/useHighlights';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useChat = (): UseChatReturn => {
+export const useChat = (
+  chatIdFromUrl: number | null = null,
+  locationState: LocationState | null = null
+): UseChatReturn => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { initialMessage, chatId: existingChatId, entryDate } = (location.state as LocationState) || {};
+  
+  // First prioritize chatId from URL, then from location state
+  const { initialMessage, chatId: stateExistingChatId, entryDate } = locationState || 
+    (location.state as LocationState) || {};
   
   // State
   const [messages, setMessages] = useState<Message[]>([]);
@@ -46,12 +53,15 @@ export const useChat = (): UseChatReturn => {
     handleHighlightRemove
   } = useHighlights(currentChatId);
 
-  // Initialize currentChatId from props if available
+  // Initialize currentChatId from URL or props if available
   useEffect(() => {
-    if (existingChatId && !currentChatId) {
-      setCurrentChatId(existingChatId);
+    // Priority: URL param > location state > current state
+    if (chatIdFromUrl) {
+      setCurrentChatId(chatIdFromUrl);
+    } else if (stateExistingChatId && !currentChatId) {
+      setCurrentChatId(stateExistingChatId);
     }
-  }, [existingChatId, currentChatId, setCurrentChatId]);
+  }, [chatIdFromUrl, stateExistingChatId, currentChatId, setCurrentChatId]);
 
   // Set display date on initialization
   useEffect(() => {
@@ -125,7 +135,7 @@ export const useChat = (): UseChatReturn => {
 
   // Function to load today's chat if it exists
   const loadTodaysChat = useCallback(async () => {
-    if (existingChatId || currentChatId || todaysChatChecked || !user) {
+    if (chatIdFromUrl || currentChatId || todaysChatChecked || !user) {
       return;
     }
 
@@ -141,10 +151,9 @@ export const useChat = (): UseChatReturn => {
         
         // Update the URL state to include the chat ID without changing the URL
         navigate(
-          '/chat', 
+          `/chat/${todaysChatId}`, 
           { 
             state: { 
-              chatId: todaysChatId,
               entryDate: getTodayFormattedDate()
             },
             replace: true 
@@ -154,7 +163,7 @@ export const useChat = (): UseChatReturn => {
     } catch (error) {
       console.error('Error loading today\'s chat:', error);
     }
-  }, [user, existingChatId, currentChatId, todaysChatChecked, navigate, findTodaysChat, setCurrentChatId, getTodayFormattedDate]);
+  }, [user, chatIdFromUrl, currentChatId, todaysChatChecked, navigate, findTodaysChat, setCurrentChatId, getTodayFormattedDate]);
 
   // Process initial message function, memoized with useCallback
   const processInitialMessage = useCallback(async () => {
@@ -166,15 +175,18 @@ export const useChat = (): UseChatReturn => {
       setInitialMessageProcessed(true);
       
       try {
-        // First check if today's chat already exists
-        const todaysChatId = await findTodaysChat();
+        // First check if today's chat already exists or use current chat
+        let chatId = currentChatId;
         
-        // Use existing chat or create new one
-        let chatId;
-        if (todaysChatId) {
-          chatId = todaysChatId;
-        } else {
-          chatId = await createNewChat();
+        if (!chatId) {
+          const todaysChatId = await findTodaysChat();
+          
+          // Use existing chat or create new one
+          if (todaysChatId) {
+            chatId = todaysChatId;
+          } else {
+            chatId = await createNewChat();
+          }
         }
         
         if (!chatId) return;
@@ -210,6 +222,12 @@ export const useChat = (): UseChatReturn => {
         
         setMessages([firstMessage]);
         
+        // Update URL with chat ID
+        navigate(`/chat/${chatId}`, { 
+          state: { entryDate: getTodayFormattedDate() },
+          replace: true 
+        });
+        
         // Only remove pendingMessage after successfully processing it
         if (pendingMessage) {
           sessionStorage.removeItem('pendingMessage');
@@ -227,7 +245,7 @@ export const useChat = (): UseChatReturn => {
         });
       }
     }
-  }, [initialMessage, user, initialMessageProcessed, findTodaysChat, createNewChat, setCurrentChatId, simulateAIResponse, toast]);
+  }, [initialMessage, user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, simulateAIResponse, toast]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -251,6 +269,12 @@ export const useChat = (): UseChatReturn => {
         
         if (!chatId) return;
         setCurrentChatId(chatId);
+        
+        // Update URL with new chat ID
+        navigate(`/chat/${chatId}`, { 
+          state: { entryDate: getTodayFormattedDate() },
+          replace: true 
+        });
       }
 
       const { data: messageData, error: messageError } = await supabase

@@ -2,9 +2,14 @@
 import React, { useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
+import { useParams, useLocation } from 'react-router-dom';
 
 const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const params = useParams();
+  const location = useLocation();
+  const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
+  
   const {
     messages,
     input,
@@ -20,15 +25,17 @@ const Chat = () => {
     handleMuteToggle,
     processInitialMessage,
     loadTodaysChat
-  } = useChat();
+  } = useChat(chatIdFromParams, location.state);
 
   // Effect to process initial message from redirect and check for today's chat
   useEffect(() => {    
     // First try to check if we need to load today's existing chat
-    loadTodaysChat();
+    if (!chatIdFromParams) {
+      loadTodaysChat();
+    }
     // Then process any initial message (from WritingInput)
     processInitialMessage();
-  }, [processInitialMessage, loadTodaysChat]);
+  }, [processInitialMessage, loadTodaysChat, chatIdFromParams]);
 
   // Scroll to bottom when messages change
   useEffect(() => {

@@ -25,6 +25,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/chat/:chatId" element={<Chat />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/entries" element={<Entries />} />
               <Route path="/about" element={<About />} />

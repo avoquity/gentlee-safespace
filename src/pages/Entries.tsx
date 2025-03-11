@@ -97,9 +97,7 @@ const Entries = () => {
     );
 
     if (todayChat) {
-      navigate('/chat', {
-        state: { chatId: todayChat.id }
-      });
+      navigate(`/chat/${todayChat.id}`);
       return;
     }
 
@@ -127,7 +125,6 @@ const Entries = () => {
     }
   });
 
-  // Group entries by date
   const groupedEntries = entries.reduce((acc, entry) => {
     const date = format(new Date(entry.created_at), 'd MMMM yyyy');
     if (!acc[date]) {
@@ -180,21 +177,15 @@ const Entries = () => {
                 <div
                   key={entry.id}
                   className="w-full p-6 border-2 border-deep-charcoal rounded-xl transition-colors group cursor-pointer hover:bg-[#E9E9E3]/50"
-                  onClick={() => navigate('/chat', { 
-                    state: { 
-                      chatId: entry.id,
-                      entryDate: date
-                    } 
+                  onClick={() => navigate(`/chat/${entry.id}`, { 
+                    state: { entryDate: date } 
                   })}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      navigate('/chat', { 
-                        state: { 
-                          chatId: entry.id,
-                          entryDate: date
-                        } 
+                      navigate(`/chat/${entry.id}`, { 
+                        state: { entryDate: date } 
                       });
                     }
                   }}
@@ -264,3 +255,4 @@ const Entries = () => {
 };
 
 export default Entries;
+
