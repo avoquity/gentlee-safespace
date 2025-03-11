@@ -25,7 +25,7 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex justify-end animate-fade-up">
-                <div className="max-w-md w-full md:w-auto">
+                <div className="max-w-md w-full">
                   <MusicPlayer />
                 </div>
               </div>
