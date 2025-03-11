@@ -36,7 +36,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Continue your thoughts here..."
-          className="w-full px-1 py-2 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
+          className="w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
           style={{
             height: '3rem',
             minHeight: '3rem',
@@ -54,7 +54,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
         {isMobile && (
           <button
             type="submit"
-            className="w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
+            className="w-full mt-4 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
           >
             <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
