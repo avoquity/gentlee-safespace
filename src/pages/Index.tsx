@@ -19,12 +19,12 @@ const Index = () => {
             </div>
             
             <div className="grid lg:grid-cols-2 gap-12 items-start">
-              <div className="space-y-8 animate-fade-in">
-                <p className="text-xl text-deep-charcoal/80 font-poppins mb-8">
+              <div className="space-y-12 animate-fade-in">
+                <p className="text-xl text-deep-charcoal/80 font-poppins mb-10">
                   Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
                 
-                <div className="animate-fade-up">
+                <div className="animate-fade-up pt-4">
                   <WritingInput />
                 </div>
               </div>
