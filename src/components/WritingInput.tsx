@@ -91,12 +91,10 @@ const WritingInput = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="What's on your mind lately?"
-            className="w-full px-1 py-2 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 min-h-[3rem] resize-none overflow-hidden flex items-center"
+            className="w-full px-1 py-2 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 min-h-[3rem] resize-none overflow-hidden"
             style={{
               height: 'auto',
-              minHeight: '3rem',
-              paddingTop: '0.75rem',
-              lineHeight: '1.5'
+              minHeight: '3rem'
             }}
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
