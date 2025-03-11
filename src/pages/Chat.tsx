@@ -23,12 +23,11 @@ const Chat = () => {
   } = useChat();
 
   // Effect to process initial message from redirect and check for today's chat
-  useEffect(() => {
-    // First try to process any initial message (from WritingInput)
-    processInitialMessage();
-    
-    // Then check if we need to load today's existing chat
+  useEffect(() => {    
+    // First try to check if we need to load today's existing chat
     loadTodaysChat();
+    // Then process any initial message (from WritingInput)
+    processInitialMessage();
   }, [processInitialMessage, loadTodaysChat]);
 
   // Scroll to bottom when messages change
