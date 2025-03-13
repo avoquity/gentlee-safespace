@@ -80,7 +80,12 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
       <Lightbulb key="lightbulb" className="w-4 h-4 mr-2" />, // Something not seeing
       <Sparkle key="sparkle" className="w-4 h-4 mr-2" />    // Softer with self
     ];
-    return icons[index % icons.length];
+    
+    // Randomize which icon is used for each suggestion
+    // Use the suggestion as a seed to ensure consistent icons per suggestion
+    const suggestionSeed = filteredSuggestions[index].length;
+    const iconIndex = suggestionSeed % icons.length;
+    return icons[iconIndex];
   };
 
   if (!isFocused || filteredSuggestions.length === 0) {

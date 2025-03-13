@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,10 +35,19 @@ const chatSuggestions = [
 const WritingInput = () => {
   const [input, setInput] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [randomizedSuggestions, setRandomizedSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  
+  // Randomize suggestions when input field is focused
+  useEffect(() => {
+    if (isFocused) {
+      const shuffled = [...chatSuggestions].sort(() => 0.5 - Math.random());
+      setRandomizedSuggestions(shuffled);
+    }
+  }, [isFocused]);
   
   const findTodayChat = async () => {
     if (!user) return null;
@@ -113,7 +122,7 @@ const WritingInput = () => {
       <form onSubmit={handleSubmit} className="relative w-full mx-auto mb-3">
         <div className="relative">
           <ChatSuggestions
-            suggestions={chatSuggestions}
+            suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
             inputValue={input}
             onSuggestionClick={handleSuggestionClick}
             isFocused={isFocused}

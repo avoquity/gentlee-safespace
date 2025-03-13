@@ -27,6 +27,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
   const [isFocused, setIsFocused] = useState(false);
+  const [randomizedSuggestions, setRandomizedSuggestions] = useState<string[]>([]);
 
   // Auto-resize the textarea when content changes
   useEffect(() => {
@@ -36,6 +37,14 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
       textareaRef.current.style.height = `${scrollHeight}px`;
     }
   }, [input]);
+
+  // Randomize suggestions when input field is focused
+  useEffect(() => {
+    if (isFocused) {
+      const shuffled = [...chatSuggestions].sort(() => 0.5 - Math.random());
+      setRandomizedSuggestions(shuffled);
+    }
+  }, [isFocused]);
 
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
@@ -55,7 +64,7 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
       <div className="relative bg-[#FDFBF8]">
         <div className="relative">
           <ChatSuggestions
-            suggestions={chatSuggestions}
+            suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
             inputValue={input}
             onSuggestionClick={handleSuggestionClick}
             isFocused={isFocused}
