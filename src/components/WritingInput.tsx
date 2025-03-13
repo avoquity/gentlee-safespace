@@ -20,16 +20,16 @@ const suggestedTopics = [
   "Inner clarity"
 ];
 
-// Chat suggestions to display in the dropdown
+// Chat suggestions - updated with more reflective prompts
 const chatSuggestions = [
-  "What's been on my mind lately",
-  "I'm feeling anxious about",
-  "Something I'm grateful for today",
-  "A challenge I'm facing is",
-  "I'd like to explore my feelings about",
-  "What would help me feel more peaceful",
-  "I've been thinking about my relationship with",
-  "One thing I'd like to change is"
+  "What truth have I been avoiding?",
+  "What would I say to my younger self right now?",
+  "What's a small, kind thing I can do for myself today?",
+  "What would this look like from a different lens?",
+  "What's one thing I know deep down, but forget too often?",
+  "If my heart could speak, what would it say?",
+  "How can I be a little softer with myself?",
+  "Tell me something I might not be seeing."
 ];
 
 const WritingInput = () => {

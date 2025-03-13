@@ -11,16 +11,16 @@ interface ChatInputProps {
   handleSubmit: (e: React.FormEvent) => void;
 }
 
-// Chat suggestions
+// Chat suggestions - updated with more reflective prompts
 const chatSuggestions = [
-  "What's been on my mind lately",
-  "I'm feeling anxious about",
-  "Something I'm grateful for today",
-  "A challenge I'm facing is",
-  "I'd like to explore my feelings about",
-  "What would help me feel more peaceful",
-  "I've been thinking about my relationship with",
-  "One thing I'd like to change is"
+  "What truth have I been avoiding?",
+  "What would I say to my younger self right now?",
+  "What's a small, kind thing I can do for myself today?",
+  "What would this look like from a different lens?",
+  "What's one thing I know deep down, but forget too often?",
+  "If my heart could speak, what would it say?",
+  "Give me words to breathe in, words to hold onto.",
+  "Tell me a small truth wrapped in kindness."
 ];
 
 export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => {

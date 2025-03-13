@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Heart, Lightbulb, Sparkle, Flower, Star } from 'lucide-react';
+import { Heart, Lightbulb, Sparkle, Star, Moon, Sun, Cloud, Compass, MessageCircle, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SuggestionProps {
@@ -66,16 +66,21 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
     }
   };
 
-  // Emoji mapping for suggestions
+  // Emoji mapping for suggestions - updated with more meaningful icons
   const getEmoji = (index: number) => {
-    const emojis = [
-      <Lightbulb key="lightbulb" className="w-4 h-4 mr-2" />,
-      <Heart key="heart" className="w-4 h-4 mr-2" />,
-      <Sparkle key="sparkle" className="w-4 h-4 mr-2" />,
-      <Flower key="flower" className="w-4 h-4 mr-2" />,
-      <Star key="star" className="w-4 h-4 mr-2" />
+    const icons = [
+      <Moon key="moon" className="w-4 h-4 mr-2" />,         // Truth & introspection
+      <Star key="star" className="w-4 h-4 mr-2" />,         // Past self
+      <Sun key="sun" className="w-4 h-4 mr-2" />,           // Self-kindness
+      <Compass key="compass" className="w-4 h-4 mr-2" />,   // Different perspective
+      <Heart key="heart" className="w-4 h-4 mr-2" />,       // Deep knowing
+      <MessageCircle key="message" className="w-4 h-4 mr-2" />, // Heart speaking
+      <Cloud key="cloud" className="w-4 h-4 mr-2" />,       // Words to breathe
+      <Quote key="quote" className="w-4 h-4 mr-2" />,       // Truth wrapped in kindness
+      <Lightbulb key="lightbulb" className="w-4 h-4 mr-2" />, // Something not seeing
+      <Sparkle key="sparkle" className="w-4 h-4 mr-2" />    // Softer with self
     ];
-    return emojis[index % emojis.length];
+    return icons[index % icons.length];
   };
 
   if (!isFocused || filteredSuggestions.length === 0) {
