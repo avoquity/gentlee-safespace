@@ -20,6 +20,7 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
   const isMobile = useIsMobile();
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>(suggestions);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState<"left" | "right">("right");
   const touchStartX = useRef<number>(0);
   const touchStartTime = useRef<number>(0);
 
@@ -60,21 +61,25 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
     
     // Swipe right to left (next suggestion)
     if (diff > 50) {
+      setDirection("left");
       goToNextSuggestion();
       touchStartX.current = touchEndX;
     }
     // Swipe left to right (previous suggestion)
     else if (diff < -50) {
+      setDirection("right");
       goToPrevSuggestion();
       touchStartX.current = touchEndX;
     }
   };
 
   const goToNextSuggestion = () => {
+    setDirection("left");
     setCurrentIndex(prev => (prev + 1) % filteredSuggestions.length);
   };
 
   const goToPrevSuggestion = () => {
+    setDirection("right");
     setCurrentIndex(prev => 
       prev === 0 ? filteredSuggestions.length - 1 : prev - 1
     );
@@ -139,52 +144,75 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
     );
   }
 
-  // Render for mobile - updated with arrows and single suggestion view
+  // Animation variants for mobile slide transitions
+  const variants = {
+    enter: (direction: "left" | "right") => ({
+      x: direction === "right" ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: "left" | "right") => ({
+      x: direction === "right" ? -100 : 100,
+      opacity: 0,
+    }),
+  };
+
+  // Render for mobile - enhanced with smooth transitions
   return (
     <div className="w-full mt-3 relative">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          className="w-full px-4 py-3 bg-white rounded-md shadow-sm border border-deep-charcoal/10 flex items-center justify-center"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-          onClick={() => onSuggestionClick(filteredSuggestions[currentIndex])}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
+      <div className="w-full px-4 py-3 bg-white rounded-md shadow-sm border border-deep-charcoal/10 flex items-center justify-center relative">
+        {/* Left Arrow */}
+        <motion.button
+          onClick={(e) => {
+            e.stopPropagation();
+            goToPrevSuggestion();
+          }}
+          className="absolute left-2 p-2 text-deep-charcoal/70 hover:text-deep-charcoal transition-colors"
+          whileTap={{ scale: 0.9 }}
         >
-          {/* Left Arrow */}
-          <motion.button
-            onClick={(e) => {
-              e.stopPropagation();
-              goToPrevSuggestion();
-            }}
-            className="absolute left-2 p-2 text-deep-charcoal/70 hover:text-deep-charcoal transition-colors"
-            whileTap={{ scale: 0.9 }}
-          >
-            <ArrowLeft size={18} />
-          </motion.button>
-          
-          {/* Suggestion Content */}
-          <div className="flex items-center justify-center px-10">
-            {getEmoji(currentIndex)}
-            <span className="text-center">{filteredSuggestions[currentIndex]}</span>
-          </div>
-          
-          {/* Right Arrow */}
-          <motion.button
-            onClick={(e) => {
-              e.stopPropagation();
-              goToNextSuggestion();
-            }}
-            className="absolute right-2 p-2 text-deep-charcoal/70 hover:text-deep-charcoal transition-colors"
-            whileTap={{ scale: 0.9 }}
-          >
-            <ArrowRight size={18} />
-          </motion.button>
-        </motion.div>
-      </AnimatePresence>
+          <ArrowLeft size={18} />
+        </motion.button>
+        
+        {/* Suggestion Content with AnimatePresence for smooth transitions */}
+        <div className="flex items-center justify-center px-10 overflow-hidden relative h-8">
+          <AnimatePresence custom={direction} initial={false} mode="popLayout">
+            <motion.div
+              key={currentIndex}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.25 }
+              }}
+              className="absolute flex items-center justify-center"
+              onClick={() => onSuggestionClick(filteredSuggestions[currentIndex])}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+            >
+              {getEmoji(currentIndex)}
+              <span>{filteredSuggestions[currentIndex]}</span>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        
+        {/* Right Arrow */}
+        <motion.button
+          onClick={(e) => {
+            e.stopPropagation();
+            goToNextSuggestion();
+          }}
+          className="absolute right-2 p-2 text-deep-charcoal/70 hover:text-deep-charcoal transition-colors"
+          whileTap={{ scale: 0.9 }}
+        >
+          <ArrowRight size={18} />
+        </motion.button>
+      </div>
     </div>
   );
 };
