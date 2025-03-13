@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Heart, Lightbulb, Sparkle, Star, Moon, Sun, Cloud, Compass, MessageCircle, Quote } from 'lucide-react';
+import { Heart, Lightbulb, Sparkle, Star, Moon, Sun, Cloud, Compass, MessageCircle, Quote, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SuggestionProps {
@@ -21,6 +21,7 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>(suggestions);
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef<number>(0);
+  const touchStartTime = useRef<number>(0);
 
   // Filter suggestions based on input value
   useEffect(() => {
@@ -43,6 +44,7 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
   // Handle touch start for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartTime.current = Date.now();
   };
 
   // Handle touch move for mobile swipe
@@ -51,19 +53,31 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
 
     const touchEndX = e.touches[0].clientX;
     const diff = touchStartX.current - touchEndX;
+    const timeDiff = Date.now() - touchStartTime.current;
+    
+    // Only register swipe if it's been less than 300ms (to ensure it's a swipe and not a long press)
+    if (timeDiff > 300) return;
     
     // Swipe right to left (next suggestion)
     if (diff > 50) {
-      setCurrentIndex(prev => (prev + 1) % filteredSuggestions.length);
+      goToNextSuggestion();
       touchStartX.current = touchEndX;
     }
     // Swipe left to right (previous suggestion)
     else if (diff < -50) {
-      setCurrentIndex(prev => 
-        prev === 0 ? filteredSuggestions.length - 1 : prev - 1
-      );
+      goToPrevSuggestion();
       touchStartX.current = touchEndX;
     }
+  };
+
+  const goToNextSuggestion = () => {
+    setCurrentIndex(prev => (prev + 1) % filteredSuggestions.length);
+  };
+
+  const goToPrevSuggestion = () => {
+    setCurrentIndex(prev => 
+      prev === 0 ? filteredSuggestions.length - 1 : prev - 1
+    );
   };
 
   // Emoji mapping for suggestions - updated with more meaningful icons
@@ -125,23 +139,52 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
     );
   }
 
-  // Render for mobile
+  // Render for mobile - updated with arrows and single suggestion view
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={currentIndex}
-        className="w-full mt-3 px-4 py-2.5 bg-white rounded-md shadow-sm border border-deep-charcoal/10 cursor-pointer flex items-center justify-center"
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -50 }}
-        transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-        onClick={() => onSuggestionClick(filteredSuggestions[currentIndex])}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-      >
-        {getEmoji(currentIndex)}
-        <span>{filteredSuggestions[currentIndex]}</span>
-      </motion.div>
-    </AnimatePresence>
+    <div className="w-full mt-3 relative">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          className="w-full px-4 py-3 bg-white rounded-md shadow-sm border border-deep-charcoal/10 flex items-center justify-center"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+          onClick={() => onSuggestionClick(filteredSuggestions[currentIndex])}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+        >
+          {/* Left Arrow */}
+          <motion.button
+            onClick={(e) => {
+              e.stopPropagation();
+              goToPrevSuggestion();
+            }}
+            className="absolute left-2 p-2 text-deep-charcoal/70 hover:text-deep-charcoal transition-colors"
+            whileTap={{ scale: 0.9 }}
+          >
+            <ArrowLeft size={18} />
+          </motion.button>
+          
+          {/* Suggestion Content */}
+          <div className="flex items-center justify-center px-10">
+            {getEmoji(currentIndex)}
+            <span className="text-center">{filteredSuggestions[currentIndex]}</span>
+          </div>
+          
+          {/* Right Arrow */}
+          <motion.button
+            onClick={(e) => {
+              e.stopPropagation();
+              goToNextSuggestion();
+            }}
+            className="absolute right-2 p-2 text-deep-charcoal/70 hover:text-deep-charcoal transition-colors"
+            whileTap={{ scale: 0.9 }}
+          >
+            <ArrowRight size={18} />
+          </motion.button>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 };
