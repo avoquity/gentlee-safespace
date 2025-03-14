@@ -14,14 +14,30 @@ serve(async (req) => {
   }
 
   try {
-    const { userMessage } = await req.json();
+    const { userMessage, chatId, userId } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Create a new TransformStream for streaming the response
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
+    const encoder = new TextEncoder();
+
+    // Start streaming response to client
+    const response = new Response(stream.readable, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+
+    // Make the API call to OpenAI with streaming enabled
+    fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -137,20 +153,62 @@ Ask for and use user's name in conversation
         ],
         temperature: 1.1,
         max_tokens: 500,
+        stream: true,
       }),
+    }).then(async (openAIResponse) => {
+      if (!openAIResponse.ok) {
+        const errorData = await openAIResponse.json();
+        throw new Error(errorData.error?.message || 'Failed to get AI response');
+      }
+
+      const reader = openAIResponse.body.getReader();
+      let accumulatedResponse = '';
+      
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          // Convert the Uint8Array to a string
+          const chunk = new TextDecoder().decode(value);
+          
+          // Parse the SSE format
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            // Skip empty lines and "data: [DONE]" messages
+            if (!line.trim() || line.includes('[DONE]')) continue;
+            
+            // Extract the data part from the SSE format
+            if (line.startsWith('data: ')) {
+              try {
+                const jsonData = JSON.parse(line.substring(6));
+                if (jsonData.choices?.[0]?.delta?.content) {
+                  const content = jsonData.choices[0].delta.content;
+                  accumulatedResponse += content;
+                  
+                  // Send each chunk to the client
+                  const data = `data: ${JSON.stringify({ chunk: content, fullResponse: accumulatedResponse })}\n\n`;
+                  await writer.write(encoder.encode(data));
+                }
+              } catch (e) {
+                console.error('Error parsing JSON:', e);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error streaming response:', error);
+      } finally {
+        await writer.close();
+      }
+    }).catch(async (error) => {
+      console.error('Fetch error:', error);
+      const errorData = `data: ${JSON.stringify({ error: error.message })}\n\n`;
+      await writer.write(encoder.encode(errorData));
+      await writer.close();
     });
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Failed to get AI response');
-    }
-
-    return new Response(
-      JSON.stringify({ response: data.choices[0].message.content }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return response;
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),

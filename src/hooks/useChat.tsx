@@ -44,7 +44,7 @@ export const useChat = (
 
   const {
     isTyping,
-    simulateAIResponse
+    streamAIResponse
   } = useMessageHandling(user?.id);
 
   const {
@@ -52,6 +52,32 @@ export const useChat = (
     handleHighlightChange,
     handleHighlightRemove
   } = useHighlights(currentChatId);
+
+  // Function to update a message text
+  const updateMessage = useCallback((id: string, updater: ((prevText: string) => string) | string, newText?: string) => {
+    setMessages(prevMessages => 
+      prevMessages.map(message => {
+        // If id matches and updater is a function, pass current text to updater
+        if (message.id === id && typeof updater === 'function') {
+          return { ...message, text: updater(message.text) };
+        } 
+        // If id matches and updater is a string (new id) and newText is provided
+        else if (message.id === id && typeof updater === 'string' && newText) {
+          return { ...message, id: updater, text: newText };
+        }
+        // If id matches and updater is a string (new text)
+        else if (message.id === id && typeof updater === 'string') {
+          return { ...message, text: updater };
+        }
+        return message;
+      })
+    );
+  }, []);
+
+  // Add a message to the messages array
+  const addMessage = useCallback((message: Message) => {
+    setMessages(prev => [...prev, message]);
+  }, []);
 
   // Initialize currentChatId from URL or props if available
   useEffect(() => {
@@ -233,9 +259,7 @@ export const useChat = (
           sessionStorage.removeItem('pendingMessage');
         }
         
-        await simulateAIResponse(messageToProcess, chatId, (aiMessage) => {
-          setMessages(prev => [...prev, aiMessage]);
-        });
+        await streamAIResponse(messageToProcess, chatId, updateMessage, addMessage);
       } catch (error: any) {
         console.error('Error processing initial message:', error);
         toast({
@@ -245,7 +269,7 @@ export const useChat = (
         });
       }
     }
-  }, [initialMessage, user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, simulateAIResponse, toast]);
+  }, [initialMessage, user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -306,9 +330,9 @@ export const useChat = (
 
       setMessages(prev => [...prev, newMessage]);
       setInput('');
-      await simulateAIResponse(input, chatId, (aiMessage) => {
-        setMessages(prev => [...prev, aiMessage]);
-      });
+      
+      // Use streaming AI response
+      await streamAIResponse(input, chatId, updateMessage, addMessage);
     } catch (error: any) {
       console.error('Error submitting message:', error);
       toast({
@@ -349,6 +373,8 @@ export const useChat = (
     handleHighlightRemove,
     handleMuteToggle,
     processInitialMessage,
-    loadTodaysChat
+    loadTodaysChat,
+    updateMessage,
+    addMessage
   };
 };

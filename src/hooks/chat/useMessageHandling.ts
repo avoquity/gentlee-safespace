@@ -1,24 +1,100 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/chat';
 
 export const useMessageHandling = (userId: string | undefined) => {
   const [isTyping, setIsTyping] = useState(false);
+  const [streamedResponse, setStreamedResponse] = useState('');
   const { toast } = useToast();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Get AI response
-  const getAIResponse = async (userMessage: string): Promise<string> => {
+  // Cleanup function for any ongoing fetch requests
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Get AI response with streaming
+  const getStreamingAIResponse = async (
+    userMessage: string,
+    chatId: number,
+    onChunkReceived: (chunk: string) => void
+  ): Promise<string> => {
     try {
-      const { data, error } = await supabase.functions.invoke('chat-completion', {
-        body: { userMessage }
+      // Create a new AbortController for this request
+      abortControllerRef.current = new AbortController();
+      const { signal } = abortControllerRef.current;
+
+      const response = await fetch(`${supabase.functions.url}/chat-completion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`,
+        },
+        body: JSON.stringify({ 
+          userMessage,
+          chatId,
+          userId
+        }),
+        signal
       });
 
-      if (error) throw error;
-      return data.response;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get AI response');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('ReadableStream not supported');
+      }
+
+      const decoder = new TextDecoder();
+      let fullResponse = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Convert the chunk to text
+        const chunkText = decoder.decode(value, { stream: true });
+        
+        // Process SSE format
+        const lines = chunkText.split('\n\n');
+        for (const line of lines) {
+          if (!line.trim() || !line.startsWith('data: ')) continue;
+          
+          try {
+            const eventData = JSON.parse(line.substring(6));
+            
+            if (eventData.error) {
+              throw new Error(eventData.error);
+            }
+            
+            if (eventData.chunk) {
+              onChunkReceived(eventData.chunk);
+              fullResponse = eventData.fullResponse;
+              setStreamedResponse(fullResponse);
+            }
+          } catch (e) {
+            console.error('Error parsing streaming data:', e);
+          }
+        }
+      }
+
+      return fullResponse;
     } catch (error: any) {
-      console.error('Error getting AI response:', error);
+      if (error.name === 'AbortError') {
+        console.log('Fetch aborted');
+        return streamedResponse || "I apologize, but our conversation was interrupted. What were you saying?";
+      }
+      
+      console.error('Error getting streaming AI response:', error);
       toast({
         title: "Error getting AI response",
         description: error.message,
@@ -92,24 +168,45 @@ export const useMessageHandling = (userId: string | undefined) => {
     }
   };
 
-  // Simulate AI response
-  const simulateAIResponse = async (
+  // Streaming AI response with real-time updates
+  const streamAIResponse = async (
     userMessage: string, 
     chatId: number, 
+    updateMessage: (id: string, text: string) => void,
     addMessageCallback: (message: Message) => void
   ) => {
     setIsTyping(true);
+    setStreamedResponse('');
     
     try {
-      const aiResponse = await getAIResponse(userMessage);
+      // Create a temporary AI message to show typing
+      const tempMessage: Message = {
+        id: 'temp-' + Date.now().toString(),
+        text: '',
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      addMessageCallback(tempMessage);
+
+      // Start streaming response
+      const finalResponse = await getStreamingAIResponse(
+        userMessage,
+        chatId,
+        (chunk) => {
+          // Update the temporary message with each chunk
+          updateMessage(tempMessage.id, (prev) => prev + chunk);
+        }
+      );
+
+      // Once streaming is complete, save the message to the database
+      const savedMessage = await saveAIMessage(finalResponse, chatId);
       
-      const aiMessage = await saveAIMessage(aiResponse, chatId);
-      
-      if (aiMessage) {
-        addMessageCallback(aiMessage);
+      if (savedMessage) {
+        // Replace temporary message with saved message
+        updateMessage(tempMessage.id, savedMessage.id, finalResponse);
       }
     } catch (error: any) {
-      console.error('Error in AI response:', error);
+      console.error('Error in AI streaming response:', error);
       toast({
         title: "Error saving AI response",
         description: error.message,
@@ -123,9 +220,9 @@ export const useMessageHandling = (userId: string | undefined) => {
   return {
     isTyping,
     setIsTyping,
-    getAIResponse,
+    getStreamingAIResponse,
     saveUserMessage,
     saveAIMessage,
-    simulateAIResponse
+    streamAIResponse
   };
 };

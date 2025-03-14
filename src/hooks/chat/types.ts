@@ -1,14 +1,14 @@
 
 import { Message, Highlight } from '@/types/chat';
 
-export interface UseChatReturn {
+export type UseChatReturn = {
   messages: Message[];
   input: string;
   setInput: (input: string) => void;
   isTyping: boolean;
   isMuted: boolean;
   highlights: Highlight[];
-  displayDate?: string;
+  displayDate: string;
   handleSubmit: (e: React.FormEvent) => void;
   handleCloseConversation: () => void;
   handleHighlightChange: (highlight: Highlight) => void;
@@ -16,4 +16,6 @@ export interface UseChatReturn {
   handleMuteToggle: () => void;
   processInitialMessage: () => Promise<void>;
   loadTodaysChat: () => Promise<void>;
-}
+  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void;
+  addMessage: (message: Message) => void;
+};
