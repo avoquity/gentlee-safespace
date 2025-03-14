@@ -199,8 +199,8 @@ export const useMessageHandling = (userId: string | undefined) => {
         userMessage,
         chatId,
         (chunk) => {
-          // Fix: Convert the updater function to match the expected type
-          updateMessage(tempMessage.id, (prev) => prev + chunk);
+          // Using the updater function correctly
+          updateMessage(tempMessage.id, (prev: string) => prev + chunk);
         }
       );
 
@@ -208,8 +208,8 @@ export const useMessageHandling = (userId: string | undefined) => {
       const savedMessage = await saveAIMessage(finalResponse, chatId);
       
       if (savedMessage) {
-        // Fix: Use only 2 arguments for updateMessage when providing a new ID
-        updateMessage(tempMessage.id, savedMessage.id);
+        // Fixed: Using the correct format to replace the temp message with the saved one
+        updateMessage(tempMessage.id, savedMessage.id, savedMessage.text);
       }
     } catch (error: any) {
       console.error('Error in AI streaming response:', error);
