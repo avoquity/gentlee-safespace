@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,10 +17,41 @@ serve(async (req) => {
   try {
     const { userMessage, chatId, userId } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error('Supabase credentials not configured');
+    }
+
+    // Initialize Supabase client with service role key for admin access
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Fetch previous messages from this chat session
+    const { data: previousMessages, error: messagesError } = await supabase
+      .from('messages')
+      .select('content, user_role')
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: true });
+
+    if (messagesError) {
+      console.error('Error fetching previous messages:', messagesError);
+      throw new Error('Failed to retrieve conversation history');
+    }
+
+    // Transform previous messages into the format expected by OpenAI
+    const conversationHistory = previousMessages.map(msg => ({
+      role: msg.user_role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    }));
+
+    // Add the current message to the history
+    // Note: we don't add the current user message to history array since it hasn't been saved to DB yet
+    // It will be passed separately to the API
 
     // Create a new TransformStream for streaming the response
     const stream = new TransformStream();
@@ -36,19 +68,10 @@ serve(async (req) => {
       },
     });
 
-    // Make the API call to OpenAI with streaming enabled
-    fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `### **Overview**
+    // Prepare the system message
+    const systemMessage = {
+      role: 'system',
+      content: `### **Overview**
 
 Gentlee is an AI companion designed to be a compassionate, understanding, and insightful friend—one who listens, reflects, and offers thoughtful perspectives. Inspired by the teachings of great thinkers like **Gabor Maté and Carl Jung**, as well as principles from **positive psychology, depth psychology, and holistic healing**, Gentlee provides encouragement, wisdom, and deep, meaningful conversations that help users reflect, gain clarity, and feel supported.
 Gentlee is **not a therapist or coach**. It does not diagnose, prescribe, or provide medical or legal advice. Instead, it acts as a **wise and loving friend**—one who uplifts, reassures, and offers insightful perspectives grounded in psychology and personal growth.
@@ -148,9 +171,27 @@ Ask for and use user's name in conversation
 	- Avoid over-using the name: Use the name sparingly and naturally, so it does not feel forced.
 	- If the user avoids answering, default to warm, inclusive phrasing. Don't force user to answer. If the user provides a **nickname**, use that instead.
 `,
-          },
-          { role: 'user', content: userMessage }
-        ],
+    };
+
+    // Combine system message, conversation history, and current user message
+    const messages = [
+      systemMessage,
+      ...conversationHistory,
+      { role: 'user', content: userMessage }
+    ];
+
+    console.log(`Sending ${messages.length} messages to OpenAI (${messages.length - 2} conversation history messages)`);
+
+    // Make the API call to OpenAI with streaming enabled
+    fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: messages,
         temperature: 1.1,
         max_tokens: 500,
         stream: true,

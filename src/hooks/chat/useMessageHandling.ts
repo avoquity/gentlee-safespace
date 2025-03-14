@@ -208,7 +208,8 @@ export const useMessageHandling = (userId: string | undefined) => {
       const savedMessage = await saveAIMessage(finalResponse, chatId);
       
       if (savedMessage) {
-        // Fixed: Using the correct format to replace the temp message with the saved one
+        // Fixed: Using the correct overload of updateMessage to replace the temp message with the saved one
+        // This ensures we don't see the message ID displayed in the UI
         updateMessage(tempMessage.id, savedMessage.id, savedMessage.text);
       }
     } catch (error: any) {
