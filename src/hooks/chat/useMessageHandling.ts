@@ -30,11 +30,17 @@ export const useMessageHandling = (userId: string | undefined) => {
       abortControllerRef.current = new AbortController();
       const { signal } = abortControllerRef.current;
 
-      const response = await fetch(`${supabase.functions.url}/chat-completion`, {
+      // Fix: Using the complete absolute URL instead of supabase.functions.url property
+      const functionUrl = `${process.env.SUPABASE_URL || 'https://zmcmrivswbszhqqragli.supabase.co'}/functions/v1/chat-completion`;
+      
+      const sessionResponse = await supabase.auth.getSession();
+      const accessToken = sessionResponse.data.session?.access_token;
+
+      const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ 
           userMessage,
@@ -172,7 +178,7 @@ export const useMessageHandling = (userId: string | undefined) => {
   const streamAIResponse = async (
     userMessage: string, 
     chatId: number, 
-    updateMessage: (id: string, text: string) => void,
+    updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
   ) => {
     setIsTyping(true);
@@ -193,7 +199,7 @@ export const useMessageHandling = (userId: string | undefined) => {
         userMessage,
         chatId,
         (chunk) => {
-          // Update the temporary message with each chunk
+          // Fix: Convert the updater function to match the expected type
           updateMessage(tempMessage.id, (prev) => prev + chunk);
         }
       );
@@ -202,8 +208,8 @@ export const useMessageHandling = (userId: string | undefined) => {
       const savedMessage = await saveAIMessage(finalResponse, chatId);
       
       if (savedMessage) {
-        // Replace temporary message with saved message
-        updateMessage(tempMessage.id, savedMessage.id, finalResponse);
+        // Fix: Use only 2 arguments for updateMessage when providing a new ID
+        updateMessage(tempMessage.id, savedMessage.id);
       }
     } catch (error: any) {
       console.error('Error in AI streaming response:', error);
