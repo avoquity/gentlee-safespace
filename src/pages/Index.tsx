@@ -25,8 +25,14 @@ const Index = () => {
                   Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
                 
-                <div className="animate-fade-up">
-                  <WritingInput />
+                <div className="space-y-8">
+                  <div className="animate-fade-up">
+                    <PromoSection />
+                  </div>
+                  
+                  <div className="animate-fade-up">
+                    <WritingInput />
+                  </div>
                 </div>
               </div>
               
@@ -35,10 +41,6 @@ const Index = () => {
                   <MusicPlayer />
                 </div>
               </div>
-            </div>
-            
-            <div className="animate-fade-up">
-              <PromoSection />
             </div>
           </div>
         </div>
