@@ -11,7 +11,7 @@ interface AuthButtonsProps {
 }
 
 const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -35,6 +35,11 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
       });
     }
   };
+
+  // Don't render anything while authentication state is loading
+  if (loading) {
+    return null;
+  }
 
   return (
     <>

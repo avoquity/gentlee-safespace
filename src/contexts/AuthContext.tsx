@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // First, check for an existing session
     const checkSession = async () => {
       try {
+        console.log("Checking for existing session...");
         // Get the current session from supabase
         const { data: { session } } = await supabase.auth.getSession();
         
