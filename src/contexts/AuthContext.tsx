@@ -23,9 +23,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initializeSession = async () => {
       try {
         console.log("Checking for existing session...");
-        // Get the current session from localStorage
-        const { data } = await supabase.auth.getSession();
         
+        // Get the current session from localStorage via Supabase
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          setLoading(false);
+          return;
+        }
+
         if (data?.session) {
           console.log("Found existing session:", data.session.user.email);
           setSession(data.session);

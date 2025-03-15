@@ -11,7 +11,7 @@ interface AuthButtonsProps {
 }
 
 const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
-  const { user, session } = useAuth();
+  const { user, session, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -22,13 +22,17 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
       userExists: !!user,
       userEmail: user?.email,
       sessionExists: !!session,
+      isLoading: loading,
       isOnHomePage: location.pathname === '/'
     });
-  }, [user, session, location.pathname]);
+  }, [user, session, loading, location.pathname]);
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      const { error } = await signOut();
+      if (error) {
+        throw error;
+      }
       toast({
         title: "Signed out",
         description: "Come back soon!"
@@ -45,6 +49,11 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
       });
     }
   };
+
+  // Don't render buttons while auth is loading
+  if (loading) {
+    return null;
+  }
 
   return (
     <>
