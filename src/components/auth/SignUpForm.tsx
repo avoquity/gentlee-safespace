@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,13 +53,20 @@ export const SignUpForm = ({
 
     try {
       setLoading(true);
+      
+      // Split the full name into first name and last name
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            first_name: name.split(' ')[0],
-            last_name: name.split(' ').slice(1).join(' ')
+            first_name: firstName,
+            last_name: lastName,
+            full_name: name.trim()
           }
         }
       });

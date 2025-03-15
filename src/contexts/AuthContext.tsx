@@ -27,6 +27,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log("Auth state changed:", _event);
+      
+      // When a user signs in, ensure their profile data is synced
+      if (session?.user && (_event === 'SIGNED_IN' || _event === 'USER_UPDATED')) {
+        try {
+          // Get user metadata from the session
+          const { user } = session;
+          const metadata = user.user_metadata;
+          
+          // Check for Google specific fields or regular fields
+          const firstName = metadata.first_name || metadata.given_name || '';
+          const lastName = metadata.last_name || metadata.family_name || '';
+          
+          // Only update if we have name data
+          if (firstName || lastName) {
+            await supabase.from('profiles').upsert({
+              id: user.id,
+              first_name: firstName,
+              last_name: lastName
+            }, { onConflict: 'id' });
+          }
+        } catch (error) {
+          console.error('Error syncing user profile:', error);
+        }
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
