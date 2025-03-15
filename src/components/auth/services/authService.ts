@@ -23,9 +23,7 @@ export const signUpWithEmail = async (
         first_name: firstName,
         last_name: lastName,
         full_name: fullName
-      },
-      // Place persistSession within options
-      persistSession: true
+      }
     }
   });
   
@@ -43,11 +41,7 @@ export const signUpWithEmail = async (
 export const signInWithEmail = async (email: string, password: string) => {
   return await supabase.auth.signInWithPassword({
     email,
-    password,
-    options: {
-      // Place persistSession within options
-      persistSession: true
-    }
+    password
   });
 };
 
@@ -55,9 +49,7 @@ export const signInWithGoogle = async (redirectUrl: string) => {
   return await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: redirectUrl,
-      // Place persistSession within options
-      persistSession: true
+      redirectTo: redirectUrl
     }
   });
 };
