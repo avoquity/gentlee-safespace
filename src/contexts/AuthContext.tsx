@@ -17,19 +17,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize the session from localStorage if available
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // First, check for an existing session
+    const checkSession = async () => {
+      try {
+        // Get the current session from supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          console.log("Found existing session on page load");
+          setSession(session);
+          setUser(session.user);
+        } else {
+          console.log("No session found on page load");
+        }
+      } catch (error) {
+        console.error('Error retrieving session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkSession();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event);
+    // Set up the auth state listener for future changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
       
       // When a user signs in, ensure their profile data is synced
-      if (session?.user && (_event === 'SIGNED_IN' || _event === 'USER_UPDATED')) {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
         try {
           // Get user metadata from the session
           const { user } = session;

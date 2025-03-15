@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/components/ui/use-toast";
+import { signInWithGoogle } from './services/authService';
 
 interface SocialSignInProps {
   loading: boolean;
@@ -18,12 +17,7 @@ export const SocialSignIn = ({ loading, setLoading }: SocialSignInProps) => {
       // Get the current domain for proper redirection
       const redirectUrl = window.location.origin + '/auth/callback';
       
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl
-        }
-      });
+      const { error } = await signInWithGoogle(redirectUrl);
       if (error) throw error;
     } catch (error: any) {
       toast({

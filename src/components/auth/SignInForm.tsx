@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from '@/integrations/supabase/client';
+import { signInWithEmail, signInWithGoogle } from './services/authService';
 import { cn } from "@/lib/utils";
 
 interface SignInFormProps {
@@ -66,10 +65,7 @@ export const SignInForm = ({
     e.preventDefault();
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { error } = await signInWithEmail(email, password);
       if (error) throw error;
       handleSuccessfulAuth();
     } catch (error: any) {
@@ -91,12 +87,7 @@ export const SignInForm = ({
       // Get the current domain for proper redirection
       const redirectUrl = window.location.origin + '/auth/callback';
       
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl
-        }
-      });
+      const { error } = await signInWithGoogle(redirectUrl);
       if (error) throw error;
     } catch (error: any) {
       toast({

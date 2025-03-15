@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { signOut } from '@/components/auth/services/authService';
 
 interface AuthButtonsProps {
   className?: string;
@@ -18,7 +18,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       toast({
         title: "Signed out",
         description: "Come back soon!"

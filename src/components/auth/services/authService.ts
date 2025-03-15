@@ -23,7 +23,9 @@ export const signUpWithEmail = async (
         first_name: firstName,
         last_name: lastName,
         full_name: fullName
-      }
+      },
+      // Always use localStorage for auth persistence
+      persistSession: true
     }
   });
   
@@ -36,4 +38,32 @@ export const signUpWithEmail = async (
     emailAlreadyRegistered,
     data
   };
+};
+
+export const signInWithEmail = async (email: string, password: string) => {
+  return await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: {
+      // Always use localStorage for auth persistence
+      persistSession: true
+    }
+  });
+};
+
+export const signInWithGoogle = async (redirectUrl: string) => {
+  return await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: redirectUrl,
+      // Always use localStorage for auth persistence
+      persistSession: true
+    }
+  });
+};
+
+export const signOut = async () => {
+  return await supabase.auth.signOut({
+    scope: 'local' // Only sign out on this device
+  });
 };
