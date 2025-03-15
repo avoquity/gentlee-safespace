@@ -17,19 +17,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // First, check for an existing session
-    const checkSession = async () => {
+    console.log("AuthProvider initializing...");
+    
+    // Set up persistent auth state using getSession
+    const initializeSession = async () => {
       try {
         console.log("Checking for existing session...");
-        // Get the current session from supabase
-        const { data: { session } } = await supabase.auth.getSession();
         
-        if (session) {
-          console.log("Found existing session on page load");
-          setSession(session);
-          setUser(session.user);
+        // Get the current session from localStorage via Supabase
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          setLoading(false);
+          return;
+        }
+
+        if (data?.session) {
+          console.log("Found existing session:", data.session.user.email);
+          setSession(data.session);
+          setUser(data.session.user);
         } else {
-          console.log("No session found on page load");
+          console.log("No existing session found on initialization");
+          setUser(null);
+          setSession(null);
         }
       } catch (error) {
         console.error('Error retrieving session:', error);
@@ -38,17 +49,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     
-    checkSession();
+    // Initialize session when component mounts
+    initializeSession();
 
-    // Set up the auth state listener for future changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+    // Set up the auth state change listener for future changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log("Auth state changed:", event, newSession?.user?.email);
       
       // When a user signs in, ensure their profile data is synced
-      if (session?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
+      if (newSession?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
         try {
           // Get user metadata from the session
-          const { user } = session;
+          const { user } = newSession;
           const metadata = user.user_metadata;
           
           // Check for Google specific fields or regular fields
@@ -68,8 +80,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
       
-      setSession(session);
-      setUser(session?.user ?? null);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
       setLoading(false);
     });
 
@@ -77,6 +89,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Add this to debug the current state
+  useEffect(() => {
+    console.log("AuthContext state updated:", {
+      isAuthenticated: !!user,
+      userEmail: user?.email,
+      sessionExists: !!session
+    });
+  }, [user, session]);
 
   return (
     <AuthContext.Provider value={{ user, session, loading }}>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,14 +11,28 @@ interface AuthButtonsProps {
 }
 
 const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  
+  // Debug to check what authentication state we have
+  useEffect(() => {
+    console.log("AuthButtons rendering with:", {
+      userExists: !!user,
+      userEmail: user?.email,
+      sessionExists: !!session,
+      isLoading: loading,
+      isOnHomePage: location.pathname === '/'
+    });
+  }, [user, session, loading, location.pathname]);
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      const { error } = await signOut();
+      if (error) {
+        throw error;
+      }
       toast({
         title: "Signed out",
         description: "Come back soon!"
@@ -36,7 +50,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
     }
   };
 
-  // Don't render anything while authentication state is loading
+  // Don't render buttons while auth is loading
   if (loading) {
     return null;
   }

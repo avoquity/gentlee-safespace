@@ -56,7 +56,16 @@ export const signInWithGoogle = async (redirectUrl: string) => {
 
 export const signOut = async () => {
   console.log("Signing out user...");
-  return await supabase.auth.signOut({
-    scope: 'local' // Only sign out on this device
-  });
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error);
+      return { error };
+    }
+    console.log("User signed out successfully");
+    return { error: null };
+  } catch (err) {
+    console.error("Exception signing out:", err);
+    return { error: err };
+  }
 };
