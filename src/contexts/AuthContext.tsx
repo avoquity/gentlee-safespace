@@ -17,18 +17,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // First, check for an existing session
-    const checkSession = async () => {
+    // Set up persistent auth state using getSession
+    const initializeSession = async () => {
       try {
-        // Get the current session from supabase
+        // Get the current session from localStorage
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          console.log("Found existing session on page load");
+          console.log("Found existing session on initialization");
           setSession(session);
           setUser(session.user);
         } else {
-          console.log("No session found on page load");
+          console.log("No existing session found on initialization");
+          setUser(null);
+          setSession(null);
         }
       } catch (error) {
         console.error('Error retrieving session:', error);
@@ -37,9 +39,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     
-    checkSession();
+    // Initialize session when component mounts
+    initializeSession();
 
-    // Set up the auth state listener for future changes
+    // Set up the auth state change listener for future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       
