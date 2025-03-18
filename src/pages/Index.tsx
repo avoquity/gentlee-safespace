@@ -5,7 +5,7 @@ import QuoteRotator from '../components/QuoteRotator';
 import MusicPlayer from '../components/MusicPlayer';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
-import PromoSection from '../components/PromoSection';
+import FAQSection from '../components/PromoSection';
 
 const Index = () => {
   return (
@@ -38,7 +38,7 @@ const Index = () => {
             </div>
             
             <div className="animate-fade-up">
-              <PromoSection />
+              <FAQSection />
             </div>
           </div>
         </div>
