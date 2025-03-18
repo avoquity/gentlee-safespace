@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
@@ -21,7 +20,7 @@ const Chat = () => {
     isMuted,
     highlights,
     displayDate,
-    messageCount, // Added message count
+    messageCount,
     handleSubmit,
     handleCloseConversation,
     handleHighlightChange,

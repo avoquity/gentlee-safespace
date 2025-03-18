@@ -4,6 +4,15 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Upgrade = () => {
+  // Stripe payment link for both monthly and yearly subscriptions
+  const stripePaymentLink = "https://buy.stripe.com/7sI2a9auI2cUgKc4gi";
+
+  // Handle redirect to Stripe
+  const handlePaymentRedirect = (event: React.MouseEvent) => {
+    event.preventDefault();
+    window.location.href = stripePaymentLink;
+  };
+
   return (
     <div className="min-h-screen bg-soft-ivory py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -42,18 +51,18 @@ const Upgrade = () => {
           </ul>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              to="#" 
+            <button 
+              onClick={handlePaymentRedirect}
               className="px-6 py-3 rounded-full bg-muted-sage text-white text-center font-medium hover:bg-muted-sage/90 transition-colors"
             >
               Subscribe Monthly - $18.88
-            </Link>
-            <Link
-              to="#"
+            </button>
+            <button
+              onClick={handlePaymentRedirect}
               className="px-6 py-3 rounded-full bg-deep-charcoal text-white text-center font-medium hover:bg-deep-charcoal/90 transition-colors"
             >
               Subscribe Yearly - $188.88 (2 months free)
-            </Link>
+            </button>
           </div>
         </div>
         
