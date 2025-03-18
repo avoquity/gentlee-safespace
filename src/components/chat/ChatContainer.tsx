@@ -13,12 +13,14 @@ interface ChatContainerProps {
   isMuted: boolean;
   highlights: Highlight[];
   displayDate?: string;
+  messageCount?: number;
+  weeklyLimit?: number;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   onMuteToggle: () => void;
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
-  messagesEndRef: React.RefObject<HTMLDivElement>; // Add this prop
+  messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -29,16 +31,15 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   isMuted,
   highlights,
   displayDate,
+  messageCount = 0,
+  weeklyLimit = 3,
   onSubmit,
   onClose,
   onMuteToggle,
   onHighlightChange,
   onHighlightRemove,
-  messagesEndRef // Add this to the destructured props
+  messagesEndRef
 }) => {
-  // Remove the local ref since we're now using the one passed as a prop
-  // const messagesEndRef = useRef<HTMLDivElement>(null);
-
   // Scroll to bottom when messages change
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -72,6 +73,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             input={input}
             setInput={setInput}
             handleSubmit={onSubmit}
+            messageCount={messageCount}
+            weeklyLimit={weeklyLimit}
           />
         </div>
       </div>

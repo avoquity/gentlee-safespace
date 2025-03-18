@@ -9,6 +9,7 @@ export type UseChatReturn = {
   isMuted: boolean;
   highlights: Highlight[];
   displayDate: string;
+  messageCount: number; // Add message count
   handleSubmit: (e: React.FormEvent) => void;
   handleCloseConversation: () => void;
   handleHighlightChange: (highlight: Highlight) => void;

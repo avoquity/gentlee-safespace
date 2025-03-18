@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LocationState } from '@/types/chat';
@@ -11,6 +11,8 @@ import { useMessages } from './chat/useMessages';
 import { useInitialSetup } from './chat/useInitialSetup';
 import { useInputHandling } from './chat/useInputHandling';
 import { useDataFetching } from './chat/useDataFetching';
+import { supabase } from '@/integrations/supabase/client';
+import { startOfWeek, endOfWeek } from 'date-fns';
 
 export const useChat = (
   chatIdFromUrl: number | null = null,
@@ -19,6 +21,7 @@ export const useChat = (
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [messageCount, setMessageCount] = useState(0);
   
   // First prioritize chatId from URL, then from location state
   const { initialMessage, chatId: stateExistingChatId, entryDate } = locationState || 
@@ -93,6 +96,45 @@ export const useChat = (
 
   // Fetch data
   useDataFetching(currentChatId, setMessages);
+  
+  // Load message count for the current week
+  useEffect(() => {
+    const fetchWeeklyMessageCount = async () => {
+      if (!user) return;
+      
+      // Calculate the start and end of the current week (Sunday to Saturday)
+      const now = new Date();
+      const weekStart = startOfWeek(now, { weekStartsOn: 0 }); // 0 = Sunday
+      const weekEnd = endOfWeek(now, { weekStartsOn: 0 });
+      
+      try {
+        // Count user messages for this week across all chats
+        const { count, error } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: false })
+          .eq('sender_id', user.id)
+          .eq('user_role', 'user')
+          .gte('created_at', weekStart.toISOString())
+          .lte('created_at', weekEnd.toISOString());
+          
+        if (error) {
+          console.error("Error fetching message count:", error);
+          return;
+        }
+        
+        setMessageCount(count || 0);
+      } catch (error) {
+        console.error("Error in fetchWeeklyMessageCount:", error);
+      }
+    };
+    
+    fetchWeeklyMessageCount();
+    
+    // Update count when messages change
+    if (messages.length > 0) {
+      fetchWeeklyMessageCount();
+    }
+  }, [user, messages]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -116,6 +158,7 @@ export const useChat = (
     isMuted,
     highlights,
     displayDate,
+    messageCount, // Add message count to the return
     handleSubmit,
     handleCloseConversation,
     handleHighlightChange,

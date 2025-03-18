@@ -4,6 +4,9 @@ import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import { useParams, useLocation } from 'react-router-dom';
 
+// Weekly message limit for free users
+const WEEKLY_MESSAGE_LIMIT = 3;
+
 const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const params = useParams();
@@ -18,6 +21,7 @@ const Chat = () => {
     isMuted,
     highlights,
     displayDate,
+    messageCount, // Added message count
     handleSubmit,
     handleCloseConversation,
     handleHighlightChange,
@@ -53,6 +57,8 @@ const Chat = () => {
       isMuted={isMuted}
       highlights={highlights}
       displayDate={displayDate}
+      messageCount={messageCount}
+      weeklyLimit={WEEKLY_MESSAGE_LIMIT}
       onSubmit={handleSubmit}
       onClose={handleCloseConversation}
       onMuteToggle={handleMuteToggle}

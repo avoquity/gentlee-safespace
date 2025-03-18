@@ -3,12 +3,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChatSuggestions } from './ChatSuggestions';
+import { UpgradePrompt } from './UpgradePrompt';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatInputProps {
   input: string;
   setInput: (value: string) => void;
   handleSubmit: (e: React.FormEvent) => void;
+  messageCount?: number;
+  weeklyLimit?: number;
 }
 
 // Chat suggestions - updated with more reflective prompts
@@ -23,11 +27,21 @@ const chatSuggestions = [
   "Tell me a small truth wrapped in kindness."
 ];
 
-export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => {
+export const ChatInput = ({ 
+  input, 
+  setInput, 
+  handleSubmit, 
+  messageCount = 0, 
+  weeklyLimit = 3 
+}: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
   const [isFocused, setIsFocused] = useState(false);
   const [randomizedSuggestions, setRandomizedSuggestions] = useState<string[]>([]);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(true);
+  const { user } = useAuth();
+  
+  const hasReachedLimit = messageCount >= weeklyLimit;
 
   // Auto-resize the textarea when content changes
   useEffect(() => {
@@ -46,10 +60,27 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
     }
   }, [isFocused]);
 
+  // Reset the upgrade prompt visibility when message count changes
+  useEffect(() => {
+    setShowUpgradePrompt(true);
+  }, [messageCount]);
+
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
     if (textareaRef.current) {
       textareaRef.current.focus();
+    }
+  };
+
+  const handleDismissUpgradePrompt = () => {
+    setShowUpgradePrompt(false);
+  };
+
+  // When focusing on the textarea, hide the approaching limit prompt
+  const handleTextareaFocus = () => {
+    setIsFocused(true);
+    if (messageCount === weeklyLimit - 1) {
+      setShowUpgradePrompt(false);
     }
   };
 
@@ -62,33 +93,42 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
         }} 
       />
       <div className="relative bg-[#FDFBF8]">
+        {user && showUpgradePrompt && (
+          <UpgradePrompt 
+            messageCount={messageCount} 
+            weeklyLimit={weeklyLimit}
+            onDismiss={messageCount === weeklyLimit - 1 ? handleDismissUpgradePrompt : undefined}
+          />
+        )}
+        
         <div className="relative">
           <ChatSuggestions
             suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
             inputValue={input}
             onSuggestionClick={handleSuggestionClick}
-            isFocused={isFocused}
+            isFocused={isFocused && !hasReachedLimit}
           />
           
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Continue your thoughts here..."
-            className="w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4"
+            placeholder={hasReachedLimit ? "You've reached your weekly message limit" : "Continue your thoughts here..."}
+            className={`w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{
               height: '3rem',
               minHeight: '3rem',
               maxHeight: '12rem',
             }}
-            onFocus={() => setIsFocused(true)}
+            onFocus={handleTextareaFocus}
             onBlur={() => setTimeout(() => setIsFocused(false), 150)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
                 e.preventDefault();
                 handleSubmit(e);
               }
             }}
+            disabled={hasReachedLimit}
           />
         </div>
         
@@ -96,8 +136,9 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
         {isMobile && (
           <motion.button
             type="submit"
-            className="w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
-            whileTap={{ scale: 0.98 }}
+            className={`w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+            disabled={hasReachedLimit}
           >
             <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
@@ -108,8 +149,9 @@ export const ChatInput = ({ input, setInput, handleSubmit }: ChatInputProps) => 
         {!isMobile && (
           <motion.button
             type="submit"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
-            whileTap={{ scale: 0.98 }}
+            className={`absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+            disabled={hasReachedLimit}
           >
             <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
