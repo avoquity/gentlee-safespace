@@ -32,7 +32,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   highlights,
   displayDate,
   messageCount = 0,
-  weeklyLimit = 3,
+  weeklyLimit = 10,
   onSubmit,
   onClose,
   onMuteToggle,

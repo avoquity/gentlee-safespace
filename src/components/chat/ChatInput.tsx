@@ -32,7 +32,7 @@ export const ChatInput = ({
   setInput, 
   handleSubmit, 
   messageCount = 0, 
-  weeklyLimit = 3 
+  weeklyLimit = 10 
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();

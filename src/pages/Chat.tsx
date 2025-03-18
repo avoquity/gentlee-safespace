@@ -5,7 +5,7 @@ import { ChatContainer } from '@/components/chat/ChatContainer';
 import { useParams, useLocation } from 'react-router-dom';
 
 // Weekly message limit for free users
-const WEEKLY_MESSAGE_LIMIT = 3;
+const WEEKLY_MESSAGE_LIMIT = 10;
 
 const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
