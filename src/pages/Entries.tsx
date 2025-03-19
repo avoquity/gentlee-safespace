@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { format, startOfDay, isToday } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getThemeStyles } from '@/utils/themeUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +16,7 @@ const ENTRIES_PER_PAGE = 10;
 const Entries = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(
     location.state?.selectedTheme || null
@@ -24,16 +24,7 @@ const Entries = () => {
   const { ref: loadMoreRef, inView } = useInView();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 0);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
+  // Ensure hooks are not conditionally rendered
   const fetchEntries = async ({ pageParam = 0 }) => {
     if (!user) return { entries: [], nextPage: null };
 
@@ -76,20 +67,33 @@ const Entries = () => {
     queryFn: fetchEntries,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    enabled: !!user
+    enabled: !!user, // Ensure the query is enabled only when the user is defined
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 0);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  React.useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   const startNewChat = async () => {
     const todayChat = (data?.pages[0]?.entries || []).find(entry => 
@@ -109,14 +113,11 @@ const Entries = () => {
   };
 
   const handleThemeClick = (e: React.MouseEvent, theme: string) => {
-    e.stopPropagation(); // Prevent entry card click
+    e.stopPropagation();
     setSelectedTheme(theme.trim());
   };
 
-  if (!user) {
-    return null;
-  }
-
+  // At this point, we know user is defined.
   const entries = data?.pages.flatMap(page => page.entries) || [];
   const allThemes = new Set<string>();
   entries.forEach(entry => {
@@ -177,16 +178,12 @@ const Entries = () => {
                 <div
                   key={entry.id}
                   className="w-full p-6 border-2 border-deep-charcoal rounded-xl transition-colors group cursor-pointer hover:bg-[#E9E9E3]/50"
-                  onClick={() => navigate(`/chat/${entry.id}`, { 
-                    state: { entryDate: date } 
-                  })}
+                  onClick={() => navigate(`/chat/${entry.id}`, { state: { entryDate: date } })}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      navigate(`/chat/${entry.id}`, { 
-                        state: { entryDate: date } 
-                      });
+                      navigate(`/chat/${entry.id}`, { state: { entryDate: date } });
                     }
                   }}
                 >
@@ -203,10 +200,7 @@ const Entries = () => {
                               key={theme}
                               onClick={(e) => handleThemeClick(e, theme)}
                               className="px-4 py-1.5 text-sm rounded-full border text-deep-charcoal transition-colors duration-200 hover:brightness-95"
-                              style={{ 
-                                borderColor,
-                                backgroundColor: borderColor
-                              }}
+                              style={{ borderColor, backgroundColor: borderColor }}
                             >
                               {theme.trim()}
                             </button>
@@ -240,11 +234,7 @@ const Entries = () => {
 
         {selectedTheme && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
-            <Button
-              onClick={() => setSelectedTheme(null)}
-              variant="outline"
-              className="shadow-lg"
-            >
+            <Button onClick={() => setSelectedTheme(null)} variant="outline" className="shadow-lg">
               Clear filter: {selectedTheme}
             </Button>
           </div>
@@ -255,4 +245,3 @@ const Entries = () => {
 };
 
 export default Entries;
-

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,64 +16,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // First, check for an existing session
-    const checkSession = async () => {
-      try {
-        // Get the current session from supabase
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          console.log("Found existing session on page load");
-          setSession(session);
-          setUser(session.user);
-        } else {
-          console.log("No session found on page load");
-        }
-      } catch (error) {
-        console.error('Error retrieving session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkSession();
-
-    // Set up the auth state listener for future changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      
-      // When a user signs in, ensure their profile data is synced
-      if (session?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-        try {
-          // Get user metadata from the session
-          const { user } = session;
-          const metadata = user.user_metadata;
-          
-          // Check for Google specific fields or regular fields
-          const firstName = metadata.first_name || metadata.given_name || '';
-          const lastName = metadata.last_name || metadata.family_name || '';
-          
-          // Only update if we have name data
-          if (firstName || lastName) {
-            await supabase.from('profiles').upsert({
-              id: user.id,
-              first_name: firstName,
-              last_name: lastName
-            }, { onConflict: 'id' });
-          }
-        } catch (error) {
-          console.error('Error syncing user profile:', error);
-        }
-      }
-      
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      setUser(session?.user ?? null);
+      setUser(session?.user || null);
+      setLoading(false);
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setSession(session);
+      setUser(session?.user || null);
       setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -86,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
