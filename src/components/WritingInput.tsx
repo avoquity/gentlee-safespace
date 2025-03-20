@@ -60,12 +60,12 @@ const WritingInput = () => {
     }
   }, [user]);
   
-  const findTodayChat = async () => {
+  // Fix: Explicitly type the return value to break circular reference
+  const findTodayChat = async (): Promise<{ id: number } | null> => {
     if (!user) return null;
     
     const today = startOfDay(new Date());
     
-    // Fix: Explicitly define the return type to prevent circular type reference
     const { data: existingChat, error } = await supabase
       .from('chat')
       .select('id')
