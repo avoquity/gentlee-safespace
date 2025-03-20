@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -92,7 +91,7 @@ export const ChatInput = ({
           background: 'linear-gradient(to top, rgba(253, 251, 248, 0) 0%, rgba(253, 251, 248, 0.9) 50%, rgba(253, 251, 248, 0) 100%)'
         }} 
       />
-      <div className="relative bg-[#FDFBF8]">
+      <div className="relative bg-[#FDFBF8] z-40">
         {user && showUpgradePrompt && (
           <UpgradePrompt 
             messageCount={messageCount} 
@@ -101,7 +100,7 @@ export const ChatInput = ({
           />
         )}
         
-        <div className="relative">
+        <div className="relative mt-4">
           <ChatSuggestions
             suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
             inputValue={input}
@@ -140,7 +139,7 @@ export const ChatInput = ({
         {isMobile && (
           <motion.button
             type="submit"
-            className={`w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 z-10 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
@@ -153,7 +152,7 @@ export const ChatInput = ({
         {!isMobile && (
           <motion.button
             type="submit"
-            className={`absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 z-10 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
