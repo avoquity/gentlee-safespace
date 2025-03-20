@@ -66,6 +66,7 @@ const WritingInput = () => {
     
     const today = startOfDay(new Date());
     
+    // Use maybeSingle() instead of single() to handle cases when no results are found
     const { data: existingChat, error } = await supabase
       .from('chat')
       .select('id')
