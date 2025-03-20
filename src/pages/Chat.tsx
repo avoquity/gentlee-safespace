@@ -9,7 +9,6 @@ const WEEKLY_MESSAGE_LIMIT = 10;
 
 const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null); // Add container ref for scroll to top
   const params = useParams();
   const location = useLocation();
   const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
@@ -50,26 +49,23 @@ const Chat = () => {
   }, [messages, isTyping]);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-soft-ivory flex flex-col overflow-auto">
-      <ChatContainer
-        messages={messages}
-        input={input}
-        setInput={setInput}
-        isTyping={isTyping}
-        isMuted={isMuted}
-        highlights={highlights}
-        displayDate={displayDate}
-        messageCount={messageCount}
-        weeklyLimit={WEEKLY_MESSAGE_LIMIT}
-        onSubmit={handleSubmit}
-        onClose={handleCloseConversation}
-        onMuteToggle={handleMuteToggle}
-        onHighlightChange={handleHighlightChange}
-        onHighlightRemove={handleHighlightRemove}
-        messagesEndRef={messagesEndRef}
-        containerRef={containerRef} // Pass container ref to ChatContainer
-      />
-    </div>
+    <ChatContainer
+      messages={messages}
+      input={input}
+      setInput={setInput}
+      isTyping={isTyping}
+      isMuted={isMuted}
+      highlights={highlights}
+      displayDate={displayDate}
+      messageCount={messageCount}
+      weeklyLimit={WEEKLY_MESSAGE_LIMIT}
+      onSubmit={handleSubmit}
+      onClose={handleCloseConversation}
+      onMuteToggle={handleMuteToggle}
+      onHighlightChange={handleHighlightChange}
+      onHighlightRemove={handleHighlightRemove}
+      messagesEndRef={messagesEndRef}
+    />
   );
 };
 

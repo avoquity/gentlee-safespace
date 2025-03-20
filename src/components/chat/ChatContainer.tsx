@@ -22,7 +22,6 @@ interface ChatContainerProps {
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
-  containerRef?: React.RefObject<HTMLDivElement>; // Add containerRef prop
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -40,27 +39,36 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onMuteToggle,
   onHighlightChange,
   onHighlightRemove,
-  messagesEndRef,
-  containerRef
+  messagesEndRef
 }) => {
-  return (
-    <div className="flex-1 overflow-hidden">
-      <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
-        <ChatHeader 
-          isMuted={isMuted}
-          onMuteToggle={onMuteToggle}
-          onClose={onClose}
-          entryDate={displayDate}
-        />
+  // Create a ref for the chat container
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
-        <ChatMessages 
-          messages={messages}
-          highlights={highlights}
-          isTyping={isTyping}
-          onHighlightChange={onHighlightChange}
-          onHighlightRemove={onHighlightRemove}
-          messagesEndRef={messagesEndRef}
-        />
+  // Scroll to bottom when messages change
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, messagesEndRef]);
+
+  return (
+    <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
+          <ChatHeader 
+            isMuted={isMuted}
+            onMuteToggle={onMuteToggle}
+            onClose={onClose}
+            entryDate={displayDate}
+          />
+
+          <ChatMessages 
+            messages={messages}
+            highlights={highlights}
+            isTyping={isTyping}
+            onHighlightChange={onHighlightChange}
+            onHighlightRemove={onHighlightRemove}
+            messagesEndRef={messagesEndRef}
+          />
+        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
@@ -75,7 +83,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         </div>
       </div>
       
-      {/* Only render ScrollToTop on the Chat page, which we are guaranteed to be on since this is ChatContainer */}
       <ScrollToTop scrollContainer={containerRef} />
       
       <audio
