@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.18.0?target=deno'
@@ -56,7 +55,7 @@ serve(async (req) => {
     // Verify the webhook signature
     let event
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret)
     } catch (err) {
       console.error(`Webhook signature verification failed: ${err.message}`)
       return new Response(
