@@ -13,8 +13,8 @@ const Upgrade = () => {
   
   // Stripe price IDs for different subscription plans
   const STRIPE_PRICE_IDS = {
-    monthly: 'price_1PPfCLAuI2cUgKc4gi', // Placeholder - replace with your actual Stripe price ID
-    yearly: 'price_1PPfCLAuI2cUgKc4gi'    // Placeholder - replace with your actual Stripe price ID
+    monthly: 'price_1R4hs0Ilsvdbf5IghzYmDa7W',
+    yearly: 'price_1R4hs0Ilsvdbf5IgmksEcpgi'
   };
 
   // Handle redirect to Stripe Checkout
