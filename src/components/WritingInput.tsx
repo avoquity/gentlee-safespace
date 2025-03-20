@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, format } from 'date-fns';
@@ -19,12 +19,46 @@ const suggestedTopics = [
   "Inner clarity"
 ];
 
+// Weekly message limit for free users
+const WEEKLY_MESSAGE_LIMIT = 10;
+
 const WritingInput = () => {
   const [input, setInput] = useState('');
+  const [messageCount, setMessageCount] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  
+  const hasReachedLimit = messageCount >= WEEKLY_MESSAGE_LIMIT;
+
+  // Get the user's message count for the current week
+  useEffect(() => {
+    const getMessageCount = async () => {
+      if (!user) return;
+      
+      try {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString());
+          
+        if (error) {
+          console.error('Error fetching message count:', error);
+          return;
+        }
+          
+        setMessageCount(count || 0);
+      } catch (error) {
+        console.error('Error in getMessageCount:', error);
+      }
+    };
+    
+    if (user) {
+      getMessageCount();
+    }
+  }, [user]);
   
   const findTodayChat = async () => {
     if (!user) return null;
@@ -50,7 +84,7 @@ const WritingInput = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || hasReachedLimit) return;
 
     // If user is not authenticated, store message and redirect to auth
     if (!user) {
@@ -87,6 +121,15 @@ const WritingInput = () => {
     }
   };
 
+  // Auto-resize the textarea when content changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '3rem'; // Reset to minimum height
+      const scrollHeight = Math.min(textareaRef.current.scrollHeight, 192);
+      textareaRef.current.style.height = `${scrollHeight}px`;
+    }
+  }, [input]);
+
   return (
     <div className="w-full mx-auto flex flex-col gap-4">
       <form onSubmit={handleSubmit} className="relative w-full mx-auto mb-3">
@@ -96,33 +139,54 @@ const WritingInput = () => {
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="What's on your mind lately?"
-              className={`w-full px-1 py-3 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 ${isMobile ? 'pr-4' : 'pr-[160px]'} resize-none overflow-y-auto`}
+              placeholder={hasReachedLimit 
+                ? "You've reached your weekly chat limit. Please upgrade to Reflection plan to continue." 
+                : "What's on your mind lately?"}
+              className={`w-full px-1 py-3 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 ${isMobile ? 'pr-4' : 'pr-[160px]'} resize-none overflow-y-auto ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{
                 height: '3rem',
                 minHeight: '3rem',
                 maxHeight: '12rem'
               }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = '3rem';
-                if (target.value) {
-                  target.style.height = 'auto';
-                  target.style.height = `${Math.min(target.scrollHeight, 192)}px`;
-                }
-              }}
+              disabled={hasReachedLimit}
             />
           </div>
         </div>
-        <motion.button
-          type="submit"
-          className="absolute right-0 top-1/2 -translate-y-1/2 px-6 py-2.5 rounded-full border border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200"
-          whileTap={{ scale: 0.98 }}
-        >
-          <span className="font-poppins text-base">Send</span>
-          <ArrowRight className="w-4 h-4" />
-        </motion.button>
+        
+        {/* Mobile Full-Width Send Button */}
+        {isMobile && (
+          <motion.button
+            type="submit"
+            className={`w-full mt-4 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+            disabled={hasReachedLimit}
+          >
+            <span className="font-poppins text-sm">Send</span>
+            <ArrowRight className="w-4 h-4" />
+          </motion.button>
+        )}
+        
+        {/* Desktop Send Button */}
+        {!isMobile && (
+          <motion.button
+            type="submit"
+            className={`absolute right-1 bottom-0 mb-3 h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+            disabled={hasReachedLimit}
+          >
+            <span className="font-poppins text-sm">Send</span>
+            <ArrowRight className="w-4 h-4" />
+          </motion.button>
+        )}
       </form>
+      
+      {hasReachedLimit && (
+        <div className="w-full text-center mb-4">
+          <Link to="/upgrade" className="text-muted-sage hover:underline text-sm">
+            Upgrade to Reflection plan
+          </Link>
+        </div>
+      )}
       
       <div className="flex flex-wrap items-center gap-2 justify-center max-w-2xl mx-auto mt-3">
         {suggestedTopics.map((topic) => (
