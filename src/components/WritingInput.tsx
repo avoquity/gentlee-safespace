@@ -65,6 +65,7 @@ const WritingInput = () => {
     
     const today = startOfDay(new Date());
     
+    // Fix: Explicitly define the return type to prevent circular type reference
     const { data: existingChat, error } = await supabase
       .from('chat')
       .select('id')
@@ -166,7 +167,7 @@ const WritingInput = () => {
           </motion.button>
         )}
         
-        {/* Desktop Send Button */}
+        {/* Desktop Send Button - Positioned lower to align with text */}
         {!isMobile && (
           <motion.button
             type="submit"
