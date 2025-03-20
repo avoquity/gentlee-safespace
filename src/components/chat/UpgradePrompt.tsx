@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 type UpgradePromptProps = {
   messageCount: number;
@@ -17,9 +19,52 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
   onDismiss,
   className 
 }) => {
+  const { user } = useAuth();
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_current_period_end')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        // Check if user has an active subscription
+        const hasActiveSubscription = data?.subscription_status === 'active';
+        
+        // Check if subscription is still valid (not expired)
+        const isStillValid = data?.subscription_current_period_end 
+          ? new Date(data.subscription_current_period_end) > new Date() 
+          : false;
+        
+        setIsSubscribed(hasActiveSubscription && isStillValid);
+      } catch (error) {
+        console.error('Error checking subscription status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkSubscriptionStatus();
+  }, [user]);
+  
+  // Don't show anything while loading or if user is subscribed
+  if (isLoading || isSubscribed) return null;
+  
   const isApproachingLimit = messageCount === weeklyLimit - 1;
   const isAtLimit = messageCount >= weeklyLimit;
   
+  // If not approaching or at limit, don't show anything
   if (!isApproachingLimit && !isAtLimit) return null;
   
   return (
