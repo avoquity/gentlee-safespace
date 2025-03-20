@@ -100,7 +100,7 @@ export const ChatInput = ({
           />
         )}
         
-        <div className="relative mt-4">
+        <div className="relative mt-6">
           <ChatSuggestions
             suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
             inputValue={input}
@@ -139,7 +139,7 @@ export const ChatInput = ({
         {isMobile && (
           <motion.button
             type="submit"
-            className={`w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 z-10 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full mt-4 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 z-10 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
