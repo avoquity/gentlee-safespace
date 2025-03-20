@@ -63,7 +63,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
+      {/* Add z-index to ensure stacking order */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <ChatInput 
             input={input}
