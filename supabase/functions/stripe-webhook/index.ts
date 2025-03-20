@@ -23,6 +23,7 @@ serve(async (req) => {
     const signature = req.headers.get('stripe-signature')
     
     if (!signature) {
+      console.error('Missing Stripe signature')
       return new Response(
         JSON.stringify({ error: 'Missing Stripe signature' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -30,13 +31,26 @@ serve(async (req) => {
     }
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeSecretKey) {
+      console.error('Missing STRIPE_SECRET_KEY')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     })
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
     if (!webhookSecret) {
-      throw new Error('Missing STRIPE_WEBHOOK_SECRET')
+      console.error('Missing STRIPE_WEBHOOK_SECRET')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Verify the webhook signature
@@ -52,12 +66,23 @@ serve(async (req) => {
     }
 
     // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing Supabase credentials')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') || '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
+      supabaseUrl,
+      supabaseServiceRoleKey,
       {
         global: {
-          headers: { Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+          headers: { Authorization: `Bearer ${supabaseServiceRoleKey}` },
         },
       }
     )
@@ -72,74 +97,65 @@ serve(async (req) => {
 
         // Find customer and add subscription data to profiles table
         if (session.customer && session.subscription) {
-          // Get user email from customer object
-          const customer = await stripe.customers.retrieve(String(session.customer))
-          const userEmail = customer.email
+          const userId = session.metadata?.user_id
 
-          if (userEmail) {
-            console.log(`Looking for user with email: ${userEmail}`)
+          if (userId) {
+            console.log(`Updating subscription for user with ID: ${userId}`)
             
-            // Find user by email
-            const { data: users, error: userError } = await supabaseClient
+            // Update user profile with subscription info using metadata user_id
+            const { error: updateError } = await supabaseClient
               .from('profiles')
-              .select('id')
-              .eq('id', session.metadata?.user_id)
-              .maybeSingle()
+              .update({
+                subscription_id: String(session.subscription),
+                subscription_status: 'active',
+                subscription_plan: session.metadata?.plan || 'monthly',
+                subscription_start_date: new Date().toISOString(),
+              })
+              .eq('id', userId)
 
-            if (userError) {
-              console.error('Error finding user:', userError)
-              break
+            if (updateError) {
+              console.error('Error updating profile by user_id:', updateError)
+            } else {
+              console.log(`Updated subscription for user ${userId}`)
             }
+          } else {
+            // If no user_id in metadata, try to find user by customer email
+            // Get user email from customer object
+            const customer = await stripe.customers.retrieve(String(session.customer))
+            const userEmail = customer.email
 
-            // If user not found by metadata, try to find by email
-            if (!users) {
+            if (userEmail) {
+              console.log(`Looking for user with email: ${userEmail}`)
+              
+              // Find user by email
               const { data: authUsers, error: authUserError } = await supabaseClient
                 .auth.admin.listUsers()
 
               if (authUserError) {
                 console.error('Error listing users:', authUserError)
-                break
-              }
-
-              const user = authUsers.users.find(u => u.email === userEmail)
-              
-              if (!user) {
-                console.error('User not found by email')
-                break
-              }
-
-              // Update user profile with subscription info
-              const { error: updateError } = await supabaseClient
-                .from('profiles')
-                .update({
-                  subscription_id: String(session.subscription),
-                  subscription_status: 'active',
-                  subscription_plan: session.metadata?.plan || 'monthly',
-                  subscription_start_date: new Date().toISOString(),
-                })
-                .eq('id', user.id)
-
-              if (updateError) {
-                console.error('Error updating profile:', updateError)
               } else {
-                console.log(`Updated subscription for user ${user.id}`)
-              }
-            } else {
-              // Update user profile with subscription info using metadata user_id
-              const { error: updateError } = await supabaseClient
-                .from('profiles')
-                .update({
-                  subscription_id: String(session.subscription),
-                  subscription_status: 'active',
-                  subscription_plan: session.metadata?.plan || 'monthly',
-                  subscription_start_date: new Date().toISOString(),
-                })
-                .eq('id', session.metadata?.user_id)
+                const user = authUsers.users.find(u => u.email === userEmail)
+                
+                if (!user) {
+                  console.error('User not found by email')
+                } else {
+                  // Update user profile with subscription info
+                  const { error: updateError } = await supabaseClient
+                    .from('profiles')
+                    .update({
+                      subscription_id: String(session.subscription),
+                      subscription_status: 'active',
+                      subscription_plan: session.metadata?.plan || 'monthly',
+                      subscription_start_date: new Date().toISOString(),
+                    })
+                    .eq('id', user.id)
 
-              if (updateError) {
-                console.error('Error updating profile by metadata user_id:', updateError)
-              } else {
-                console.log(`Updated subscription for user ${session.metadata?.user_id}`)
+                  if (updateError) {
+                    console.error('Error updating profile:', updateError)
+                  } else {
+                    console.log(`Updated subscription for user ${user.id}`)
+                  }
+                }
               }
             }
           }
@@ -169,29 +185,27 @@ serve(async (req) => {
 
               if (authUserError) {
                 console.error('Error listing users:', authUserError)
-                break
-              }
-
-              const user = authUsers.users.find(u => u.email === userEmail)
-              
-              if (!user) {
-                console.error('User not found by email')
-                break
-              }
-
-              // Update subscription status to active
-              const { error: updateError } = await supabaseClient
-                .from('profiles')
-                .update({
-                  subscription_status: 'active',
-                  subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                })
-                .eq('id', user.id)
-
-              if (updateError) {
-                console.error('Error updating profile:', updateError)
               } else {
-                console.log(`Updated subscription period for user ${user.id}`)
+                const user = authUsers.users.find(u => u.email === userEmail)
+                
+                if (!user) {
+                  console.error('User not found by email')
+                } else {
+                  // Update subscription status to active
+                  const { error: updateError } = await supabaseClient
+                    .from('profiles')
+                    .update({
+                      subscription_status: 'active',
+                      subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                    })
+                    .eq('id', user.id)
+
+                  if (updateError) {
+                    console.error('Error updating profile:', updateError)
+                  } else {
+                    console.log(`Updated subscription period for user ${user.id}`)
+                  }
+                }
               }
             }
           }
@@ -217,29 +231,27 @@ serve(async (req) => {
 
             if (authUserError) {
               console.error('Error listing users:', authUserError)
-              break
-            }
-
-            const user = authUsers.users.find(u => u.email === userEmail)
-            
-            if (!user) {
-              console.error('User not found by email')
-              break
-            }
-
-            // Update subscription details
-            const { error: updateError } = await supabaseClient
-              .from('profiles')
-              .update({
-                subscription_status: subscription.status,
-                subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              })
-              .eq('id', user.id)
-
-            if (updateError) {
-              console.error('Error updating profile:', updateError)
             } else {
-              console.log(`Updated subscription status for user ${user.id}`)
+              const user = authUsers.users.find(u => u.email === userEmail)
+              
+              if (!user) {
+                console.error('User not found by email')
+              } else {
+                // Update subscription details
+                const { error: updateError } = await supabaseClient
+                  .from('profiles')
+                  .update({
+                    subscription_status: subscription.status,
+                    subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                  })
+                  .eq('id', user.id)
+
+                if (updateError) {
+                  console.error('Error updating profile:', updateError)
+                } else {
+                  console.log(`Updated subscription status for user ${user.id}`)
+                }
+              }
             }
           }
         }
@@ -264,29 +276,27 @@ serve(async (req) => {
 
             if (authUserError) {
               console.error('Error listing users:', authUserError)
-              break
-            }
-
-            const user = authUsers.users.find(u => u.email === userEmail)
-            
-            if (!user) {
-              console.error('User not found by email')
-              break
-            }
-
-            // Update subscription status to canceled or expired
-            const { error: updateError } = await supabaseClient
-              .from('profiles')
-              .update({
-                subscription_status: 'canceled',
-                subscription_end_date: new Date().toISOString(),
-              })
-              .eq('id', user.id)
-
-            if (updateError) {
-              console.error('Error updating profile:', updateError)
             } else {
-              console.log(`Updated subscription status to canceled for user ${user.id}`)
+              const user = authUsers.users.find(u => u.email === userEmail)
+              
+              if (!user) {
+                console.error('User not found by email')
+              } else {
+                // Update subscription status to canceled or expired
+                const { error: updateError } = await supabaseClient
+                  .from('profiles')
+                  .update({
+                    subscription_status: 'canceled',
+                    subscription_end_date: new Date().toISOString(),
+                  })
+                  .eq('id', user.id)
+
+                if (updateError) {
+                  console.error('Error updating profile:', updateError)
+                } else {
+                  console.log(`Updated subscription status to canceled for user ${user.id}`)
+                }
+              }
             }
           }
         }
@@ -300,7 +310,8 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error processing webhook:', error)
+    console.error('Error processing webhook:', error.message)
+    console.error(error.stack)
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
