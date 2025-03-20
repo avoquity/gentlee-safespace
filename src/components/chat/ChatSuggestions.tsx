@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Heart, Lightbulb, Sparkle, Star, Moon, Sun, Cloud, Compass, MessageCircle, Quote, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Heart, Lightbulb, Sparkle, Star, Moon, Sun, Cloud, Compass, MessageCircle, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SuggestionProps {
@@ -8,6 +9,7 @@ interface SuggestionProps {
   inputValue: string;
   onSuggestionClick: (suggestion: string) => void;
   isFocused: boolean;
+  messageCount?: number;
 }
 
 export const ChatSuggestions: React.FC<SuggestionProps> = ({
@@ -15,6 +17,7 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
   inputValue,
   onSuggestionClick,
   isFocused,
+  messageCount = 0,
 }) => {
   const isMobile = useIsMobile();
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>(suggestions);
@@ -22,18 +25,26 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
   const [direction, setDirection] = useState<"left" | "right">("right");
   const touchStartX = useRef<number>(0);
   const touchStartTime = useRef<number>(0);
+  const [shouldShow, setShouldShow] = useState(true);
+
+  // Only show suggestions for the first 2 messages
+  const shouldDisplaySuggestions = messageCount < 2;
 
   // Filter suggestions based on input value
   useEffect(() => {
     if (!inputValue.trim()) {
       setFilteredSuggestions(suggestions);
+      setShouldShow(true);
       return;
     }
 
     const filtered = suggestions.filter(suggestion =>
       suggestion.toLowerCase().includes(inputValue.toLowerCase())
     );
-    setFilteredSuggestions(filtered.length > 0 ? filtered : suggestions);
+    
+    // Hide suggestions when there are no matches
+    setShouldShow(filtered.length > 0);
+    setFilteredSuggestions(filtered.length > 0 ? filtered : []);
   }, [inputValue, suggestions]);
 
   // Reset current index when suggestions change
@@ -106,8 +117,19 @@ export const ChatSuggestions: React.FC<SuggestionProps> = ({
     return icons[iconIndex];
   };
 
-  // Temporarily hide suggestions on mobile
-  if (isMobile || !isFocused || filteredSuggestions.length === 0) {
+  // Don't show suggestions if:
+  // 1. On mobile
+  // 2. Not focused
+  // 3. No filtered suggestions
+  // 4. User has already sent 2+ messages
+  // 5. No matches found (shouldShow is false)
+  if (
+    isMobile || 
+    !isFocused || 
+    filteredSuggestions.length === 0 || 
+    !shouldDisplaySuggestions ||
+    !shouldShow
+  ) {
     return null;
   }
 

@@ -107,6 +107,7 @@ export const ChatInput = ({
             inputValue={input}
             onSuggestionClick={handleSuggestionClick}
             isFocused={isFocused && !hasReachedLimit}
+            messageCount={messageCount}
           />
           
           <div className="relative">

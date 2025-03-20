@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, format } from 'date-fns';
-import { ChatSuggestions } from './chat/ChatSuggestions';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -20,34 +19,12 @@ const suggestedTopics = [
   "Inner clarity"
 ];
 
-// Chat suggestions - updated with more reflective prompts
-const chatSuggestions = [
-  "What truth have I been avoiding?",
-  "What would I say to my younger self right now?",
-  "What's a small, kind thing I can do for myself today?",
-  "What would this look like from a different lens?",
-  "What's one thing I know deep down, but forget too often?",
-  "If my heart could speak, what would it say?",
-  "How can I be a little softer with myself?",
-  "Tell me something I might not be seeing."
-];
-
 const WritingInput = () => {
   const [input, setInput] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-  const [randomizedSuggestions, setRandomizedSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
-  
-  // Randomize suggestions when input field is focused
-  useEffect(() => {
-    if (isFocused) {
-      const shuffled = [...chatSuggestions].sort(() => 0.5 - Math.random());
-      setRandomizedSuggestions(shuffled);
-    }
-  }, [isFocused]);
   
   const findTodayChat = async () => {
     if (!user) return null;
@@ -110,24 +87,10 @@ const WritingInput = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  };
-
   return (
     <div className="w-full mx-auto flex flex-col gap-4">
       <form onSubmit={handleSubmit} className="relative w-full mx-auto mb-3">
         <div className="relative">
-          <ChatSuggestions
-            suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
-            inputValue={input}
-            onSuggestionClick={handleSuggestionClick}
-            isFocused={isFocused}
-          />
-          
           <div className="relative">
             <textarea
               ref={textareaRef}
@@ -140,8 +103,6 @@ const WritingInput = () => {
                 minHeight: '3rem',
                 maxHeight: '12rem'
               }}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setTimeout(() => setIsFocused(false), 150)}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = '3rem';

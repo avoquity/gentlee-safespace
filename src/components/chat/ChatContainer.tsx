@@ -3,6 +3,7 @@ import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
+import { ScrollToTop } from './ScrollToTop';
 import { Highlight, Message } from '@/types/chat';
 
 interface ChatContainerProps {
@@ -40,13 +41,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onHighlightRemove,
   messagesEndRef
 }) => {
+  // Create a ref for the chat container
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   // Scroll to bottom when messages change
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, messagesEndRef]);
 
   return (
-    <div className="min-h-screen bg-soft-ivory flex flex-col">
+    <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
           <ChatHeader 
@@ -78,6 +82,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           />
         </div>
       </div>
+      
+      <ScrollToTop scrollContainer={containerRef} />
       
       <audio
         src="/path-to-your-music.mp3"
