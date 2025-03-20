@@ -62,6 +62,8 @@ serve(async (req) => {
       }
     )
 
+    console.log(`Processing webhook event: ${event.type}`)
+
     // Process different event types
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -75,20 +77,36 @@ serve(async (req) => {
           const userEmail = customer.email
 
           if (userEmail) {
+            console.log(`Looking for user with email: ${userEmail}`)
+            
             // Find user by email
-            const { data: userData, error: userError } = await supabaseClient
-              .from('auth')
-              .select('users(id)')
-              .eq('users.email', userEmail)
-              .single()
+            const { data: users, error: userError } = await supabaseClient
+              .from('profiles')
+              .select('id')
+              .eq('id', session.metadata?.user_id)
+              .maybeSingle()
 
             if (userError) {
               console.error('Error finding user:', userError)
               break
             }
 
-            if (userData && userData.users && userData.users.id) {
-              const userId = userData.users.id
+            // If user not found by metadata, try to find by email
+            if (!users) {
+              const { data: authUsers, error: authUserError } = await supabaseClient
+                .auth.admin.listUsers()
+
+              if (authUserError) {
+                console.error('Error listing users:', authUserError)
+                break
+              }
+
+              const user = authUsers.users.find(u => u.email === userEmail)
+              
+              if (!user) {
+                console.error('User not found by email')
+                break
+              }
 
               // Update user profile with subscription info
               const { error: updateError } = await supabaseClient
@@ -99,10 +117,29 @@ serve(async (req) => {
                   subscription_plan: session.metadata?.plan || 'monthly',
                   subscription_start_date: new Date().toISOString(),
                 })
-                .eq('id', userId)
+                .eq('id', user.id)
 
               if (updateError) {
                 console.error('Error updating profile:', updateError)
+              } else {
+                console.log(`Updated subscription for user ${user.id}`)
+              }
+            } else {
+              // Update user profile with subscription info using metadata user_id
+              const { error: updateError } = await supabaseClient
+                .from('profiles')
+                .update({
+                  subscription_id: String(session.subscription),
+                  subscription_status: 'active',
+                  subscription_plan: session.metadata?.plan || 'monthly',
+                  subscription_start_date: new Date().toISOString(),
+                })
+                .eq('id', session.metadata?.user_id)
+
+              if (updateError) {
+                console.error('Error updating profile by metadata user_id:', updateError)
+              } else {
+                console.log(`Updated subscription for user ${session.metadata?.user_id}`)
               }
             }
           }
@@ -124,31 +161,37 @@ serve(async (req) => {
             const userEmail = customer.email
             
             if (userEmail) {
-              // Find user by email
-              const { data: userData, error: userError } = await supabaseClient
-                .from('auth')
-                .select('users(id)')
-                .eq('users.email', userEmail)
-                .single()
+              console.log(`Invoice payment succeeded for user with email: ${userEmail}`)
 
-              if (userError || !userData) {
-                console.error('Error finding user:', userError)
+              // Find user by email
+              const { data: authUsers, error: authUserError } = await supabaseClient
+                .auth.admin.listUsers()
+
+              if (authUserError) {
+                console.error('Error listing users:', authUserError)
                 break
               }
 
-              if (userData.users && userData.users.id) {
-                // Update subscription status to active
-                const { error: updateError } = await supabaseClient
-                  .from('profiles')
-                  .update({
-                    subscription_status: 'active',
-                    subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                  })
-                  .eq('id', userData.users.id)
+              const user = authUsers.users.find(u => u.email === userEmail)
+              
+              if (!user) {
+                console.error('User not found by email')
+                break
+              }
 
-                if (updateError) {
-                  console.error('Error updating profile:', updateError)
-                }
+              // Update subscription status to active
+              const { error: updateError } = await supabaseClient
+                .from('profiles')
+                .update({
+                  subscription_status: 'active',
+                  subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                })
+                .eq('id', user.id)
+
+              if (updateError) {
+                console.error('Error updating profile:', updateError)
+              } else {
+                console.log(`Updated subscription period for user ${user.id}`)
               }
             }
           }
@@ -166,31 +209,37 @@ serve(async (req) => {
           const userEmail = customer.email
           
           if (userEmail) {
-            // Find user by email
-            const { data: userData, error: userError } = await supabaseClient
-              .from('auth')
-              .select('users(id)')
-              .eq('users.email', userEmail)
-              .single()
+            console.log(`Subscription updated for user with email: ${userEmail}`)
 
-            if (userError || !userData) {
-              console.error('Error finding user:', userError)
+            // Find user by email
+            const { data: authUsers, error: authUserError } = await supabaseClient
+              .auth.admin.listUsers()
+
+            if (authUserError) {
+              console.error('Error listing users:', authUserError)
               break
             }
 
-            if (userData.users && userData.users.id) {
-              // Update subscription details
-              const { error: updateError } = await supabaseClient
-                .from('profiles')
-                .update({
-                  subscription_status: subscription.status,
-                  subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                })
-                .eq('id', userData.users.id)
+            const user = authUsers.users.find(u => u.email === userEmail)
+            
+            if (!user) {
+              console.error('User not found by email')
+              break
+            }
 
-              if (updateError) {
-                console.error('Error updating profile:', updateError)
-              }
+            // Update subscription details
+            const { error: updateError } = await supabaseClient
+              .from('profiles')
+              .update({
+                subscription_status: subscription.status,
+                subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              })
+              .eq('id', user.id)
+
+            if (updateError) {
+              console.error('Error updating profile:', updateError)
+            } else {
+              console.log(`Updated subscription status for user ${user.id}`)
             }
           }
         }
@@ -207,31 +256,37 @@ serve(async (req) => {
           const userEmail = customer.email
           
           if (userEmail) {
-            // Find user by email
-            const { data: userData, error: userError } = await supabaseClient
-              .from('auth')
-              .select('users(id)')
-              .eq('users.email', userEmail)
-              .single()
+            console.log(`Subscription deleted for user with email: ${userEmail}`)
 
-            if (userError || !userData) {
-              console.error('Error finding user:', userError)
+            // Find user by email
+            const { data: authUsers, error: authUserError } = await supabaseClient
+              .auth.admin.listUsers()
+
+            if (authUserError) {
+              console.error('Error listing users:', authUserError)
               break
             }
 
-            if (userData.users && userData.users.id) {
-              // Update subscription status to canceled or expired
-              const { error: updateError } = await supabaseClient
-                .from('profiles')
-                .update({
-                  subscription_status: 'canceled',
-                  subscription_end_date: new Date().toISOString(),
-                })
-                .eq('id', userData.users.id)
+            const user = authUsers.users.find(u => u.email === userEmail)
+            
+            if (!user) {
+              console.error('User not found by email')
+              break
+            }
 
-              if (updateError) {
-                console.error('Error updating profile:', updateError)
-              }
+            // Update subscription status to canceled or expired
+            const { error: updateError } = await supabaseClient
+              .from('profiles')
+              .update({
+                subscription_status: 'canceled',
+                subscription_end_date: new Date().toISOString(),
+              })
+              .eq('id', user.id)
+
+            if (updateError) {
+              console.error('Error updating profile:', updateError)
+            } else {
+              console.log(`Updated subscription status to canceled for user ${user.id}`)
             }
           }
         }

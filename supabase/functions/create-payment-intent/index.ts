@@ -17,7 +17,7 @@ serve(async (req) => {
 
   try {
     // Get the request body
-    const { priceId, userEmail, plan } = await req.json()
+    const { priceId, userEmail, plan, userId } = await req.json()
 
     // Initialize Stripe with the secret key from environment
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
@@ -25,18 +25,19 @@ serve(async (req) => {
     })
 
     // Validate inputs
-    if (!priceId || !userEmail || !plan) {
+    if (!priceId || !userEmail || !plan || !userId) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Create a PaymentIntent with the order amount and currency
+    // Create a customer in Stripe
     const customer = await stripe.customers.create({
       email: userEmail,
       metadata: {
-        plan: plan,
+        plan,
+        user_id: userId,
       },
     })
 
@@ -52,7 +53,8 @@ serve(async (req) => {
         },
       ],
       metadata: {
-        plan: plan,
+        plan,
+        user_id: userId,
       },
       success_url: `${req.headers.get('origin')}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/upgrade`,

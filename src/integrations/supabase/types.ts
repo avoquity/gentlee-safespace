@@ -183,18 +183,36 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          subscription_current_period_end: string | null
+          subscription_end_date: string | null
+          subscription_id: string | null
+          subscription_plan: string | null
+          subscription_start_date: string | null
+          subscription_status: string | null
         }
         Insert: {
           created_at?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
+          subscription_current_period_end?: string | null
+          subscription_end_date?: string | null
+          subscription_id?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
         }
         Update: {
           created_at?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          subscription_current_period_end?: string | null
+          subscription_end_date?: string | null
+          subscription_id?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
         }
         Relationships: []
       }

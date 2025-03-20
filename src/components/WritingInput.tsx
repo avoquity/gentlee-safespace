@@ -22,6 +22,10 @@ const suggestedTopics = [
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
 
+interface TodayChat {
+  id: number;
+}
+
 const WritingInput = () => {
   const [input, setInput] = useState('');
   const [messageCount, setMessageCount] = useState(0);
@@ -60,8 +64,8 @@ const WritingInput = () => {
     }
   }, [user]);
   
-  // Fix: Explicitly type the return value to break circular reference
-  const findTodayChat = async (): Promise<{ id: number } | null> => {
+  // Fixed version that explicitly returns the properly typed object
+  const findTodayChat = async (): Promise<TodayChat | null> => {
     if (!user) return null;
     
     const today = startOfDay(new Date());
@@ -205,3 +209,4 @@ const WritingInput = () => {
 };
 
 export default WritingInput;
+

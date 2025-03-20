@@ -19,7 +19,7 @@ const Upgrade = () => {
 
   // Handle redirect to Stripe Checkout
   const handlePaymentRedirect = async (plan: 'monthly' | 'yearly') => {
-    if (!user?.email) {
+    if (!user?.email || !user?.id) {
       toast({
         title: "You need to be logged in",
         description: "Please log in to upgrade your account",
@@ -37,7 +37,8 @@ const Upgrade = () => {
         body: {
           priceId: plan === 'monthly' ? STRIPE_PRICE_IDS.monthly : STRIPE_PRICE_IDS.yearly,
           userEmail: user.email,
-          plan: plan
+          plan: plan,
+          userId: user.id
         }
       });
 
