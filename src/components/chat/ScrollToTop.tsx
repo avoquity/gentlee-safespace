@@ -69,7 +69,7 @@ export const ScrollToTop: React.FC<ScrollToTopProps> = ({ scrollContainer }) => 
           onClick={scrollToTop}
           aria-label="Scroll to top"
         >
-          <ChevronUp className="w-5 h-5" />
+          <ChevronUp size={24} />
         </motion.button>
       )}
     </AnimatePresence>
