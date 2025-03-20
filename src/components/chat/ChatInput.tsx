@@ -93,16 +93,13 @@ export const ChatInput = ({
         }} 
       />
       <div className="relative bg-[#FDFBF8]">
-        {/* Increase space below prompt for mobile */}
-        <div className={`${isMobile ? 'mb-6' : 'mb-2'}`}>
-          {user && showUpgradePrompt && (
-            <UpgradePrompt 
-              messageCount={messageCount} 
-              weeklyLimit={weeklyLimit}
-              onDismiss={messageCount === weeklyLimit - 1 ? handleDismissUpgradePrompt : undefined}
-            />
-          )}
-        </div>
+        {user && showUpgradePrompt && (
+          <UpgradePrompt 
+            messageCount={messageCount} 
+            weeklyLimit={weeklyLimit}
+            onDismiss={messageCount === weeklyLimit - 1 ? handleDismissUpgradePrompt : undefined}
+          />
+        )}
         
         <div className="relative">
           <ChatSuggestions
@@ -156,7 +153,7 @@ export const ChatInput = ({
         {!isMobile && (
           <motion.button
             type="submit"
-            className={`absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''} z-10`}
+            className={`absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
