@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -101,7 +100,7 @@ export const ChatInput = ({
           />
         )}
         
-        <div className="relative mt-10">
+        <div className="relative mt-4">
           <ChatSuggestions
             suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
             inputValue={input}
