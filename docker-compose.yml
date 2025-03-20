@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=http://localhost:8000
+      - SUPABASE_KEY=your-supabase-key
+    volumes:
+      - .:/app
+    command: ["node", "dist/server.js"]
+    depends_on:
+      - supabase-db
+      - supabase-auth
+      - supabase-storage
+
+  supabase-db:
+    image: supabase/postgres:15.8.1.048
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+
+  supabase-auth:
+    image: supabase/gotrue:v2.170.0
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:postgres@supabase-db:5432/postgres
+      GOTRUE_SITE_URL: http://localhost:8000
+      GOTRUE_JWT_SECRET: your-jwt-secret
+    depends_on:
+      - supabase-db
+
+  supabase-storage:
+    image: supabase/storage-api:latest
+    environment:
+      SUPABASE_STORAGE_HOST: 0.0.0.0
+      SUPABASE_DB_DRIVER: postgres
+      SUPABASE_DB_DATABASE_URL: postgres://postgres:postgres@supabase-db:5432/postgres
+    depends_on:
+      - supabase-db
+
+volumes:
+  supabase-db-data:

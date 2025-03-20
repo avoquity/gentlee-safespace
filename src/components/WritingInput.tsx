@@ -37,32 +37,32 @@ const WritingInput = () => {
   const hasReachedLimit = messageCount >= WEEKLY_MESSAGE_LIMIT;
 
   // Get the user's message count for the current week
-  useEffect(() => {
-    const getMessageCount = async () => {
-      if (!user) return;
+  // useEffect(() => {
+  //   const getMessageCount = async () => {
+  //     if (!user) return;
       
-      try {
-        const { count, error } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString());
+  //     try {
+  //       const { count, error } = await supabase
+  //         .from('messages')
+  //         .select('*', { count: 'exact', head: true })
+  //         .eq('user_id', user.id)
+  //         .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString());
           
-        if (error) {
-          console.error('Error fetching message count:', error);
-          return;
-        }
+  //       if (error) {
+  //         console.error('Error fetching message count:', error);
+  //         return;
+  //       }
           
-        setMessageCount(count || 0);
-      } catch (error) {
-        console.error('Error in getMessageCount:', error);
-      }
-    };
+  //       setMessageCount(count || 0);
+  //     } catch (error) {
+  //       console.error('Error in getMessageCount:', error);
+  //     }
+  //   };
     
-    if (user) {
-      getMessageCount();
-    }
-  }, [user]);
+  //   if (user) {
+  //     getMessageCount();
+  //   }
+  // }, [user]);
   
   // Fixed version that explicitly returns the properly typed object
   const findTodayChat = async (): Promise<TodayChat | null> => {

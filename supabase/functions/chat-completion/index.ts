@@ -191,8 +191,8 @@ Ask for and use user's name in conversation
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: messages,
-        temperature: 1.1,
-        max_tokens: 250,
+        temperature: 1.0,
+        max_tokens: 500,
         stream: true,
       }),
     }).then(async (openAIResponse) => {
