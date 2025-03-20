@@ -1,16 +1,66 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const Upgrade = () => {
-  // Stripe payment link for both monthly and yearly subscriptions
-  const stripePaymentLink = "https://buy.stripe.com/7sI2a9auI2cUgKc4gi";
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  
+  // Stripe price IDs for different subscription plans
+  const STRIPE_PRICE_IDS = {
+    monthly: 'price_1PPfCLAuI2cUgKc4gi', // Placeholder - replace with your actual Stripe price ID
+    yearly: 'price_1PPfCLAuI2cUgKc4gi'    // Placeholder - replace with your actual Stripe price ID
+  };
 
-  // Handle redirect to Stripe
-  const handlePaymentRedirect = (event: React.MouseEvent) => {
-    event.preventDefault();
-    window.location.href = stripePaymentLink;
+  // Handle redirect to Stripe Checkout
+  const handlePaymentRedirect = async (plan: 'monthly' | 'yearly') => {
+    if (!user?.email) {
+      toast({
+        title: "You need to be logged in",
+        description: "Please log in to upgrade your account",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Call our Supabase Edge Function to create a Checkout session
+      const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+        body: {
+          priceId: plan === 'monthly' ? STRIPE_PRICE_IDS.monthly : STRIPE_PRICE_IDS.yearly,
+          userEmail: user.email,
+          plan: plan
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: "There was a problem setting up your payment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,16 +102,18 @@ const Upgrade = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={handlePaymentRedirect}
-              className="px-6 py-3 rounded-full bg-muted-sage text-white text-center font-medium hover:bg-muted-sage/90 transition-colors"
+              onClick={() => handlePaymentRedirect('monthly')}
+              disabled={isLoading}
+              className="px-6 py-3 rounded-full bg-muted-sage text-white text-center font-medium hover:bg-muted-sage/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Subscribe Monthly - $18.88
+              {isLoading ? 'Processing...' : 'Subscribe Monthly - $18.88'}
             </button>
             <button
-              onClick={handlePaymentRedirect}
-              className="px-6 py-3 rounded-full bg-deep-charcoal text-white text-center font-medium hover:bg-deep-charcoal/90 transition-colors"
+              onClick={() => handlePaymentRedirect('yearly')}
+              disabled={isLoading}
+              className="px-6 py-3 rounded-full bg-deep-charcoal text-white text-center font-medium hover:bg-deep-charcoal/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Subscribe Yearly - $188.88 (2 months free)
+              {isLoading ? 'Processing...' : 'Subscribe Yearly - $188.88 (2 months free)'}
             </button>
           </div>
         </div>

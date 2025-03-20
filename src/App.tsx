@@ -1,3 +1,4 @@
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { MusicProvider } from '@/contexts/MusicContext';
@@ -12,6 +13,7 @@ import About from '@/pages/About';
 import Terms from '@/pages/Terms';
 import Privacy from '@/pages/Privacy';
 import Upgrade from './pages/Upgrade';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,7 @@ function App() {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/about" element={<About />} />
               <Route path="/upgrade" element={<Upgrade />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
