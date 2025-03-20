@@ -46,7 +46,7 @@ export const ChatInput = ({
   // Auto-resize the textarea when content changes
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '3rem'; // Reset to minimum height
       const scrollHeight = Math.min(textareaRef.current.scrollHeight, 192);
       textareaRef.current.style.height = `${scrollHeight}px`;
     }
@@ -109,27 +109,30 @@ export const ChatInput = ({
             isFocused={isFocused && !hasReachedLimit}
           />
           
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={hasReachedLimit ? "You've reached your weekly message limit" : "Continue your thoughts here..."}
-            className={`w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-4 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
-            style={{
-              height: '3rem',
-              minHeight: '3rem',
-              maxHeight: '12rem',
-            }}
-            onFocus={handleTextareaFocus}
-            onBlur={() => setTimeout(() => setIsFocused(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-            disabled={hasReachedLimit}
-          />
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={hasReachedLimit ? "You've reached your weekly message limit" : "Continue your thoughts here..."}
+              className={`w-full px-1 py-3 pb-4 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed ${isMobile ? 'pr-4' : 'pr-[160px]'} ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{
+                height: '3rem',
+                minHeight: '3rem',
+                maxHeight: '12rem',
+                overflowY: 'auto',
+              }}
+              onFocus={handleTextareaFocus}
+              onBlur={() => setTimeout(() => setIsFocused(false), 150)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+              disabled={hasReachedLimit}
+            />
+          </div>
         </div>
         
         {/* Mobile Full-Width Send Button */}

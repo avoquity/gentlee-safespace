@@ -128,27 +128,30 @@ const WritingInput = () => {
             isFocused={isFocused}
           />
           
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="What's on your mind lately?"
-            className="w-full px-1 py-3 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 pr-40 resize-none overflow-hidden"
-            style={{
-              height: '3rem',
-              minHeight: '3rem'
-            }}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 150)}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = '3rem';
-              if (target.value) {
-                target.style.height = 'auto';
-                target.style.height = `${Math.min(target.scrollHeight, 192)}px`;
-              }
-            }}
-          />
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="What's on your mind lately?"
+              className={`w-full px-1 py-3 text-lg leading-normal align-middle bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 ${isMobile ? 'pr-4' : 'pr-[160px]'} resize-none overflow-y-auto`}
+              style={{
+                height: '3rem',
+                minHeight: '3rem',
+                maxHeight: '12rem'
+              }}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 150)}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = '3rem';
+                if (target.value) {
+                  target.style.height = 'auto';
+                  target.style.height = `${Math.min(target.scrollHeight, 192)}px`;
+                }
+              }}
+            />
+          </div>
         </div>
         <motion.button
           type="submit"
