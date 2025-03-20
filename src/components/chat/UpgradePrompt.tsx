@@ -26,7 +26,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-4 mb-8 rounded-md border border-muted-sage/30 bg-muted-sage/10 text-deep-charcoal relative z-50 ${className}`}
+      className={`p-4 mb-12 rounded-md border border-muted-sage/30 bg-muted-sage/10 text-deep-charcoal relative z-50 ${className}`}
     >
       {isApproachingLimit && (
         <div className="flex justify-between items-center">
