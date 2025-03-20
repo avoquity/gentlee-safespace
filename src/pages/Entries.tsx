@@ -105,11 +105,7 @@ const Entries = () => {
       return;
     }
 
-    navigate('/chat', {
-      state: {
-        initialMessage: "Hi there! How are you feeling today? I'm here to listen and chat about whatever's on your mind."
-      }
-    });
+    navigate('/chat');
   };
 
   const handleThemeClick = (e: React.MouseEvent, theme: string) => {

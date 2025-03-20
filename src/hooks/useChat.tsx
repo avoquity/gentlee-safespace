@@ -136,13 +136,6 @@ export const useChat = (
     }
   }, [user, messages]);
 
-  // Redirect to auth if not authenticated
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-
   // Handle closing the conversation wrapper
   const handleCloseConversation = async () => {
     if (await closeConversation(messages, currentChatId)) {
