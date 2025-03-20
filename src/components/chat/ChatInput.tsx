@@ -98,6 +98,7 @@ export const ChatInput = ({
             messageCount={messageCount} 
             weeklyLimit={weeklyLimit}
             onDismiss={messageCount === weeklyLimit - 1 ? handleDismissUpgradePrompt : undefined}
+            className="mb-8" // Added more bottom margin to create space
           />
         )}
         
@@ -140,7 +141,7 @@ export const ChatInput = ({
         {isMobile && (
           <motion.button
             type="submit"
-            className={`w-full mt-3 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full mt-4 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
@@ -149,11 +150,11 @@ export const ChatInput = ({
           </motion.button>
         )}
         
-        {/* Desktop Send Button */}
+        {/* Desktop Send Button - Adjusted position for better alignment with text */}
         {!isMobile && (
           <motion.button
             type="submit"
-            className={`absolute right-1 top-1/2 -translate-y-1/2 h-[50px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`absolute right-1 bottom-0 mb-3 h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
