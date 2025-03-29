@@ -3,9 +3,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { signOut } from '@/components/auth/services/authService';
-import UserAvatar from '@/components/UserAvatar';
+import UserMenu from '@/components/UserMenu';
 
 interface AuthButtonsProps {
   className?: string;
@@ -15,43 +13,12 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed out",
-        description: "Come back soon!"
-      });
-      // Clear saved credentials when user manually signs out
-      localStorage.removeItem('rememberMe');
-      localStorage.removeItem('userEmail');
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
 
   return (
     <>
       {user ? (
         <>
-          <Link 
-            to="/"
-            onClick={handleSignOut}
-            className={`text-deep-charcoal hover:text-muted-sage transition-colors duration-200 font-poppins text-base ${className}`}
-          >
-            Sign Out
-          </Link>
-          
-          <Link to="/profile">
-            <UserAvatar />
-          </Link>
+          <UserMenu />
           
           {location.pathname === '/' && (
             <Button

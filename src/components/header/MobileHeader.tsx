@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MobileMenu from '../MobileMenu';
-import UserAvatar from '@/components/UserAvatar';
+import UserMenu from '@/components/UserMenu';
 
 interface MobileHeaderProps {
   user: any;
@@ -41,9 +41,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
       
       <div className="flex items-center">
         {user ? (
-          <Link to="/profile">
-            <UserAvatar size="sm" />
-          </Link>
+          <UserMenu size="sm" />
         ) : (
           <Button
             onClick={() => navigate('/auth', { state: { tab: 'signin' } })}
