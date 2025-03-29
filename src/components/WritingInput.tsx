@@ -29,40 +29,53 @@ interface TodayChat {
 const WritingInput = () => {
   const [input, setInput] = useState('');
   const [messageCount, setMessageCount] = useState(0);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
   
-  const hasReachedLimit = messageCount >= WEEKLY_MESSAGE_LIMIT;
-
-  // Get the user's message count for the current week
-  // useEffect(() => {
-  //   const getMessageCount = async () => {
-  //     if (!user) return;
+  // Check subscription status
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (!user) {
+        setIsSubscriptionLoading(false);
+        return;
+      }
       
-  //     try {
-  //       const { count, error } = await supabase
-  //         .from('messages')
-  //         .select('*', { count: 'exact', head: true })
-  //         .eq('user_id', user.id)
-  //         .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString());
-          
-  //       if (error) {
-  //         console.error('Error fetching message count:', error);
-  //         return;
-  //       }
-          
-  //       setMessageCount(count || 0);
-  //     } catch (error) {
-  //       console.error('Error in getMessageCount:', error);
-  //     }
-  //   };
+      try {
+        setIsSubscriptionLoading(true);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_current_period_end')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        // Check if user has an active subscription
+        const hasActiveSubscription = data?.subscription_status === 'active';
+        
+        // Check if subscription is still valid (not expired)
+        const isStillValid = data?.subscription_current_period_end 
+          ? new Date(data.subscription_current_period_end) > new Date() 
+          : false;
+        
+        setIsSubscribed(hasActiveSubscription && isStillValid);
+      } catch (error) {
+        console.error('Error checking subscription status:', error);
+        setIsSubscribed(false);
+      } finally {
+        setIsSubscriptionLoading(false);
+      }
+    };
     
-  //   if (user) {
-  //     getMessageCount();
-  //   }
-  // }, [user]);
+    checkSubscriptionStatus();
+  }, [user]);
+  
+  // Only apply limit if user is not subscribed
+  const hasReachedLimit = !isSubscribed && messageCount >= WEEKLY_MESSAGE_LIMIT;
   
   // Fixed version that explicitly returns the properly typed object
   const findTodayChat = async (): Promise<TodayChat | null> => {
@@ -209,4 +222,3 @@ const WritingInput = () => {
 };
 
 export default WritingInput;
-
