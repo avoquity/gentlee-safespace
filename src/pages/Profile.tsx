@@ -161,7 +161,7 @@ const Profile = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow container mx-auto px-4 py-12 max-w-4xl">
+      <main className="flex-grow container mx-auto px-4 py-20 max-w-4xl">
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <UserAvatar size="lg" />
