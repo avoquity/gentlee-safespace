@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -28,14 +27,18 @@ serve(async (req) => {
       throw new Error('Supabase credentials not configured');
     }
 
+    // Compute the date 14 days ago in ISO format
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
     // Initialize Supabase client with service role key for admin access
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    // Fetch previous messages from this chat session
+    // Fetch previous user messages from this chat session from the last 14 days only
     const { data: previousMessages, error: messagesError } = await supabase
       .from('messages')
-      .select('content, user_role')
-      .eq('chat_id', chatId)
+      .select('content, user_role, created_at')
+      .eq('user_role', 'user')
+      .gte('created_at', fourteenDaysAgo)
       .order('created_at', { ascending: true });
 
     if (messagesError) {
@@ -43,9 +46,9 @@ serve(async (req) => {
       throw new Error('Failed to retrieve conversation history');
     }
 
-    // Transform previous messages into the format expected by OpenAI
+    // Transform fetched messages into the format expected by OpenAI (user messages only)
     const conversationHistory = previousMessages.map(msg => ({
-      role: msg.user_role === 'user' ? 'user' : 'assistant',
+      role: 'user',
       content: msg.content
     }));
 
