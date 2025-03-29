@@ -14,6 +14,7 @@ import Terms from '@/pages/Terms';
 import Privacy from '@/pages/Privacy';
 import Upgrade from './pages/Upgrade';
 import PaymentSuccess from './pages/PaymentSuccess';
+import Profile from './pages/Profile';
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/upgrade" element={<Upgrade />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

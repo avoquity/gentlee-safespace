@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { signOut } from '@/components/auth/services/authService';
+import UserAvatar from '@/components/UserAvatar';
 
 interface AuthButtonsProps {
   className?: string;
@@ -47,6 +48,11 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
           >
             Sign Out
           </Link>
+          
+          <Link to="/profile">
+            <UserAvatar />
+          </Link>
+          
           {location.pathname === '/' && (
             <Button
               onClick={() => navigate('/entries')}
