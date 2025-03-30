@@ -6,14 +6,16 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import UserAvatar from '@/components/UserAvatar';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -28,6 +30,8 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   
   // Initialize form
   const form = useForm<ProfileFormValues>({
@@ -120,6 +124,42 @@ const Profile = () => {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!user) return;
+    
+    setCancelLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription', {
+        method: 'POST',
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Subscription canceled",
+        description: "Your subscription will remain active until the end of the current billing period."
+      });
+      
+      // Update local state
+      setUserProfile({
+        ...userProfile,
+        subscription_status: 'canceled_at_period_end',
+      });
+      
+      setCancelDialogOpen(false);
+    } catch (error: any) {
+      console.error('Error canceling subscription:', error);
+      toast({
+        title: "Error canceling subscription",
+        description: error.message || "An error occurred while canceling your subscription.",
+        variant: "destructive"
+      });
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   // Format subscription date
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -132,15 +172,51 @@ const Profile = () => {
     
     if (userProfile.subscription_status === 'active') {
       return (
-        <span className="text-green-600 font-medium">
-          Active until {formatDate(userProfile.subscription_current_period_end)}
-        </span>
+        <div className="flex flex-col gap-2">
+          <span className="text-green-600 font-medium">
+            Active until {formatDate(userProfile.subscription_current_period_end)}
+          </span>
+          {!userProfile.subscription_status?.includes('cancel') && userProfile.subscription_id && (
+            <Button 
+              onClick={() => setCancelDialogOpen(true)}
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            >
+              Cancel subscription
+            </Button>
+          )}
+        </div>
+      );
+    } else if (userProfile.subscription_status === 'canceled_at_period_end') {
+      return (
+        <div className="flex flex-col gap-2">
+          <span className="text-orange-600 font-medium">
+            Canceled - Active until {formatDate(userProfile.subscription_current_period_end)}
+          </span>
+          <Button 
+            onClick={() => navigate('/upgrade')}
+            className="bg-muted-sage hover:bg-deep-charcoal text-white"
+          >
+            Renew subscription
+          </Button>
+        </div>
       );
     } else if (userProfile.subscription_status === 'trialing') {
       return (
-        <span className="text-blue-600 font-medium">
-          Trial until {formatDate(userProfile.subscription_current_period_end)}
-        </span>
+        <div className="flex flex-col gap-2">
+          <span className="text-blue-600 font-medium">
+            Trial until {formatDate(userProfile.subscription_current_period_end)}
+          </span>
+          {!userProfile.subscription_status?.includes('cancel') && userProfile.subscription_id && (
+            <Button 
+              onClick={() => setCancelDialogOpen(true)}
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            >
+              Cancel trial
+            </Button>
+          )}
+        </div>
       );
     } else {
       return (
@@ -250,6 +326,46 @@ const Profile = () => {
           </div>
         </div>
       </main>
+      
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Cancel Subscription</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel your subscription? You'll still have access until the end of your current billing period.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center py-2 text-amber-600 bg-amber-50 px-3 rounded-md">
+            <AlertCircle className="h-5 w-5 mr-2" />
+            <p className="text-sm">Your subscription will remain active until {formatDate(userProfile?.subscription_current_period_end)}</p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+              disabled={cancelLoading}
+            >
+              Keep Subscription
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelSubscription}
+              disabled={cancelLoading}
+            >
+              {cancelLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Canceling...
+                </>
+              ) : (
+                'Yes, Cancel Subscription'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
