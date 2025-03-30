@@ -33,19 +33,22 @@ serve(async (req) => {
     // Initialize Supabase client with service role key for admin access
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
     
-    // New: Fetch user's profile to get full name
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('full_name, first_name, last_name')
-      .eq('id', userId)
-      .single();
-    
-    let userFullName = '';
-    if (profileError) {
-      console.error("Error fetching user profile:", profileError);
-      userFullName = "User";
-    } else {
-      userFullName = profileData.full_name || `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+    // New: Use localStorage to cache and retrieve user's full name
+    let userFullName = localStorage.getItem(`userFullName_${userId}`);
+    if (!userFullName) {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, first_name, last_name')
+        .eq('id', userId)
+        .single();
+      
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError);
+        userFullName = "User";
+      } else {
+        userFullName = profileData.full_name || `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+      }
+      localStorage.setItem(`userFullName_${userId}`, userFullName);
     }
 
     // Fetch previous user messages from this chat session from the last 14 days only
