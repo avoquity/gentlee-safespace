@@ -14,6 +14,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import UserAvatar from '@/components/UserAvatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -27,6 +38,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [unsubscribing, setUnsubscribing] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   
   // Initialize form
@@ -120,6 +132,42 @@ const Profile = () => {
     }
   };
 
+  // Handle cancellation of subscription
+  const handleCancelSubscription = async () => {
+    if (!user || !userProfile?.subscription_id) return;
+    
+    setUnsubscribing(true);
+    
+    try {
+      // Call the Supabase Edge Function to cancel the subscription
+      const { error } = await supabase.functions.invoke('cancel-subscription', {
+        body: { subscriptionId: userProfile.subscription_id }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Subscription canceled",
+        description: "Your subscription will remain active until the end of the current billing period."
+      });
+      
+      // Update local state
+      setUserProfile({
+        ...userProfile,
+        subscription_status: 'canceled',
+      });
+    } catch (error: any) {
+      console.error('Error canceling subscription:', error);
+      toast({
+        title: "Error canceling subscription",
+        description: error.message || "Failed to cancel subscription. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setUnsubscribing(false);
+    }
+  };
+
   // Format subscription date
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -132,15 +180,60 @@ const Profile = () => {
     
     if (userProfile.subscription_status === 'active') {
       return (
-        <span className="text-green-600 font-medium">
-          Active until {formatDate(userProfile.subscription_current_period_end)}
-        </span>
+        <div className="space-y-2">
+          <span className="text-green-600 font-medium">
+            Active until {formatDate(userProfile.subscription_current_period_end)}
+          </span>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 mt-2"
+              >
+                Cancel subscription
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Your subscription will remain active until {formatDate(userProfile.subscription_current_period_end)}, but will not renew after that date.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep my subscription</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleCancelSubscription}
+                  className="bg-red-500 hover:bg-red-600"
+                  disabled={unsubscribing}
+                >
+                  {unsubscribing ? 'Canceling...' : 'Yes, cancel my subscription'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       );
     } else if (userProfile.subscription_status === 'trialing') {
       return (
         <span className="text-blue-600 font-medium">
           Trial until {formatDate(userProfile.subscription_current_period_end)}
         </span>
+      );
+    } else if (userProfile.subscription_status === 'canceled') {
+      return (
+        <div className="space-y-2">
+          <span className="text-amber-600 font-medium">
+            Canceled - active until {formatDate(userProfile.subscription_current_period_end)}
+          </span>
+          <Button 
+            onClick={() => navigate('/upgrade')}
+            className="bg-muted-sage hover:bg-deep-charcoal text-white mt-2"
+          >
+            Resubscribe
+          </Button>
+        </div>
       );
     } else {
       return (

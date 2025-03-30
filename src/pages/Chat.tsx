@@ -4,6 +4,7 @@ import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
@@ -15,6 +16,7 @@ const Chat = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
+  const [hasSubscription, setHasSubscription] = React.useState(false);
 
   const {
     messages,
@@ -33,6 +35,38 @@ const Chat = () => {
     processInitialMessage,
     loadTodaysChat
   } = useChat(chatIdFromParams, location.state);
+
+  // Check if user has a subscription
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('subscription_status')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error checking subscription:', error);
+          return;
+        }
+        
+        // User has subscription if status is 'active' or 'trialing'
+        setHasSubscription(
+          data?.subscription_status === 'active' || 
+          data?.subscription_status === 'trialing'
+        );
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    };
+    
+    if (!loading && user) {
+      checkSubscription();
+    }
+  }, [user, loading]);
 
   // Redirect to /auth if user is not logged in, but only after loading is complete
   useEffect(() => {
@@ -69,6 +103,7 @@ const Chat = () => {
       displayDate={displayDate}
       messageCount={messageCount}
       weeklyLimit={WEEKLY_MESSAGE_LIMIT}
+      hasSubscription={hasSubscription}
       onSubmit={handleSubmit}
       onClose={handleCloseConversation}
       onMuteToggle={handleMuteToggle}
