@@ -1,21 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-interface UpgradePromptProps {
-  messageCount?: number;
-  weeklyLimit?: number;
+type UpgradePromptProps = {
+  messageCount: number;
+  weeklyLimit: number;
   onDismiss?: () => void;
   className?: string;
-}
+};
 
 export const UpgradePrompt: React.FC<UpgradePromptProps> = ({ 
-  messageCount = 0, 
-  weeklyLimit = 10,
+  messageCount, 
+  weeklyLimit,
   onDismiss,
   className 
 }) => {

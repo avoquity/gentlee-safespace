@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
-import ChatInput from './ChatInput';
+import { ChatInput } from './ChatInput';
 import { ScrollToTop } from './ScrollToTop';
 import { Highlight, Message } from '@/types/chat';
 
@@ -16,8 +16,7 @@ interface ChatContainerProps {
   displayDate?: string;
   messageCount?: number;
   weeklyLimit?: number;
-  hasSubscription?: boolean;
-  onSubmit: (message: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   onMuteToggle: () => void;
   onHighlightChange: (highlight: Highlight) => void;
@@ -35,7 +34,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   displayDate,
   messageCount = 0,
   weeklyLimit = 10,
-  hasSubscription = false,
   onSubmit,
   onClose,
   onMuteToggle,
@@ -78,11 +76,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           <ChatInput 
             input={input}
             setInput={setInput}
-            onSubmit={onSubmit}
-            isTyping={isTyping}
+            handleSubmit={onSubmit}
             messageCount={messageCount}
             weeklyLimit={weeklyLimit}
-            hasSubscription={hasSubscription}
           />
         </div>
       </div>

@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -15,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userMessage, chatId, userId, userFullName } = await req.json();
+    const { userMessage, chatId, userId } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -34,8 +33,20 @@ serve(async (req) => {
     // Initialize Supabase client with service role key for admin access
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
     
-    // Use the provided user full name if available, otherwise fallback to "User"
-    const userName = userFullName || "User";
+    // New: Fetch user's profile to get full name
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, first_name, last_name')
+      .eq('id', userId)
+      .single();
+    
+    let userFullName = '';
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
+      userFullName = "User";
+    } else {
+      userFullName = profileData.full_name || `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+    }
 
     // Fetch previous user messages from this chat session from the last 14 days only
     const { data: previousMessages, error: messagesError } = await supabase
@@ -56,6 +67,10 @@ serve(async (req) => {
       content: msg.content
     }));
 
+    // Add the current message to the history
+    // Note: we don't add the current user message to history array since it hasn't been saved to DB yet
+    // It will be passed separately to the API
+
     // Create a new TransformStream for streaming the response
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
@@ -74,7 +89,7 @@ serve(async (req) => {
     // Prepare the system message with attached user's full name
     const systemMessage = {
       role: 'system',
-      content: `You are addressing the user: ${userName}
+      content: `You are addressing the user: ${userFullName}
 
 ### **Overview**
 
