@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -55,35 +56,11 @@ export const useInputHandling = (
         });
       }
 
-      // Fetch user's first name from profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('first_name')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileError) {
-        console.error('Error fetching user profile:', profileError);
-      }
-      
-      const userName = profileData?.first_name || '';
-      
-      // Store the original user input
-      const originalInput = input;
-      
-      // Create enhanced message with user name if available
-      let enhancedInput = originalInput;
-      if (userName) {
-        // Format the enhanced input to include the user's name, but keep the original message intact
-        enhancedInput = `My name is ${userName}. ${originalInput}`;
-      }
-      
-      // Save the original message to database (what the user actually typed)
       const { data: messageData, error: messageError } = await supabase
         .from('messages')
         .insert([{
           chat_id: chatId,
-          content: originalInput, // Save the original input
+          content: input,
           user_role: 'user',
           sender_id: user.id,
         }])
@@ -101,7 +78,7 @@ export const useInputHandling = (
 
       const newMessage = {
         id: messageData.id.toString(),
-        text: originalInput, // Display the original input to the user
+        text: input,
         sender: 'user' as const,
         timestamp: new Date()
       };
@@ -109,8 +86,8 @@ export const useInputHandling = (
       addMessage(newMessage);
       setInput('');
       
-      // Use streaming AI response with the enhanced input
-      await streamAIResponse(enhancedInput, chatId, updateMessage, addMessage);
+      // Use streaming AI response
+      await streamAIResponse(input, chatId, updateMessage, addMessage);
     } catch (error: any) {
       console.error('Error submitting message:', error);
       toast({
