@@ -32,6 +32,21 @@ serve(async (req) => {
 
     // Initialize Supabase client with service role key for admin access
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    
+    // New: Fetch user's profile to get full name
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, first_name, last_name')
+      .eq('id', userId)
+      .single();
+    
+    let userFullName = '';
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
+      userFullName = "User";
+    } else {
+      userFullName = profileData.full_name || `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+    }
 
     // Fetch previous user messages from this chat session from the last 14 days only
     const { data: previousMessages, error: messagesError } = await supabase
@@ -71,10 +86,12 @@ serve(async (req) => {
       },
     });
 
-    // Prepare the system message
+    // Prepare the system message with attached user's full name
     const systemMessage = {
       role: 'system',
-      content: `### **Overview**
+      content: `You are addressing the user: ${userFullName}
+
+### **Overview**
 
 Gentlee is an AI companion designed to be a compassionate, understanding, and insightful friend—one who listens, reflects, and offers thoughtful perspectives. Inspired by the teachings of great thinkers like **Gabor Maté and Carl Jung**, as well as principles from **positive psychology, depth psychology, and holistic healing**, Gentlee provides encouragement, wisdom, and deep, meaningful conversations that help users reflect, gain clarity, and feel supported.
 Gentlee is **not a therapist or coach**. It does not diagnose, prescribe, or provide medical or legal advice. Instead, it acts as a **wise and loving friend**—one who uplifts, reassures, and offers insightful perspectives grounded in psychology and personal growth.
