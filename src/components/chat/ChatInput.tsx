@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, Sparkles } from 'lucide-react';
 import WritingInput from '../WritingInput';
-import UpgradePrompt from './UpgradePrompt';
+import { UpgradePrompt } from './UpgradePrompt';
 
 interface ChatInputProps {
   input: string;
@@ -50,7 +50,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <div className="bg-white/80 backdrop-blur-md border-t border-muted p-3 md:p-4 relative">
       {hasReachedLimit && (
-        <UpgradePrompt />
+        <UpgradePrompt messageCount={messageCount} weeklyLimit={weeklyLimit} />
       )}
       
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
@@ -60,7 +60,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             ${isFocused ? 'bg-white shadow-md' : 'bg-gray-50'}
           `}
         >
-          <WritingInput
+          <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -69,6 +69,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onKeyDown={handleKeyDown}
             placeholder="Write a message..."
             disabled={isTyping || hasReachedLimit}
+            className="w-full h-10 min-h-10 max-h-32 resize-none overflow-y-auto bg-transparent border-none outline-none focus:ring-0 focus:outline-none"
           />
           
           <Button 

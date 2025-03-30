@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,7 +65,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
       
       // Check if there's a chat for today
       const { data, error } = await supabase
-        .from('chats')
+        .from('chat')
         .select('id, created_at')
         .eq('user_id', user.id)
         .gte('created_at', `${today}T00:00:00`)
@@ -98,7 +99,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
     
     try {
       const { data, error } = await supabase
-        .from('chats')
+        .from('chat')
         .insert([{ user_id: user.id }])
         .select();
         
@@ -151,7 +152,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
       try {
         // Get chat details
         const { data: chatData, error: chatError } = await supabase
-          .from('chats')
+          .from('chat')
           .select('created_at')
           .eq('id', currentChatId)
           .single();
@@ -174,7 +175,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
         if (error) throw error;
         
         if (data) {
-          setMessages(data);
+          setMessages(data as Message[]);
           
           // Count user messages for the current week
           countWeeklyMessages();
@@ -190,7 +191,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
         if (highlightsError) throw highlightsError;
         
         if (highlightsData) {
-          setHighlights(highlightsData);
+          setHighlights(highlightsData as Highlight[]);
         }
       } catch (error: any) {
         console.error('Error loading messages:', error);
@@ -239,7 +240,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
     
     // Add user message to UI immediately
     const userMessageObj: Message = {
-      id: Date.now(),
+      id: Date.now().toString(),
       chat_id: currentChatId,
       user_id: user.id,
       content: userMessage,
@@ -296,7 +297,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
       
       // Create a placeholder for the AI response
       const aiMessageObj: Message = {
-        id: Date.now() + 1,
+        id: Date.now().toString() + 1,
         chat_id: currentChatId!,
         user_id: user.id,
         content: '',
@@ -430,7 +431,7 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
         
         if (data && data.length > 0) {
           // Add to local state
-          setHighlights(prev => [...prev, data[0]]);
+          setHighlights(prev => [...prev, data[0] as Highlight]);
         }
       }
       
@@ -449,28 +450,24 @@ export const useChat = (chatId: number | null, locationState: any = {}) => {
   };
 
   // Handle removing a highlight
-  const handleHighlightRemove = async (messageId: number) => {
+  const handleHighlightRemove = async (highlightId: number) => {
     if (!user) return;
     
     try {
-      const highlightToRemove = highlights.find(h => h.message_id === messageId);
-      
-      if (highlightToRemove) {
-        const { error } = await supabase
-          .from('highlights')
-          .delete()
-          .eq('id', highlightToRemove.id);
+      const { error } = await supabase
+        .from('highlights')
+        .delete()
+        .eq('id', highlightId);
           
-        if (error) throw error;
-        
-        // Update local state
-        setHighlights(prev => prev.filter(h => h.id !== highlightToRemove.id));
-        
-        toast({
-          title: "Highlight removed",
-          description: "Your highlight has been removed successfully."
-        });
-      }
+      if (error) throw error;
+      
+      // Update local state
+      setHighlights(prev => prev.filter(h => h.id !== highlightId));
+      
+      toast({
+        title: "Highlight removed",
+        description: "Your highlight has been removed successfully."
+      });
     } catch (error: any) {
       console.error('Error removing highlight:', error);
       toast({

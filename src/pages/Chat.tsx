@@ -92,6 +92,11 @@ const Chat = () => {
     }
   }, [messages, isTyping]);
 
+  // Handler to pass the string message to handleSubmit
+  const handleMessageSubmit = (message: string) => {
+    handleSubmit(message);
+  };
+
   return (
     <ChatContainer
       messages={messages}
@@ -104,7 +109,7 @@ const Chat = () => {
       messageCount={messageCount}
       weeklyLimit={WEEKLY_MESSAGE_LIMIT}
       hasSubscription={hasSubscription}
-      onSubmit={handleSubmit}
+      onSubmit={handleMessageSubmit}
       onClose={handleCloseConversation}
       onMuteToggle={handleMuteToggle}
       onHighlightChange={handleHighlightChange}
