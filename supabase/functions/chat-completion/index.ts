@@ -173,7 +173,7 @@ Avoid
         model: 'gpt-4.1',
         messages: messages,
         temperature: 1.0,
-        max_tokens: 500,
+        max_tokens: 2048,
         stream: true,
       }),
     }).then(async (openAIResponse) => {
