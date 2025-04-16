@@ -1,12 +1,19 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Expand } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChatSuggestions } from './ChatSuggestions';
 import { UpgradePrompt } from './UpgradePrompt';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { JournalModal } from './JournalModal';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 interface ChatInputProps {
   input: string;
@@ -42,6 +49,7 @@ export const ChatInput = ({
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const { user } = useAuth();
   
   // Check if user has an active subscription
@@ -130,6 +138,25 @@ export const ChatInput = ({
   const shouldShowUpgradePrompt = !isSubscribed && user && showUpgradePrompt && 
     (messageCount === weeklyLimit - 1 || messageCount >= weeklyLimit);
 
+  const handleOpenJournal = () => {
+    setIsJournalModalOpen(true);
+  };
+
+  const handleCloseJournal = () => {
+    setIsJournalModalOpen(false);
+  };
+
+  const handleJournalSend = (text: string, saveAsLetter: boolean) => {
+    // Set the input to the journal text and submit the form
+    setInput(text);
+    
+    // Use a timeout to ensure the input is set before submitting
+    setTimeout(() => {
+      const formEvent = new Event('submit') as unknown as React.FormEvent;
+      handleSubmit(formEvent);
+    }, 0);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="relative mt-16">
       <div 
@@ -163,7 +190,7 @@ export const ChatInput = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={hasReachedLimit ? "You've reached your weekly message limit" : "Continue your thoughts here..."}
-              className={`w-full px-1 py-3 pb-4 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed ${isMobile ? 'pr-4' : 'pr-[160px]'} ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-1 py-3 pb-4 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed ${isMobile ? 'pr-16' : 'pr-[160px]'} ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{
                 height: '3rem',
                 minHeight: '3rem',
@@ -180,20 +207,53 @@ export const ChatInput = ({
               }}
               disabled={hasReachedLimit}
             />
+            
+            {/* Journal expand button - desktop */}
+            {!isMobile && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={handleOpenJournal}
+                      className="absolute right-[100px] bottom-0 mb-3 p-2 text-deep-charcoal hover:text-muted-sage focus:outline-none transition-colors"
+                      disabled={hasReachedLimit}
+                    >
+                      <Expand className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Open journal</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
         
-        {/* Mobile Full-Width Send Button */}
+        {/* Mobile Full-Width Send Button and Journal Button */}
         {isMobile && (
-          <motion.button
-            type="submit"
-            className={`w-full mt-4 py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
-            whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
-            disabled={hasReachedLimit}
-          >
-            <span className="font-poppins text-sm">Send</span>
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
+          <div className="flex gap-3 w-full mt-4">
+            <motion.button
+              type="button"
+              className={`py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+              disabled={hasReachedLimit}
+              onClick={handleOpenJournal}
+            >
+              <Expand className="w-4 h-4" />
+            </motion.button>
+            
+            <motion.button
+              type="submit"
+              className={`flex-grow py-3 px-6 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+              whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+              disabled={hasReachedLimit}
+            >
+              <span className="font-poppins text-sm">Send</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </div>
         )}
         
         {/* Desktop Send Button - Adjusted position for better alignment with text */}
@@ -209,6 +269,14 @@ export const ChatInput = ({
           </motion.button>
         )}
       </div>
+      
+      {/* Journal Modal */}
+      <JournalModal 
+        isOpen={isJournalModalOpen}
+        onClose={handleCloseJournal}
+        onSend={handleJournalSend}
+        initialText={input}
+      />
     </form>
   );
 };
