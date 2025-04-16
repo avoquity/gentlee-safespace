@@ -52,15 +52,21 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       onSend(text, saveAsLetter);
       
       if (saveAsLetter && user) {
-        // Save to letters table if toggle is on using a raw query
-        const { error } = await supabase
-          .rpc('insert_letter', { 
-            user_id_param: user.id, 
-            message_text_param: text,
-            send_date_param: null
-          });
-          
-        if (error) throw error;
+        // Use the edge function to save the letter
+        const response = await fetch('https://zmcmrivswbszhqqragli.supabase.co/functions/v1/insert_letter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            message_text: text,
+            send_date: null
+          })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save letter');
       }
       
       // Close modal after sending
