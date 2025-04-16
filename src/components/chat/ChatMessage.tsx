@@ -8,11 +8,16 @@ import { ExpandableMessage } from './ExpandableMessage';
 interface ChatMessageProps {
   message: Message;
   highlights: Highlight[];
-  onHighlight?: (start: number, end: number, message: Message) => void;
-  isLongMessage?: boolean;
+  onHighlightChange?: (highlight: Highlight) => void;
+  onHighlightRemove?: (highlightId: number) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, highlights, onHighlight }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ 
+  message, 
+  highlights, 
+  onHighlightChange,
+  onHighlightRemove
+}) => {
   const [selectedText, setSelectedText] = useState<{ start: number; end: number } | null>(null);
   const messageRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -84,8 +89,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, highlights, onHighli
   }, []);
   
   const handleHighlightClick = () => {
-    if (selectedText && message && onHighlight) {
-      onHighlight(selectedText.start, selectedText.end, message);
+    if (selectedText && message && onHighlightChange) {
+      onHighlightChange({
+        id: 0, // This will be set by the database
+        message_id: parseInt(message.id),
+        start_index: selectedText.start,
+        end_index: selectedText.end,
+        created_at: new Date().toISOString()
+      });
       setSelectedText(null);
     }
   };
@@ -109,7 +120,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, highlights, onHighli
           {message.sender === 'user' ? (
             <ExpandableMessage text={message.text} maxLength={280} />
           ) : (
-            <HighlightedText text={message.text} highlights={messageHighlights} />
+            <HighlightedText 
+              text={message.text} 
+              highlights={messageHighlights} 
+              onRemoveHighlight={onHighlightRemove} 
+            />
           )}
           
           {selectedText && message.sender === 'ai' && (

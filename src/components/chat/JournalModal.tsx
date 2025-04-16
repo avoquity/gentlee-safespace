@@ -52,13 +52,12 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       onSend(text, saveAsLetter);
       
       if (saveAsLetter && user) {
-        // Save to letters table if toggle is on
+        // Save to letters table if toggle is on using a raw query
         const { error } = await supabase
-          .from('letters')
-          .insert({
-            user_id: user.id,
-            message_text: text,
-            send_date: null
+          .rpc('insert_letter', { 
+            user_id_param: user.id, 
+            message_text_param: text,
+            send_date_param: null
           });
           
         if (error) throw error;
