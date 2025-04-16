@@ -1,146 +1,136 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import { HighlightedText } from './HighlightedText';
-import { Highlight, Message } from '@/types/chat';
+import React, { useState, useRef, useEffect } from 'react';
+import { Message, Highlight } from '@/types/chat';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { ExpandableMessage } from './ExpandableMessage';
+import { HighlightedText } from './HighlightedText';
+import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
+import { Highlighter } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
   highlights: Highlight[];
-  onHighlightChange?: (highlight: Highlight) => void;
-  onHighlightRemove?: (highlightId: number) => void;
+  onHighlightChange: (highlight: Highlight) => void;
+  onHighlightRemove: (highlightId: number) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ 
+export const ChatMessage = ({ 
   message, 
   highlights, 
-  onHighlightChange,
-  onHighlightRemove
-}) => {
-  const [selectedText, setSelectedText] = useState<{ start: number; end: number } | null>(null);
-  const messageRef = useRef<HTMLDivElement>(null);
+  onHighlightChange, 
+  onHighlightRemove 
+}: ChatMessageProps) => {
+  const { toast } = useToast();
   const { user } = useAuth();
-  
-  // Find highlights for this message
-  const messageHighlights = highlights.filter(h => h.message_id.toString() === message.id);
-  
-  const handleSelection = () => {
-    if (!user || message.sender !== 'ai') return;
-    
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
+  const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  // Reset tooltip when clicking outside
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
+  //       setShowHighlightTooltip(false);
+  //     }
+  //   };
+
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, []);
+
+  const handleHighlight = async () => {
+    if (!user || !selectionRange) return;
+
+    try {
+      const newHighlight = await createHighlight(
+        message.id,
+        selectionRange.start,
+        selectionRange.end,
+        user.id
+      );
+      
+      onHighlightChange(newHighlight);
+      toast({
+        title: "Success",
+        description: "Text has been highlighted"
+      });
+      setShowHighlightTooltip(false);
+    } catch (error: any) {
+      toast({
+        title: "Error highlighting text",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTextSelection = () => {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) {
-      setSelectedText(null);
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedContent = range.toString().trim();
+
+    if (!selectedContent) {
+      setShowHighlightTooltip(false);
       return;
     }
-    
-    // Only process selections within this message
-    if (messageRef.current && messageRef.current.contains(selection.anchorNode)) {
-      const text = message.text;
-      const selectionText = selection.toString();
-      
-      if (!selectionText || selectionText.length < 3) {
-        setSelectedText(null);
-        return;
-      }
-      
-      const anchorOffset = selection.anchorOffset;
-      const focusOffset = selection.focusOffset;
-      const range = selection.getRangeAt(0);
-      
-      // Find the offset within the text
-      let startContainer = range.startContainer;
-      let startOffset = range.startOffset;
-      
-      // Adjust for nested text nodes
-      let textOffset = 0;
-      if (messageRef.current !== startContainer && startContainer.nodeType === Node.TEXT_NODE) {
-        let node = startContainer;
-        while (node.previousSibling) {
-          if (node.previousSibling.nodeType === Node.TEXT_NODE) {
-            textOffset += node.previousSibling.textContent?.length || 0;
-          } else if (node.previousSibling.nodeType === Node.ELEMENT_NODE) {
-            textOffset += node.previousSibling.textContent?.length || 0;
-          }
-          node = node.previousSibling;
-        }
-      }
-      
-      // Calculate the actual start and end points in the text
-      const start = Math.min(textOffset + startOffset, textOffset + startOffset + selectionText.length);
-      const end = Math.max(textOffset + startOffset, textOffset + startOffset + selectionText.length);
-      
-      setSelectedText({ start, end });
-    }
+
+    // Get selection coordinates for tooltip positioning
+    const rect = range.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Calculate text offsets
+    const container = messageRef.current;
+    if (!container) return;
+
+    const textContent = container.textContent || '';
+    const start = textContent.indexOf(selectedContent);
+    const end = start + selectedContent.length;
+
+    setSelectedText(selectedContent);
+    setSelectionRange({ start, end });
+    setTooltipPosition({
+      x: rect.left + (rect.width / 2),
+      y: rect.top + scrollTop - 10
+    });
+    setShowHighlightTooltip(true);
+    console.log('Selection detected:', { selectedContent, start, end });
   };
-  
-  // Reset selection when clicking outside the message
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (messageRef.current && !messageRef.current.contains(e.target as Node)) {
-        setSelectedText(null);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-  
-  const handleHighlightClick = () => {
-    if (selectedText && message && onHighlightChange) {
-      onHighlightChange({
-        id: 0, // This will be set by the database
-        message_id: parseInt(message.id),
-        start_index: selectedText.start,
-        end_index: selectedText.end,
-        created_at: new Date().toISOString()
-      });
-      setSelectedText(null);
-    }
-  };
-  
+
   return (
-    <div
-      ref={messageRef}
-      className={`chat-message py-4 first:pt-0 last:pb-0 ${
-        message.sender === 'user' ? 'user-message' : 'ai-message'
-      }`}
-      onMouseUp={handleSelection}
-    >
-      <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-        <div
-          className={`max-w-[85%] ${
-            message.sender === 'user'
-              ? 'bg-muted-sage text-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl rounded-tr-sm px-4 py-3'
-              : 'bg-light-sage text-deep-charcoal rounded-tr-2xl rounded-br-2xl rounded-bl-2xl rounded-tl-sm px-4 py-3'
-          } shadow-sm text-opacity-90 leading-relaxed`}
-        >
-          {message.sender === 'user' ? (
-            <ExpandableMessage text={message.text} maxLength={280} />
-          ) : (
-            <HighlightedText 
-              text={message.text} 
-              highlights={messageHighlights} 
-              onRemoveHighlight={onHighlightRemove} 
-            />
-          )}
-          
-          {selectedText && message.sender === 'ai' && (
-            <div className="mt-2 flex justify-end">
-              <button
-                onClick={handleHighlightClick}
-                className="text-xs bg-muted-sage text-white px-2 py-1 rounded-full"
-              >
-                Highlight
-              </button>
-            </div>
-          )}
-        </div>
+    <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+      <div
+        ref={messageRef}
+        className={`max-w-[80%] px-6 py-4 rounded-2xl relative ${
+          message.sender === 'user' ? 'bg-white shadow-sm' : 'bg-transparent'
+        }`}
+        onMouseUp={handleTextSelection}
+      >
+        <HighlightedText
+          text={message.text}
+          highlights={highlights}
+          onRemoveHighlight={onHighlightRemove}
+        />
+
+        {showHighlightTooltip && selectionRange && (
+          <div 
+            className="fixed z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 flex items-center gap-2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
+            style={{
+              left: tooltipPosition.x,
+              top: tooltipPosition.y
+            }}
+            onClick={handleHighlight}
+          >
+            <Highlighter size={16} />
+            Highlight text
+          </div>
+        )}
       </div>
     </div>
   );
 };
-
-export default ChatMessage;

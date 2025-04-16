@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { Message, Highlight } from '@/types/chat';
-import ChatMessage from './ChatMessage';
+import { ChatMessage } from './ChatMessage';
 import { ChatTypingIndicator } from './ChatTypingIndicator';
 
 interface ChatMessagesProps {
