@@ -55,13 +55,11 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
         if (error) throw error;
       }
-
+      
+      // Call the onSend prop function with the current text and saved letter state
       onSend(journalText, isSavedAsLetter);
       
-      // Clear the text after sending but before closing to prevent flashing
-      setJournalText('');
-      setIsSavedAsLetter(false);
-      onClose();
+      // No need to handle closing or clearing text here as it's done in the parent component
     } catch (error) {
       toast({
         title: "Error",
