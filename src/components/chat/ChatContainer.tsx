@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { JournalModal } from './JournalModal';
 import { ChatHeader } from './ChatHeader';
@@ -47,6 +49,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [journalText, setJournalText] = useState('');
   const isMobile = useIsMobile();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     setJournalText(text);
