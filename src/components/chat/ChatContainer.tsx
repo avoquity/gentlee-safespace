@@ -1,5 +1,8 @@
-
-import React from 'react';
+import React, { useState } from 'react';
+import { NotebookPen } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { JournalModal } from './JournalModal';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
@@ -41,13 +44,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onHighlightRemove,
   messagesEndRef
 }) => {
-  // Create a ref for the chat container
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [journalText, setJournalText] = useState('');
+  const isMobile = useIsMobile();
 
-  // Scroll to bottom when messages change
-  React.useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, messagesEndRef]);
+  const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
+    setJournalText(text);
+    onSubmit(new Event('submit') as unknown as React.FormEvent);
+  };
 
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
@@ -72,7 +76,32 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
+          {!isMobile ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setIsJournalModalOpen(true)}
+                    className="absolute right-[-50px] top-1/2 transform -translate-y-1/2 text-deep-charcoal hover:text-muted-sage transition-colors"
+                  >
+                    <NotebookPen size={24} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Open journal</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button 
+              onClick={() => setIsJournalModalOpen(true)} 
+              className="w-full mb-4"
+            >
+              Journal
+            </Button>
+          )}
+
           <ChatInput 
             input={input}
             setInput={setInput}
@@ -82,6 +111,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           />
         </div>
       </div>
+      
+      <JournalModal
+        isOpen={isJournalModalOpen}
+        onClose={() => setIsJournalModalOpen(false)}
+        onSend={handleModalSend}
+        initialText={journalText}
+      />
       
       <ScrollToTop scrollContainer={containerRef} />
       
