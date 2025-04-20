@@ -57,6 +57,8 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       }
 
       onSend(journalText, isSavedAsLetter);
+      
+      // Clear the text after sending but before closing to prevent flashing
       setJournalText('');
       setIsSavedAsLetter(false);
       onClose();
@@ -95,7 +97,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
           >
             <div className="flex justify-end mb-4">
               <button 
-                onClick={onClose}
+                onClick={handleCancel}
                 className="text-deep-charcoal hover:text-opacity-70 transition-all"
               >
                 <X size={24} />
@@ -123,7 +125,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               <div className="space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={onClose}
+                  onClick={handleCancel}
                 >
                   Cancel
                 </Button>
@@ -139,4 +141,3 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     </AnimatePresence>
   );
 };
-

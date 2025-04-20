@@ -52,8 +52,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
-    setJournalText(text);
-    onSubmit(new Event('submit') as unknown as React.FormEvent);
+    // Set the input to the journal text first
+    setInput(text);
+    
+    // Use setTimeout to ensure the input is set before submitting
+    setTimeout(() => {
+      onSubmit(new Event('submit') as unknown as React.FormEvent);
+      setJournalText(''); // Clear journal text after sending
+    }, 0);
   };
 
   const handleModalCancel = (text: string) => {
