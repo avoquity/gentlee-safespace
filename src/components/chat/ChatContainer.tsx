@@ -56,6 +56,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     onSubmit(new Event('submit') as unknown as React.FormEvent);
   };
 
+  const handleModalCancel = (text: string) => {
+    setInput(text);
+  };
+
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
       <div className="flex-1 overflow-hidden">
@@ -119,6 +123,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         isOpen={isJournalModalOpen}
         onClose={() => setIsJournalModalOpen(false)}
         onSend={handleModalSend}
+        onCancel={handleModalCancel}
         initialText={journalText}
       />
       

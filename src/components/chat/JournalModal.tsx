@@ -12,13 +12,15 @@ interface JournalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSend: (text: string, isSavedAsLetter: boolean) => void;
+  onCancel: (text: string) => void;
   initialText?: string;
 }
 
 export const JournalModal: React.FC<JournalModalProps> = ({ 
   isOpen, 
   onClose, 
-  onSend, 
+  onSend,
+  onCancel,
   initialText = '' 
 }) => {
   const [journalText, setJournalText] = useState(initialText);
@@ -65,6 +67,15 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         variant: "destructive"
       });
     }
+  };
+
+  const handleCancel = () => {
+    if (journalText.trim()) {
+      onCancel(journalText);
+    }
+    setJournalText('');
+    setIsSavedAsLetter(false);
+    onClose();
   };
 
   return (
@@ -128,3 +139,4 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     </AnimatePresence>
   );
 };
+
