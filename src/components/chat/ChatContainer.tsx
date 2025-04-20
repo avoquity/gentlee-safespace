@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -51,17 +50,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
-    // We'll directly call updateMessage from here
-    setInput(text);
+  const handleModalSend = async (text: string, isSavedAsLetter: boolean) => {
+    if (!text.trim()) return;
     
-    // Create a synthetic event and call onSubmit immediately
-    const event = new Event('submit') as unknown as React.FormEvent;
-    onSubmit(event);
-    
-    // Clean up
-    setJournalText('');
     setIsJournalModalOpen(false);
+    setInput(text);
+    requestAnimationFrame(() => {
+      const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+      onSubmit(formEvent);
+      setJournalText('');
+    });
   };
 
   const handleModalCancel = (text: string) => {

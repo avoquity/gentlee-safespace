@@ -25,6 +25,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 }) => {
   const [journalText, setJournalText] = useState(initialText);
   const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -35,6 +36,14 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       setJournalText(initialText);
     }
   }, [isOpen, initialText]);
+
+  // Clean up state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsSavedAsLetter(false);
+      // Don't reset journalText here as it might still be needed
+    }
+  }, [isOpen]);
 
   const handleSend = async () => {
     if (!journalText.trim()) {
@@ -47,8 +56,11 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     }
 
     try {
+      setIsSending(true);
+      
+      // Handle saving as letter if needed
       if (isSavedAsLetter && user) {
-        const { data, error } = await supabase.rpc('create_letter', {
+        const { error } = await supabase.rpc('create_letter', {
           p_message_text: journalText,
           p_send_date: new Date().toISOString()
         });
@@ -56,16 +68,17 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         if (error) throw error;
       }
       
-      // Call the onSend prop function with the current text and saved letter state
+      // Call the parent's onSend function
+      // This triggers the submission in ChatContainer
       onSend(journalText, isSavedAsLetter);
       
-      // No need to handle closing or clearing text here as it's done in the parent component
     } catch (error) {
       toast({
         title: "Error",
         description: "Could not save journal entry.",
         variant: "destructive"
       });
+      setIsSending(false);
     }
   };
 
@@ -74,7 +87,6 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       onCancel(journalText);
     }
     setJournalText('');
-    setIsSavedAsLetter(false);
     onClose();
   };
 
@@ -124,10 +136,14 @@ export const JournalModal: React.FC<JournalModalProps> = ({
                 <Button 
                   variant="outline" 
                   onClick={handleCancel}
+                  disabled={isSending}
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSend}>
+                <Button 
+                  onClick={handleSend}
+                  disabled={isSending || !journalText.trim()}
+                >
                   <Send size={16} className="mr-2" />
                   Send
                 </Button>
