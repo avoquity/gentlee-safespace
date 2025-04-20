@@ -30,6 +30,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // Initialize text when modal opens
   useEffect(() => {
     if (isOpen && textareaRef.current) {
       textareaRef.current.focus();
@@ -37,11 +38,11 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     }
   }, [isOpen, initialText]);
 
-  // Clean up state when modal closes
+  // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setIsSavedAsLetter(false);
-      // Don't reset journalText here as it might still be needed
+      setIsSending(false);
     }
   }, [isOpen]);
 
@@ -68,9 +69,12 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         if (error) throw error;
       }
       
-      // Call the parent's onSend function
-      // This triggers the submission in ChatContainer
+      // Send the journal text to the parent component
+      // This will immediately trigger the form submission in ChatContainer
       onSend(journalText, isSavedAsLetter);
+      
+      // Clear text in the modal after sending
+      setJournalText('');
       
     } catch (error) {
       toast({

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -131,7 +130,7 @@ export const ChatInput = ({
     (messageCount === weeklyLimit - 1 || messageCount >= weeklyLimit);
 
   return (
-    <form onSubmit={handleSubmit} className="relative mt-16">
+    <div className="relative mt-16">
       <div 
         className="absolute -top-20 left-0 right-0 h-40 pointer-events-none" 
         style={{ 
@@ -209,6 +208,6 @@ export const ChatInput = ({
           </motion.button>
         )}
       </div>
-    </form>
+    </div>
   );
 };

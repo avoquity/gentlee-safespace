@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -49,17 +50,27 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [journalText, setJournalText] = useState('');
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleModalSend = async (text: string, isSavedAsLetter: boolean) => {
+  const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
     
-    setIsJournalModalOpen(false);
+    // First set the input text
     setInput(text);
-    requestAnimationFrame(() => {
-      const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
-      onSubmit(formEvent);
-      setJournalText('');
-    });
+    
+    // Directly submit the form using the form reference
+    // This is crucial to ensure immediate submission
+    if (formRef.current) {
+      // Use setTimeout to ensure the input value is set before submission
+      setTimeout(() => {
+        formRef.current?.dispatchEvent(
+          new Event('submit', { cancelable: true, bubbles: true })
+        );
+        // Close modal and reset journal text after submission
+        setIsJournalModalOpen(false);
+        setJournalText('');
+      }, 0);
+    }
   };
 
   const handleModalCancel = (text: string) => {
@@ -115,13 +126,15 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             </Button>
           )}
 
-          <ChatInput 
-            input={input}
-            setInput={setInput}
-            handleSubmit={onSubmit}
-            messageCount={messageCount}
-            weeklyLimit={weeklyLimit}
-          />
+          <form ref={formRef} onSubmit={onSubmit}>
+            <ChatInput 
+              input={input}
+              setInput={setInput}
+              handleSubmit={onSubmit}
+              messageCount={messageCount}
+              weeklyLimit={weeklyLimit}
+            />
+          </form>
         </div>
       </div>
       
