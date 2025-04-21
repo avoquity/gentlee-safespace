@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
@@ -37,12 +36,14 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   initialText = ""
 }) => {
   const [journalText, setJournalText] = useState(initialText);
-  const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
+  // Temporarily hide this feature
+  // const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const isSheet = useIsMobileSheet();
+  const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
 
   // Autofocus on open
   useEffect(() => {
@@ -55,8 +56,9 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   // Reset state on close
   useEffect(() => {
     if (!isOpen) {
-      setIsSavedAsLetter(false);
+      // setIsSavedAsLetter(false);
       setIsSending(false);
+      setIsSavedAsLetter(false);
     }
   }, [isOpen]);
 
@@ -73,7 +75,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     try {
       setIsSending(true);
 
-      // Feature hidden: saving as letter (still in logic, not UI)
+      // Feature hidden: saving as letter (logic kept but not used, UI hidden)
       if (isSavedAsLetter && user) {
         const { error } = await supabase.rpc('create_letter', {
           p_message_text: journalText,
@@ -83,7 +85,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         if (error) throw error;
       }
 
-      onSend(journalText, isSavedAsLetter);
+      onSend(journalText, isSavedAsLetter); // always false for isSavedAsLetter (feature hidden)
       setJournalText('');
     } catch (error) {
       toast({
@@ -103,7 +105,15 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     onClose();
   };
 
-  // Animation/config for mobile sheet vs. classic modal
+  // Overlay animation for mobile/tablet
+  const overlayMotionProps = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.24, ease: [0.4, 0.0, 0.2, 1] }
+  };
+
+  // Modal/sheet animation/config
   const modalMotionProps = isSheet
     ? {
         className:
@@ -128,84 +138,97 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div {...modalMotionProps}>
-          <motion.div
-            className={contentClass}
-            initial={{ scale: 0.97, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.97, opacity: 0 }}
-            transition={{ type: "spring", bounce: 0.12, duration: 0.30 }}
-          >
-            {/* Drag handle/bar on top for sheet modal */}
-            {isSheet && (
-              <div
-                className="mx-auto my-2 w-12 h-[5px] rounded-full bg-deep-charcoal/10"
-                aria-hidden="true"
-              ></div>
-            )}
-
-            <div className={`flex justify-end mb-2 px-6`}>
-              <button
-                onClick={handleCancel}
-                className="text-deep-charcoal hover:text-opacity-70 transition-all"
-                aria-label="Close journal entry"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            {/* Textarea */}
-            <div className="flex-1 px-6 pb-3">
-              <textarea
-                ref={textareaRef}
-                value={journalText}
-                onChange={(e) => setJournalText(e.target.value)}
-                placeholder="Take your time. Write what's on your mind."
-                className="w-full h-full bg-transparent text-lg text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none focus:outline-none font-poppins"
-                autoFocus
-                style={{
-                  minHeight: isSheet ? "150px" : "unset",
-                  overflowY: 'auto'
-                }}
-              />
-            </div>
-            {/* Feature Hidden: Save letter switch remains hidden here */}
-
-            {/* "Sticky" Bottom Button Row */}
-            <div
-              className={`
-                w-full px-6 pb-[max(18px,env(safe-area-inset-bottom))] pt-0 
-                flex gap-3
-                ${isSheet
-                  ? "sticky bottom-0 bg-soft-ivory"
-                  : "mt-4 bg-soft-ivory/95 border-t-0"}
-              `}
-              style={{
-                boxShadow: isSheet
-                  ? "0px -8px 32px 0 rgba(202 189 176 / 7%)"
-                  : undefined
-              }}
+        <>
+          {/* Overlay for mobile/tablet, only when modal is open and in sheet mode */}
+          {isSheet && (
+            <motion.div
+              key="journal-modal-overlay"
+              className="fixed inset-0 z-40 bg-black/50"
+              {...overlayMotionProps}
+              onClick={onClose}
+              aria-label="Close modal overlay"
+            />
+          )}
+          <motion.div {...modalMotionProps}>
+            <motion.div
+              className={contentClass}
+              initial={{ scale: 0.97, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.97, opacity: 0 }}
+              transition={{ type: "spring", bounce: 0.12, duration: 0.30 }}
+              onClick={e => e.stopPropagation()} // prevent closing modal when clicking inside
             >
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSending}
-                className="flex-1 font-poppins rounded-full h-12 text-base"
-                type="button"
+              {/* Drag handle/bar on top for sheet modal */}
+              {isSheet && (
+                <div
+                  className="mx-auto my-2 w-12 h-[5px] rounded-full bg-deep-charcoal/10"
+                  aria-hidden="true"
+                ></div>
+              )}
+
+              <div className={`flex justify-end mb-2 px-6`}>
+                <button
+                  onClick={handleCancel}
+                  className="text-deep-charcoal hover:text-opacity-70 transition-all"
+                  aria-label="Close journal entry"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              {/* Textarea */}
+              <div className="flex-1 px-6 pb-3">
+                <textarea
+                  ref={textareaRef}
+                  value={journalText}
+                  onChange={(e) => setJournalText(e.target.value)}
+                  placeholder="Take your time. Write what's on your mind."
+                  className="w-full h-full bg-transparent text-lg text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none focus:outline-none font-poppins"
+                  autoFocus
+                  style={{
+                    minHeight: isSheet ? "150px" : "unset",
+                    overflowY: 'auto'
+                  }}
+                />
+              </div>
+              {/* Feature Hidden: Save letter switch remains hidden here */}
+
+              {/* "Sticky" Bottom Button Row */}
+              <div
+                className={`
+                  w-full px-6 pb-[max(18px,env(safe-area-inset-bottom))] pt-0 
+                  flex gap-3
+                  ${isSheet
+                    ? "sticky bottom-0 bg-soft-ivory"
+                    : "mt-4 bg-soft-ivory/95 border-t-0"}
+                `}
+                style={{
+                  boxShadow: isSheet
+                    ? "0px -8px 32px 0 rgba(202 189 176 / 7%)"
+                    : undefined
+                }}
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSend}
-                disabled={isSending || !journalText.trim()}
-                className="flex-1 font-poppins rounded-full h-12 text-base flex items-center justify-center gap-2"
-                type="button"
-              >
-                <Send size={18} className="mr-1 -ml-1" />
-                Send
-              </Button>
-            </div>
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isSending}
+                  className="flex-1 font-poppins rounded-full h-12 text-base"
+                  type="button"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSend}
+                  disabled={isSending || !journalText.trim()}
+                  className="flex-1 font-poppins rounded-full h-12 text-base flex items-center justify-center gap-2"
+                  type="button"
+                >
+                  <Send size={18} className="mr-1 -ml-1" />
+                  Send
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
