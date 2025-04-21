@@ -162,7 +162,7 @@ export const ChatInput = ({
           <motion.button
             type="submit"
             aria-label="Send"
-            className={`w-[90%] mx-auto py-3 px-6 mt-1 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal font-poppins text-sm hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
+            className={`w-[90%] mx-auto py-3 px-6 mt-1 rounded-full border-2 border-deep-charcoal flex items-center justify-center gap-2 text-deep-charcoal font-poppins text-base hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
               hasReachedLimit ? "opacity-50 cursor-not-allowed" : ""
             }`}
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
@@ -243,7 +243,7 @@ export const ChatInput = ({
         <motion.button
           type="submit"
           aria-label="Send"
-          className={`h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal font-poppins text-sm hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
+          className={`h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal font-poppins text-base hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
             hasReachedLimit ? "opacity-50 cursor-not-allowed" : ""
           }`}
           whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
