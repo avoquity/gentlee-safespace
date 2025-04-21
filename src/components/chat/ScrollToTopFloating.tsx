@@ -56,7 +56,7 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
         )}
         tabIndex={isVisible ? 0 : -1}
       >
-        <ArrowUp className="text-primary" size={24} color="#9b87f5" strokeWidth={2.5} />
+        <ArrowUp className="text-black" size={24} strokeWidth={2.5} />
       </button>
     </div>
   );
