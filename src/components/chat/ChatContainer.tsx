@@ -50,6 +50,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
@@ -70,7 +71,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
+    <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative'}}>
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
           <ChatHeader 
@@ -87,6 +88,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             onHighlightRemove={onHighlightRemove}
             messagesEndRef={messagesEndRef}
           />
+          <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
         </div>
       </div>
 
@@ -113,7 +115,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         initialText={journalText}
       />
       
-      <ScrollToTop scrollContainer={containerRef} isTyping={isTyping} />
+      <ScrollToTop scrollContainer={containerRef} endRef={messagesEndWrapperRef} isTyping={isTyping} />
       
       <audio
         src="/path-to-your-music.mp3"
