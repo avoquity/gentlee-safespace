@@ -9,6 +9,7 @@ import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
 import { ScrollToTop } from './ScrollToTop';
 import { Highlight, Message } from '@/types/chat';
+import { ScrollToTopFloating } from './ScrollToTopFloating';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -91,6 +92,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
         </div>
       </div>
+
+      <ScrollToTopFloating scrollContainer={containerRef} />
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
