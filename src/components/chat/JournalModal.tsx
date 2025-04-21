@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
+// import { Switch } from '@/components/ui/switch'; // <-- Temporarily not needed
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,8 +58,8 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
     try {
       setIsSending(true);
-      
-      // Handle saving as letter if needed
+
+      // Feature hidden: saving as letter (still in logic, not UI)
       if (isSavedAsLetter && user) {
         const { error } = await supabase.rpc('create_letter', {
           p_message_text: journalText,
@@ -68,14 +68,12 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
         if (error) throw error;
       }
-      
+
       // Send the journal text to the parent component
-      // This will immediately trigger the form submission in ChatContainer
       onSend(journalText, isSavedAsLetter);
-      
+
       // Clear text in the modal after sending
       setJournalText('');
-      
     } catch (error) {
       toast({
         title: "Error",
@@ -126,6 +124,8 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               style={{ overflowY: 'auto' }}
             />
             <div className="flex justify-between items-center mt-4">
+              {/* Feature Hidden - Save letter switch */}
+              {/* 
               <div className="flex items-center space-x-2">
                 <Switch 
                   id="save-letter"
@@ -136,17 +136,21 @@ export const JournalModal: React.FC<JournalModalProps> = ({
                   Save this as a letter to myself
                 </label>
               </div>
-              <div className="space-x-2">
+              */}
+              <div />
+              <div className="space-x-2 flex">
                 <Button 
                   variant="outline" 
                   onClick={handleCancel}
                   disabled={isSending}
+                  className="rounded-full px-6 py-2 font-poppins"
                 >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSend}
                   disabled={isSending || !journalText.trim()}
+                  className="rounded-full px-6 py-2 font-poppins flex items-center gap-2"
                 >
                   <Send size={16} className="mr-2" />
                   Send
