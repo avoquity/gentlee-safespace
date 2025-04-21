@@ -121,7 +121,7 @@ export const ChatInput = ({
       <div className="relative w-full flex flex-col gap-0">
         <div className="flex items-center w-full mb-2">
           {/* Input area */}
-          <div className="flex flex-1 items-center">
+          <div className="flex flex-1 items-center relative">
             <textarea
               ref={textareaRef}
               value={input}
@@ -144,10 +144,12 @@ export const ChatInput = ({
               }}
               disabled={hasReachedLimit}
             />
-            {/* JournalButton right of input: */}
+            {/* JournalButton right of input, outside the send button: */}
             <div
-              className="absolute right-1"
-              style={{ top: '50%', transform: 'translateY(-50%)' }}
+              className="flex-shrink-0 ml-3"
+              style={{ minWidth: 44, minHeight: 44 }}
+              aria-label="Journal mode"
+              title="Journal mode"
             >
               <JournalButton
                 onClick={onJournalClick}
@@ -255,3 +257,4 @@ export const ChatInput = ({
     </div>
   );
 };
+
