@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Notebook } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChatSuggestions } from './ChatSuggestions';
 import { UpgradePrompt } from './UpgradePrompt';
@@ -14,7 +14,8 @@ interface ChatInputProps {
   handleSubmit: (e: React.FormEvent) => void;
   messageCount?: number;
   weeklyLimit?: number;
-  leftAction?: React.ReactNode; // left of send button
+  leftAction?: React.ReactNode; // Deprecated in new layout
+  onJournalOpen?: () => void,   // New, for explicit journal open
 }
 
 const chatSuggestions = [
@@ -34,7 +35,7 @@ export const ChatInput = ({
   handleSubmit,
   messageCount = 0,
   weeklyLimit = 10,
-  leftAction,
+  onJournalOpen,
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
@@ -119,6 +120,28 @@ export const ChatInput = ({
     showUpgradePrompt &&
     (messageCount === weeklyLimit - 1 || messageCount >= weeklyLimit);
 
+  // NEW: Journal icon as an explicit function - no border, min 44x44, right of textarea (mobile) or send btn (desktop)
+  const JournalIconButton = (
+    <button
+      type="button"
+      aria-label="Open journal"
+      tabIndex={0}
+      onClick={onJournalOpen}
+      className={`flex items-center justify-center bg-transparent outline-none border-none select-none transition-colors duration-150
+        min-w-[44px] min-h-[44px] rounded-full mx-2
+        ${isMobile ? 'mr-0' : 'ml-2'} 
+        hover:bg-transparent active:bg-transparent shadow-none`}
+      style={{
+        padding: 0,
+        margin: 0,
+        appearance: 'none',
+        boxShadow: 'none',
+      }}
+    >
+      <Notebook size={26} className="text-deep-charcoal" />
+    </button>
+  );
+
   return (
     <div className="relative mt-16">
       <div
@@ -147,54 +170,104 @@ export const ChatInput = ({
             messageCount={messageCount}
           />
 
-          <div className={`flex items-end gap-2 w-full pt-2`}>
-            {/* Journal Button as leftAction, only if provided */}
-            {leftAction && <div className="flex-shrink-0">{leftAction}</div>}
-
-            {/* Textarea expands to fill */}
-            <div className="flex-1 relative">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  hasReachedLimit
-                    ? "You've reached your weekly message limit"
-                    : "Continue your thoughts here..."
-                }
-                className={`w-full px-1 py-3 pb-4 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed ${isMobile ? 'pr-4' : 'pr-[120px]'} ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                style={{
-                  height: '3rem',
-                  minHeight: '3rem',
-                  maxHeight: '12rem',
-                  overflowY: 'auto',
-                }}
-                onFocus={handleTextareaFocus}
-                onBlur={() => setTimeout(() => setIsFocused(false), 150)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
+          {/* --- Mobile Layout --- */}
+          {isMobile ? (
+            <div className="flex flex-col items-center gap-0 w-full pt-2">
+              {/* Row: Textarea + Journal icon */}
+              <div className="flex w-full items-end">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={
+                      hasReachedLimit
+                        ? "You've reached your weekly message limit"
+                        : "Continue your thoughts here..."
+                    }
+                    className={`w-full px-1 py-3 pb-4 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-2 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{
+                      height: '3rem',
+                      minHeight: '3rem',
+                      maxHeight: '12rem',
+                      overflowY: 'auto',
+                    }}
+                    onFocus={handleTextareaFocus}
+                    onBlur={() => setTimeout(() => setIsFocused(false), 150)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
+                    disabled={hasReachedLimit}
+                    aria-label="Chat input"
+                  />
+                </div>
+                {/* Journal icon */}
+                {JournalIconButton}
+              </div>
+              {/* Row: Send button, full-width under textarea */}
+              <motion.button
+                type="submit"
+                className={`mt-4 h-[44px] w-[90vw] max-w-[440px] rounded-full bg-deep-charcoal text-white text-lg font-semibold flex items-center justify-center gap-2 shadow-none border-none transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
                 disabled={hasReachedLimit}
-                aria-label="Chat input"
-              />
+                style={{ outline: "none", boxShadow: "none" }}
+              >
+                <span className="font-poppins text-md">Send</span>
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
             </div>
+          ) : (
+          /* --- Desktop Layout --- */
+            <div className={`flex items-end gap-2 w-full pt-2`}>
+              {/* Textarea expands to fill */}
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={
+                    hasReachedLimit
+                      ? "You've reached your weekly message limit"
+                      : "Continue your thoughts here..."
+                  }
+                  className={`w-full px-1 py-3 pb-4 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-[120px] ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  style={{
+                    height: '3rem',
+                    minHeight: '3rem',
+                    maxHeight: '12rem',
+                    overflowY: 'auto',
+                  }}
+                  onFocus={handleTextareaFocus}
+                  onBlur={() => setTimeout(() => setIsFocused(false), 150)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
+                  disabled={hasReachedLimit}
+                  aria-label="Chat input"
+                />
+              </div>
+              {/* Send Button */}
+              <motion.button
+                type="submit"
+                className={`h-[44px] min-w-[44px] px-6 rounded-full flex items-center gap-2 text-deep-charcoal bg-deep-charcoal/5 hover:bg-muted-sage hover:text-white transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
+                style={{ marginBottom: '8px', border: 'none', outline: 'none', boxShadow: 'none' }}
+                disabled={hasReachedLimit}
+              >
+                <span className="font-poppins text-sm">Send</span>
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+              {/* Journal icon, to the right of send */}
+              {JournalIconButton}
+            </div>
+          )}
 
-            {/* Send Button */}
-            <motion.button
-              type="submit"
-              className={`h-[44px] min-w-[44px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
-              whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
-              style={{ marginBottom: '8px' }}
-              disabled={hasReachedLimit}
-            >
-              {!isMobile && <span className="font-poppins text-sm">Send</span>}
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
-          </div>
         </div>
       </div>
     </div>

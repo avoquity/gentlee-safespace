@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Notebook, PenTool } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -71,43 +70,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     setInput(text);
   };
 
-  // Render the journal button (Notebook icon, icon-only on mobile)
-  const journalButton = isMobile ? (
-    <button
-      type="button"
-      aria-label="Open journal"
-      className="flex items-center justify-center rounded-full bg-white text-deep-charcoal hover:bg-soft-yellow/60 transition-colors border border-deep-charcoal min-w-[44px] min-h-[44px] mr-2"
-      style={{
-        boxShadow: '0 2px 8px 0 rgba(20, 20, 20, 0.03)',
-        fontSize: 22,
-      }}
-      onClick={() => setIsJournalModalOpen(true)}
-    >
-      <Notebook size={24} aria-hidden="true" />
-    </button>
-  ) : (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            aria-label="Open journal"
-            className="flex items-center justify-center rounded-full bg-white text-deep-charcoal hover:bg-soft-yellow/60 transition-colors border border-deep-charcoal min-w-[44px] min-h-[44px] mr-2"
-            style={{
-              boxShadow: '0 2px 8px 0 rgba(20, 20, 20, 0.03)',
-              fontSize: 22,
-            }}
-            onClick={() => setIsJournalModalOpen(true)}
-          >
-            <Notebook size={22} aria-hidden="true" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Open journal</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  const handleOpenJournal = () => setIsJournalModalOpen(true);
 
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
@@ -140,7 +103,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               handleSubmit={onSubmit}
               messageCount={messageCount}
               weeklyLimit={weeklyLimit}
-              leftAction={journalButton}
+              onJournalOpen={handleOpenJournal}
             />
           </form>
         </div>
