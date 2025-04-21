@@ -58,6 +58,18 @@ const Chat = () => {
     }
   }, [messages, isTyping]);
 
+  useEffect(() => {
+    // Add debug message to check if chat page is mounted
+    console.log("Chat page mounted, should initialize ScrollToTopFloating");
+    
+    // Force a repaint after a short delay to make sure the button appears
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <ChatContainer
       messages={messages}

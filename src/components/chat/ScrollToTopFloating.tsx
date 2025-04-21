@@ -17,12 +17,26 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
       if (!scrollContainer?.current) return;
 
       const container = scrollContainer.current;
-      // Show button if user has scrolled down a bit (use lower threshold to show button more readily)
-      setIsVisible(container.scrollTop > 100);
+      const scrollHeight = container.scrollHeight;
+      const scrollTop = container.scrollTop;
+      const clientHeight = container.clientHeight;
+      
+      // Show button when scrolled down 100px or more from top
+      // AND when not at the very bottom (leave some room)
+      setIsVisible(scrollTop > 100);
+      
+      // Add console log for debugging
+      console.log({
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        isVisible: scrollTop > 100
+      });
     };
 
     const el = scrollContainer?.current;
     if (!el) return;
+    
     el.addEventListener("scroll", handleScroll, { passive: true });
 
     // Run once for initial state
@@ -42,17 +56,22 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
   return (
     <div
       aria-hidden={!isVisible}
-      className="pointer-events-none fixed bottom-0 left-0 right-0 z-50 flex justify-center"
+      className={cn(
+        "pointer-events-none fixed bottom-20 left-0 right-0 z-[1000] flex justify-center",
+        "transition-opacity duration-300 ease-in-out",
+        isVisible ? "opacity-100" : "opacity-0"
+      )}
+      style={{ pointerEvents: isVisible ? 'auto' : 'none' }}
     >
       <button
         type="button"
         aria-label="Scroll to top"
         onClick={handleClick}
         className={cn(
-          "flex h-12 w-12 min-h-11 min-w-11 items-center justify-center rounded-full bg-white shadow-lg",
-          "transition-all duration-300 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-          "mb-28 transform",
-          isVisible ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none translate-y-10"
+          "flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg",
+          "transition-transform duration-300 ease-in-out hover:bg-gray-50 hover:shadow-xl",
+          "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+          isVisible ? "translate-y-0" : "translate-y-10"
         )}
         tabIndex={isVisible ? 0 : -1}
       >
