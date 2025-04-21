@@ -2,11 +2,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
-// import { Switch } from '@/components/ui/switch'; // <-- Temporarily not needed
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+
+// Track window size for responsive modal (mobile/tablet style)
+function useIsMobileSheet() {
+  const [isSheet, setIsSheet] = React.useState(false);
+  useEffect(() => {
+    function update() {
+      setIsSheet(window.innerWidth < 1024);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return isSheet;
+}
 
 interface JournalModalProps {
   isOpen: boolean;
@@ -16,12 +29,12 @@ interface JournalModalProps {
   initialText?: string;
 }
 
-export const JournalModal: React.FC<JournalModalProps> = ({ 
-  isOpen, 
-  onClose, 
+export const JournalModal: React.FC<JournalModalProps> = ({
+  isOpen,
+  onClose,
   onSend,
   onCancel,
-  initialText = '' 
+  initialText = ""
 }) => {
   const [journalText, setJournalText] = useState(initialText);
   const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
@@ -29,8 +42,9 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const isSheet = useIsMobileSheet();
 
-  // Initialize text when modal opens
+  // Autofocus on open
   useEffect(() => {
     if (isOpen && textareaRef.current) {
       textareaRef.current.focus();
@@ -38,7 +52,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     }
   }, [isOpen, initialText]);
 
-  // Reset state when modal closes
+  // Reset state on close
   useEffect(() => {
     if (!isOpen) {
       setIsSavedAsLetter(false);
@@ -69,10 +83,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         if (error) throw error;
       }
 
-      // Send the journal text to the parent component
       onSend(journalText, isSavedAsLetter);
-
-      // Clear text in the modal after sending
       setJournalText('');
     } catch (error) {
       toast({
@@ -92,70 +103,106 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     onClose();
   };
 
+  // Animation/config for mobile sheet vs. classic modal
+  const modalMotionProps = isSheet
+    ? {
+        className:
+          "fixed inset-x-0 bottom-0 z-50 flex items-end justify-center",
+        initial: { y: "100%", opacity: 1 },
+        animate: { y: 0, opacity: 1 },
+        exit: { y: "100%" },
+        transition: { type: "spring", bounce: 0.2, duration: 0.35 }
+      }
+    : {
+        className:
+          "fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm",
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 }
+      };
+
+  const contentClass = isSheet
+    ? "relative w-full max-w-md mx-auto h-[80dvh] rounded-t-3xl bg-soft-ivory flex flex-col pb-0 pt-4 px-0 shadow-xl overflow-hidden"
+    : "w-[70%] h-[70%] bg-soft-ivory rounded-lg shadow-xl flex flex-col p-6";
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div 
-            className="w-[70%] h-[70%] bg-soft-ivory rounded-lg shadow-xl flex flex-col p-6"
-            initial={{ scale: 0.9, opacity: 0 }}
+        <motion.div {...modalMotionProps}>
+          <motion.div
+            className={contentClass}
+            initial={{ scale: 0.97, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            exit={{ scale: 0.97, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.12, duration: 0.30 }}
           >
-            <div className="flex justify-end mb-4">
-              <button 
+            {/* Drag handle/bar on top for sheet modal */}
+            {isSheet && (
+              <div
+                className="mx-auto my-2 w-12 h-[5px] rounded-full bg-deep-charcoal/10"
+                aria-hidden="true"
+              ></div>
+            )}
+
+            <div className={`flex justify-end mb-2 px-6`}>
+              <button
                 onClick={handleCancel}
                 className="text-deep-charcoal hover:text-opacity-70 transition-all"
+                aria-label="Close journal entry"
               >
                 <X size={24} />
               </button>
             </div>
-            <textarea
-              ref={textareaRef}
-              value={journalText}
-              onChange={(e) => setJournalText(e.target.value)}
-              placeholder="Take your time. Write what's on your mind."
-              className="w-full h-full bg-transparent text-lg text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none focus:outline-none"
-              style={{ overflowY: 'auto' }}
-            />
-            <div className="flex justify-between items-center mt-4">
-              {/* Feature Hidden - Save letter switch */}
-              {/* 
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="save-letter"
-                  checked={isSavedAsLetter}
-                  onCheckedChange={setIsSavedAsLetter}
-                />
-                <label htmlFor="save-letter" className="text-sm text-deep-charcoal">
-                  Save this as a letter to myself
-                </label>
-              </div>
-              */}
-              <div />
-              <div className="space-x-2 flex">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancel}
-                  disabled={isSending}
-                  className="rounded-full px-6 py-2 font-poppins"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSend}
-                  disabled={isSending || !journalText.trim()}
-                  className="rounded-full px-6 py-2 font-poppins flex items-center gap-2"
-                >
-                  <Send size={16} className="mr-2" />
-                  Send
-                </Button>
-              </div>
+            {/* Textarea */}
+            <div className="flex-1 px-6 pb-3">
+              <textarea
+                ref={textareaRef}
+                value={journalText}
+                onChange={(e) => setJournalText(e.target.value)}
+                placeholder="Take your time. Write what's on your mind."
+                className="w-full h-full bg-transparent text-lg text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none focus:outline-none font-poppins"
+                autoFocus
+                style={{
+                  minHeight: isSheet ? "150px" : "unset",
+                  overflowY: 'auto'
+                }}
+              />
+            </div>
+            {/* Feature Hidden: Save letter switch remains hidden here */}
+
+            {/* "Sticky" Bottom Button Row */}
+            <div
+              className={`
+                w-full px-6 pb-[max(18px,env(safe-area-inset-bottom))] pt-0 
+                flex gap-3
+                ${isSheet
+                  ? "sticky bottom-0 bg-soft-ivory"
+                  : "mt-4 bg-soft-ivory/95 border-t-0"}
+              `}
+              style={{
+                boxShadow: isSheet
+                  ? "0px -8px 32px 0 rgba(202 189 176 / 7%)"
+                  : undefined
+              }}
+            >
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSending}
+                className="flex-1 font-poppins rounded-full h-12 text-base"
+                type="button"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={isSending || !journalText.trim()}
+                className="flex-1 font-poppins rounded-full h-12 text-base flex items-center justify-center gap-2"
+                type="button"
+              >
+                <Send size={18} className="mr-1 -ml-1" />
+                Send
+              </Button>
             </div>
           </motion.div>
         </motion.div>
