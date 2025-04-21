@@ -19,7 +19,7 @@ export const ChatHeader = ({ isMuted, onMuteToggle, onClose, entryDate }: ChatHe
 
   return (
     <div className="flex justify-between items-center mb-8">
-      <h1 className="text-[68px] font-semibold text-deep-charcoal">
+      <h1 className="text-[68px] md:text-[68px] sm:text-[48px] xs:text-[38px] font-semibold text-deep-charcoal">
         {displayDate}
       </h1>
       <div className="flex items-center gap-4">
