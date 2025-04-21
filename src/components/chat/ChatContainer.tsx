@@ -1,5 +1,6 @@
+
 import React, { useState, useRef } from 'react';
-import { Notebook, PenTool } from 'lucide-react';
+import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -53,13 +54,19 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
+    
+    // First set the input text
     setInput(text);
-
+    
+    // Directly submit the form using the form reference
+    // This is crucial to ensure immediate submission
     if (formRef.current) {
+      // Use setTimeout to ensure the input value is set before submission
       setTimeout(() => {
         formRef.current?.dispatchEvent(
           new Event('submit', { cancelable: true, bubbles: true })
         );
+        // Close modal and reset journal text after submission
         setIsJournalModalOpen(false);
         setJournalText('');
       }, 0);
@@ -70,20 +77,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     setInput(text);
   };
 
-  const handleOpenJournal = () => setIsJournalModalOpen(true);
-
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col" ref={containerRef}>
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
-          <ChatHeader
+          <ChatHeader 
             isMuted={isMuted}
             onMuteToggle={onMuteToggle}
             onClose={onClose}
             entryDate={displayDate}
           />
 
-          <ChatMessages
+          <ChatMessages 
             messages={messages}
             highlights={highlights}
             isTyping={isTyping}
@@ -94,21 +99,45 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6 z-[30]">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
+          {!isMobile ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setIsJournalModalOpen(true)}
+                    className="absolute right-[-50px] top-1/2 transform -translate-y-1/2 text-deep-charcoal hover:text-muted-sage transition-colors"
+                  >
+                    <NotebookPen size={24} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Open journal</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button 
+              onClick={() => setIsJournalModalOpen(true)} 
+              className="w-full mb-4"
+            >
+              Journal
+            </Button>
+          )}
+
           <form ref={formRef} onSubmit={onSubmit}>
-            <ChatInput
+            <ChatInput 
               input={input}
               setInput={setInput}
               handleSubmit={onSubmit}
               messageCount={messageCount}
               weeklyLimit={weeklyLimit}
-              onJournalOpen={handleOpenJournal}
             />
           </form>
         </div>
       </div>
-
+      
       <JournalModal
         isOpen={isJournalModalOpen}
         onClose={() => setIsJournalModalOpen(false)}
@@ -116,13 +145,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         onCancel={handleModalCancel}
         initialText={journalText}
       />
-
-      <ScrollToTop
-        scrollContainer={containerRef}
-        isTyping={isTyping}
-        lastMessageRef={messagesEndRef}
-      />
-
+      
+      <ScrollToTop scrollContainer={containerRef} />
+      
       <audio
         src="/path-to-your-music.mp3"
         autoPlay
