@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { JournalButton } from './JournalButton';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 interface ChatInputProps {
   input: string;
@@ -235,11 +236,22 @@ export const ChatInput = ({
             disabled={hasReachedLimit}
           />
         </div>
-        <JournalButton
-          onClick={onJournalClick}
-          isMobile={false}
-          className="ml-2"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <JournalButton
+                  onClick={onJournalClick}
+                  isMobile={false}
+                  className="ml-2"
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="font-montserrat text-sm">
+              Journal mode
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <motion.button
           type="submit"
           aria-label="Send"
