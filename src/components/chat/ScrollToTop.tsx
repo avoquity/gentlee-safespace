@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp } from 'lucide-react';
@@ -5,49 +6,60 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ScrollToTopProps {
   scrollContainer?: React.RefObject<HTMLElement>;
+  isTyping?: boolean;
 }
 
-export const ScrollToTop: React.FC<ScrollToTopProps> = ({ scrollContainer }) => {
+export const ScrollToTop: React.FC<ScrollToTopProps> = ({ scrollContainer, isTyping = false }) => {
   const [isVisible, setIsVisible] = useState(false);
   const isMobile = useIsMobile();
-  
+  const [isNearBottom, setIsNearBottom] = useState(true);
+
   useEffect(() => {
     const handleScroll = () => {
-      const threshold = window.innerHeight * 1.5;
-      let scrollPosition = 0;
-
-      scrollPosition = window.pageYOffset;
-
-      setIsVisible(true); // harcoding for now
+      if (!scrollContainer?.current) return;
+      const container = scrollContainer.current;
+      // If user is scrolled less than 120px from the bottom, show
+      const maxScroll = container.scrollHeight - container.clientHeight;
+      const scrollPos = container.scrollTop;
+      const distanceFromBottom = maxScroll - scrollPos;
+      setIsNearBottom(distanceFromBottom < 120);
+      setIsVisible(distanceFromBottom > 60 && !isTyping);
     };
 
-    const targetElement = scrollContainer?.current || window;
+    const targetElement = scrollContainer?.current;
+    if (!targetElement) return;
     targetElement.addEventListener('scroll', handleScroll, { passive: true });
 
+    // Initial check
     handleScroll();
 
     return () => {
       targetElement.removeEventListener('scroll', handleScroll);
     };
-  }, [scrollContainer]);
-  
+  }, [scrollContainer, isTyping]);
+
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    if (scrollContainer?.current) {
+      scrollContainer.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
   };
-  
+
+  // Center after the last message (not fixed for mobile)
   return (
     <AnimatePresence>
-      {isVisible && (
+      {isVisible && !isTyping && (
         <motion.button
-          className="fixed flex items-center justify-center rounded-full bg-deep-charcoal/60 hover:bg-deep-charcoal shadow-md text-white z-50 transition-all duration-300"
+          className="flex items-center justify-center rounded-full bg-deep-charcoal/60 hover:bg-deep-charcoal text-white z-50 transition-all duration-300 mx-auto"
           style={{
-            right: isMobile ? 16 : 24,
-            bottom: isMobile ? 80 : 24,
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: isMobile ? 110 : 42,
             width: 40,
-            height: 40
+            height: 40,
           }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
