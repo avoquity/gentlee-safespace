@@ -23,19 +23,16 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
       if (!scrollContainer?.current) return;
 
       const container = scrollContainer.current;
-      const scrollHeight = container.scrollHeight;
       const scrollTop = container.scrollTop;
-      const clientHeight = container.clientHeight;
       
-      // Show button when scrolled down 100px or more from top
-      setIsVisible(scrollTop > 100);
+      // Show button when scrolled down 50px or more from top (reduced from 100px for better visibility)
+      setIsVisible(scrollTop > 50);
       
       // Add console log for debugging scroll position
-      console.log({
+      console.log("Scroll debug:", {
         scrollTop,
-        scrollHeight,
-        clientHeight,
-        isVisible: scrollTop > 100
+        isVisible: scrollTop > 50,
+        containerRef: scrollContainer.current
       });
     };
 
@@ -47,8 +44,15 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
     // Run once for initial state
     handleScroll();
 
+    // Force visibility check after a brief delay to ensure detection works
+    const timer = setTimeout(() => {
+      handleScroll();
+      console.log("Forced scroll check");
+    }, 1000);
+
     return () => {
-      el.removeEventListener("scroll", handleScroll);
+      el?.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
     };
   }, [scrollContainer]);
 
@@ -58,12 +62,16 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
     }
   };
 
+  // For testing: force visible during development
+  // Remove this line in production
+  // const isVisible = true;
+
   return (
     <TooltipProvider>
       <div
         aria-hidden={!isVisible}
         className={cn(
-          "pointer-events-none fixed bottom-24 left-0 right-0 z-[1000] flex justify-center",
+          "pointer-events-none fixed bottom-24 right-8 z-[1100] flex justify-center",
           "transition-opacity duration-300 ease-in-out",
           isVisible ? "opacity-100" : "opacity-0"
         )}
@@ -76,7 +84,7 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
               aria-label="Scroll to top"
               onClick={handleClick}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full",
+                "flex h-12 w-12 items-center justify-center rounded-full",
                 "bg-deep-charcoal text-white shadow-lg",
                 "transition-all duration-300 ease-in-out",
                 "hover:bg-opacity-90 hover:shadow-xl",
@@ -85,7 +93,7 @@ export const ScrollToTopFloating: React.FC<ScrollToTopFloatingProps> = ({
               )}
               tabIndex={isVisible ? 0 : -1}
             >
-              <ArrowUp className="h-5 w-5" />
+              <ArrowUp className="h-6 w-6" />
             </button>
           </TooltipTrigger>
           <TooltipContent>
