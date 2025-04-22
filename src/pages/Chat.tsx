@@ -60,16 +60,12 @@ const Chat = () => {
 
   useEffect(() => {
     // Add debug message to check if chat page is mounted
-    console.log("Chat page mounted with scroll buttons enabled");
+    console.log("Chat page mounted, should initialize ScrollToTopFloating");
     
-    // Force a scroll event after component is mounted to check visibility
+    // Force a repaint after a short delay to make sure the button appears
     const timer = setTimeout(() => {
-      const chatContainer = document.querySelector('.min-h-screen');
-      if (chatContainer) {
-        chatContainer.dispatchEvent(new Event('scroll'));
-        console.log("Forced scroll event on chat container");
-      }
-    }, 1000);
+      window.dispatchEvent(new Event('resize'));
+    }, 500);
     
     return () => clearTimeout(timer);
   }, []);

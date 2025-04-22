@@ -54,14 +54,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
 
-  // Force render after mount to ensure scroll detection works
-  const [mounted, setMounted] = useState(false);
-  React.useEffect(() => {
-    setMounted(true);
-    // Log when component mounts
-    console.log("ChatContainer mounted, containerRef:", containerRef.current);
-  }, []);
-
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
     setInput(text);
@@ -81,15 +73,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <div 
-      className="min-h-screen bg-soft-ivory flex flex-col relative" 
-      ref={containerRef} 
-      style={{
-        position: 'relative',
-        overflow: 'auto',
-        height: '100vh' // Ensure the container has a fixed height for scrolling
-      }}
-    >
+    <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
           <ChatHeader 
@@ -110,7 +94,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         </div>
       </div>
 
-      {/* Prominently place the scroll to top button */}
       <ScrollToTopFloating scrollContainer={containerRef} />
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
