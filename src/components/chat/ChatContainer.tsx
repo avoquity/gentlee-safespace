@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfileWithCheckIn } from '@/types/databaseTypes';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -56,6 +57,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [journalText, setJournalText] = useState('');
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
   const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); // Default to true to make banner more likely to show
+  const isDevelopment = process.env.NODE_ENV !== 'production';
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -159,13 +161,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     console.log("Banner visibility conditions:", { showCheckInBanner, isIdleAtBottom });
     
     // For testing: Show a toast when banner conditions change
-    if (showCheckInBanner && isIdleAtBottom) {
+    if (showCheckInBanner && isIdleAtBottom && isDevelopment) {
       toast({
         title: "Banner conditions met",
         description: "The banner should be visible now",
       });
     }
-  }, [showCheckInBanner, isIdleAtBottom, toast]);
+  }, [showCheckInBanner, isIdleAtBottom, toast, isDevelopment]);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
@@ -203,6 +205,34 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   };
 
+  // Reset banner visibility for testing
+  const resetBanner = async () => {
+    if (user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ 
+            banner_seen: false 
+          } as Partial<ProfileWithCheckIn>)
+          .eq('id', user.id);
+          
+        toast({
+          title: "Banner reset",
+          description: "Check-in banner has been reset and should show again."
+        });
+        
+        setShowCheckInBanner(true);
+        setIsIdleAtBottom(true);
+      } catch (error) {
+        console.error("Error resetting banner status:", error);
+        toast({
+          title: "Error",
+          description: "Failed to reset check-in banner status."
+        });
+      }
+    }
+  };
+
   // Force banner to show for testing purposes
   const forceShowBanner = () => {
     setShowCheckInBanner(true);
@@ -211,6 +241,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
+      {isDevelopment && (
+        <div className="absolute top-2 left-2 z-50">
+          <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+            Dev Mode
+          </Badge>
+        </div>
+      )}
+
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
           <ChatHeader 
@@ -229,16 +267,24 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           />
           <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
           
-          {/* Debug button for testing - only visible in development */}
-          {process.env.NODE_ENV !== 'production' && (
-            <div className="mt-4 mb-4">
+          {/* Debug buttons for testing - only visible in development */}
+          {isDevelopment && (
+            <div className="mt-4 mb-4 flex gap-2">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={forceShowBanner}
                 className="text-xs"
               >
-                Force Show Check-In Banner
+                Force Show Banner
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={resetBanner}
+                className="text-xs"
+              >
+                Reset Banner Status
               </Button>
             </div>
           )}

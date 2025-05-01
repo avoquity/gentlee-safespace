@@ -18,13 +18,21 @@ interface CheckInBannerProps {
 export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>("21:00");
+  const [devMode, setDevMode] = useState(process.env.NODE_ENV !== 'production');
   const { toast } = useToast();
   const { user } = useAuth();
 
   const handleYesClick = async () => {
     console.log("Yes clicked - current notification permission:", Notification.permission);
     
-    // Request notification permission
+    // In dev mode or if permission is already granted, proceed directly to the time selection
+    if (devMode || Notification.permission === 'granted') {
+      console.log(devMode ? "Dev mode enabled, bypassing permission check" : "Permission already granted");
+      setIsSheetOpen(true);
+      return;
+    }
+    
+    // Request notification permission in production
     try {
       if (Notification.permission === 'default') {
         console.log("Requesting notification permission");
@@ -40,10 +48,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
           });
           onDismiss();
         }
-      } else if (Notification.permission === 'granted') {
-        console.log("Notification permission already granted, opening sheet");
-        setIsSheetOpen(true);
-      } else {
+      } else if (Notification.permission === 'denied') {
         console.log("Notifications are blocked, showing toast");
         toast({
           title: "Notifications are blocked",
@@ -87,15 +92,41 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
           throw error;
         }
           
-        // Register service worker
-        await registerServiceWorker();
+        // Register service worker if not in dev mode
+        if (!devMode) {
+          await registerServiceWorker();
+        } else {
+          console.log("Dev mode: Skipping service worker registration");
+          
+          // For dev mode, simulate analytics logging
+          console.log("Dev mode: Simulating push subscription analytics logging");
+          try {
+            await fetch('https://zmcmrivswbszhqqragli.supabase.co/functions/v1/log-analytics', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                user_id: user.id,
+                event_type: 'dev_mode_push_subscription',
+                event_data: { 
+                  created_at: new Date().toISOString(),
+                  dev_mode: true
+                }
+              }),
+            });
+            console.log("Dev mode: Analytics logged successfully");
+          } catch (devError) {
+            console.error("Dev mode: Error logging analytics:", devError);
+          }
+        }
       }
       
       // Show confirmation toast with formatted time
       const timeFormat = selectedTime === "08:00" ? "8:00 AM" : "9:00 PM";
       toast({
         title: "Lovely!",
-        description: `I'll check in around ${timeFormat}.`,
+        description: `I'll check in around ${timeFormat}.${devMode ? " (Dev mode)" : ""}`,
       });
       
       onDismiss();
@@ -232,6 +263,25 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
                 <label htmlFor="evening" className="flex-1 cursor-pointer">Evening 21:00</label>
               </div>
             </RadioGroup>
+            
+            {/* Development mode toggle */}
+            {process.env.NODE_ENV !== 'production' && (
+              <div className="mt-6 p-3 bg-gray-50 rounded-md">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="dev-mode" className="text-sm text-gray-600">Development testing mode</label>
+                  <input
+                    id="dev-mode"
+                    type="checkbox"
+                    checked={devMode}
+                    onChange={(e) => setDevMode(e.target.checked)}
+                    className="h-4 w-4 text-blue-500 focus:ring-blue-400"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Bypasses notification permission checks for testing
+                </p>
+              </div>
+            )}
           </div>
           <div className="mt-4 flex justify-end">
             <Button onClick={handleTimeSelection} className="bg-muted-sage hover:bg-muted-sage/90 text-white">
