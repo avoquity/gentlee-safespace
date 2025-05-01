@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { NotebookPen, Bell } from 'lucide-react';
+import { NotebookPen, Bell, RefreshCw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -17,6 +16,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProfileWithCheckIn } from '@/types/databaseTypes';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface ChatContainerProps {
   messages: Message[];
@@ -56,7 +64,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [journalText, setJournalText] = useState('');
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
-  const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); // Default to true to make banner more likely to show
+  const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); 
   const isDevelopment = process.env.NODE_ENV !== 'production';
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,6 +73,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const idleTimerRef = useRef<number | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // New state for permission alert
+  const [showPermissionAlert, setShowPermissionAlert] = useState(false);
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [swActive, setSwActive] = useState(false);
 
   // Check if user is eligible to see the check-in banner using localStorage for tracking banner seen status
   useEffect(() => {
@@ -203,6 +216,90 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   };
 
+  // Register service worker and set up listeners
+  useEffect(() => {
+    const registerSW = async () => {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('Service worker registered successfully in ChatContainer');
+          setSwRegistration(registration);
+          
+          // Check if service worker is active
+          if (registration.active) {
+            setSwActive(true);
+            
+            // Ping the service worker to make sure it's responding
+            if (navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({
+                type: 'PING'
+              });
+            }
+          } else {
+            // Wait for the service worker to become active
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'activated') {
+                    setSwActive(true);
+                    toast({
+                      title: "Service worker activated",
+                      description: "Notification features are now available"
+                    });
+                  }
+                });
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Service worker registration failed in ChatContainer:', error);
+          toast({
+            title: "Service worker error",
+            description: error instanceof Error ? error.message : "Unknown error",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+    
+    registerSW();
+    
+    // Set up message listener
+    const messageHandler = (event: MessageEvent) => {
+      if (event.data) {
+        console.log('Message from service worker:', event.data);
+        
+        if (event.data.type === 'PONG') {
+          console.log('Service worker is active and responding');
+          setSwActive(true);
+        } else if (event.data.type === 'NOTIFICATION_SHOWN') {
+          toast({
+            title: "Test notification sent",
+            description: "Check your notification tray"
+          });
+        } else if (event.data.type === 'NOTIFICATION_ERROR') {
+          toast({
+            title: "Notification error",
+            description: event.data.error || "Unknown error",
+            variant: "destructive"
+          });
+          
+          // If the error is permission-related, show the permission alert
+          if (event.data.error?.includes('permission')) {
+            setShowPermissionAlert(true);
+          }
+        }
+      }
+    };
+    
+    navigator.serviceWorker.addEventListener('message', messageHandler);
+    
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', messageHandler);
+    };
+  }, [toast]);
+
   // Reset banner visibility for testing
   const resetBanner = async () => {
     if (user) {
@@ -238,17 +335,76 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     setIsIdleAtBottom(true);
   };
   
+  // Check notification permission status
+  const checkPermissionStatus = async () => {
+    if (!('Notification' in window)) {
+      toast({
+        title: "Notifications not supported",
+        description: "This browser does not support notifications",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const permission = Notification.permission;
+    toast({
+      title: "Permission status",
+      description: `Notification permission is currently: ${permission}`
+    });
+    
+    if (permission === 'denied') {
+      setShowPermissionAlert(true);
+    }
+  };
+  
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    try {
+      const result = await Notification.requestPermission();
+      toast({
+        title: "Permission result",
+        description: `User ${result === 'granted' ? 'accepted' : 'declined'} notifications`
+      });
+      
+      if (result === 'granted') {
+        sendTestNotification();
+      } else if (result === 'denied') {
+        setShowPermissionAlert(true);
+      }
+    } catch (error) {
+      console.error("Error requesting permission:", error);
+      toast({
+        title: "Error",
+        description: "Could not request notification permission",
+        variant: "destructive"
+      });
+    }
+  };
+  
   // Send test notification
   const sendTestNotification = async () => {
     // First check if notification permission is granted
-    if (Notification.permission !== 'granted') {
-      // Request permission
+    if (!('Notification' in window)) {
+      toast({
+        title: "Notifications not supported",
+        description: "This browser does not support notifications",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (Notification.permission === 'denied') {
+      setShowPermissionAlert(true);
+      return;
+    }
+    
+    if (Notification.permission === 'default') {
       try {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
           toast({
             title: "Permission denied",
-            description: "Please allow notifications to test this feature."
+            description: "Please allow notifications to test this feature"
           });
           return;
         }
@@ -256,62 +412,129 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         console.error("Error requesting notification permission:", error);
         toast({
           title: "Error",
-          description: "Could not request notification permission."
+          description: "Could not request notification permission"
         });
         return;
       }
     }
     
-    // Try to show notification directly first
+    // Try to send notification via service worker first (preferred method)
+    if (swActive && navigator.serviceWorker.controller) {
+      try {
+        console.log("Sending test notification request to service worker");
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SHOW_TEST_NOTIFICATION',
+          title: 'Gentlee Service Worker Test',
+          message: 'This notification comes from the service worker!'
+        });
+        
+        // Toast will be shown by the message listener after confirmation
+      } catch (swError) {
+        console.error("Error sending message to service worker:", swError);
+        
+        // Fallback to direct notification
+        tryDirectNotification();
+      }
+    } else {
+      console.log("Service worker not active, trying direct notification");
+      tryDirectNotification();
+    }
+  };
+  
+  // Direct notification as fallback
+  const tryDirectNotification = () => {
     try {
-      new Notification("Gentlee Test", {
+      const notification = new Notification("Gentlee Test", {
         body: "This is a direct test notification.",
         icon: '/favicon.ico'
       });
       
       toast({
         title: "Test notification sent",
-        description: "Check your notification tray."
+        description: "Check your notification tray"
       });
     } catch (error) {
       console.error("Error showing direct notification:", error);
-      
-      // If direct notification fails, try via service worker
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        try {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'SHOW_TEST_NOTIFICATION',
-            title: 'Gentlee Service Worker Test',
-            message: 'This notification comes from the service worker!'
-          });
+      toast({
+        title: "Error",
+        description: "Could not show notification: " + (error instanceof Error ? error.message : "Unknown error"),
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Open browser notification settings (only works in some browsers)
+  const openNotificationSettings = () => {
+    if ('permissions' in navigator) {
+      try {
+        // @ts-ignore - This is not in the standard TypeScript definitions yet
+        navigator.permissions.query({ name: 'notifications' }).then(permissionStatus => {
+          console.log('Current permission state:', permissionStatus.state);
           
-          toast({
-            title: "Test notification request sent to service worker",
-            description: "Check your notification tray."
-          });
-        } catch (swError) {
-          console.error("Error sending message to service worker:", swError);
-          toast({
-            title: "Error",
-            description: "Could not send test notification via service worker."
-          });
-        }
-      } else {
+          // This only works in some browsers (Chrome/Edge)
+          if (permissionStatus.id && document.hasStorageAccess) {
+            // @ts-ignore
+            permissionStatus.id.openSettings();
+            setShowPermissionAlert(false);
+          } else {
+            toast({
+              title: "Not supported",
+              description: "Your browser doesn't support opening permission settings directly."
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error accessing permission settings:", error);
         toast({
-          title: "Service worker not available",
-          description: "Service worker is not controlling the page yet."
+          title: "Not supported",
+          description: "Your browser doesn't support opening permission settings directly."
+        });
+      }
+    } else {
+      toast({
+        title: "Not supported",
+        description: "Your browser doesn't support opening permission settings directly."
+      });
+    }
+  };
+
+  // Reset service worker for testing
+  const resetServiceWorker = async () => {
+    if ('serviceWorker' in navigator) {
+      try {
+        // Unregister all service workers
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+        
+        toast({
+          title: "Service worker reset",
+          description: "All service workers have been unregistered"
         });
         
-        // Try registering service worker
-        try {
-          const registration = await navigator.serviceWorker.register('/sw.js');
-          toast({
-            title: "Service worker registered",
-            description: "Please try the test again in a few seconds."
-          });
-        } catch (regError) {
-          console.error("Error registering service worker:", regError);
-        }
+        setSwActive(false);
+        setSwRegistration(null);
+        
+        // Register service worker again after a short delay
+        setTimeout(async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            setSwRegistration(registration);
+            toast({
+              title: "Service worker registered",
+              description: "New service worker has been registered"
+            });
+          } catch (error) {
+            console.error("Error re-registering service worker:", error);
+          }
+        }, 1000);
+      } catch (error) {
+        console.error("Error resetting service workers:", error);
+        toast({
+          title: "Error",
+          description: "Could not reset service workers"
+        });
       }
     }
   };
@@ -371,6 +594,33 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               >
                 <Bell className="h-3 w-3" /> Test Notification
               </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={checkPermissionStatus}
+                className="text-xs"
+              >
+                Check Permission
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={requestNotificationPermission}
+                className="text-xs"
+              >
+                Request Permission
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={resetServiceWorker}
+                className="text-xs flex items-center gap-1"
+              >
+                <RefreshCw className="h-3 w-3" /> Reset SW
+              </Button>
+              <Badge variant={swActive ? "success" : "destructive"} className="text-xs">
+                {swActive ? "SW Active" : "SW Inactive"}
+              </Badge>
             </div>
           )}
         </div>
@@ -420,6 +670,33 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         loop
         muted={isMuted}
       />
+      
+      {/* Permission denied alert */}
+      <AlertDialog open={showPermissionAlert} onOpenChange={setShowPermissionAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Notification Permission Denied</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Notifications are currently blocked in your browser settings. To test notifications:
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Click the lock/info icon in your address bar</li>
+                <li>Find "Notifications" in the site settings</li>
+                <li>Change the setting from "Block" to "Allow"</li>
+              </ul>
+              <p className="text-sm text-muted-foreground mt-2">
+                After changing settings, try the "Test Notification" button again.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowPermissionAlert(false)}>
+              Got it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

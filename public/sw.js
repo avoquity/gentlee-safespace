@@ -5,6 +5,7 @@ const CACHE_NAME = 'gentlee-cache-v1';
 // Install event
 self.addEventListener('install', (event) => {
   self.skipWaiting();
+  console.log('Service worker installed');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
@@ -17,6 +18,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event
 self.addEventListener('activate', (event) => {
+  console.log('Service worker activated');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -32,6 +34,7 @@ self.addEventListener('activate', (event) => {
 
 // Push event
 self.addEventListener('push', function(event) {
+  console.log('Push event received in SW');
   let data = {};
   try {
     data = event.data.json();
@@ -92,18 +95,54 @@ self.addEventListener('notificationclick', function(event) {
 
 // Test notification handling - detect messages from the client
 self.addEventListener('message', function(event) {
+  console.log('Message received in SW:', event.data);
+  
   if (event.data && event.data.type === 'SHOW_TEST_NOTIFICATION') {
     const title = event.data.title || 'Gentlee Test Notification';
     const message = event.data.message || 'This is a test notification from the service worker.';
     
-    self.registration.showNotification(title, {
-      body: message,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
-      data: {
-        url: '/chat',
-        type: 'test'
-      }
+    try {
+      self.registration.showNotification(title, {
+        body: message,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        data: {
+          url: '/chat',
+          type: 'test'
+        }
+      }).then(() => {
+        // Notify client that notification was shown
+        event.source.postMessage({
+          type: 'NOTIFICATION_SHOWN',
+          success: true
+        });
+      }).catch(error => {
+        console.error('Error showing notification:', error);
+        // Notify client about the error
+        event.source.postMessage({
+          type: 'NOTIFICATION_ERROR',
+          error: error.message
+        });
+      });
+    } catch (error) {
+      console.error('Error in showNotification:', error);
+      // Notify client about the error
+      event.source.postMessage({
+        type: 'NOTIFICATION_ERROR',
+        error: error.message
+      });
+    }
+  } else if (event.data && event.data.type === 'CHECK_PERMISSION') {
+    // Check if we can show notifications (service worker context)
+    event.source.postMessage({
+      type: 'PERMISSION_STATUS',
+      permission: 'granted' // Service worker can always show notifications if registered
+    });
+  } else if (event.data && event.data.type === 'PING') {
+    // Simple ping to check if service worker is active
+    event.source.postMessage({
+      type: 'PONG',
+      timestamp: new Date().toISOString()
     });
   }
 });
