@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { NotebookPen, Bell, RefreshCw, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -68,6 +69,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); 
   const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
   const isDevelopment = process.env.NODE_ENV !== 'production';
+  
+  // Create the missing refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const idleTimerRef = useRef<number | null>(null);
+  
+  // Get user from auth context
+  const { user } = useAuth();
+  // Initialize toast
+  const { toast } = useToast();
   
   // Always force banner to show in development mode
   useEffect(() => {
