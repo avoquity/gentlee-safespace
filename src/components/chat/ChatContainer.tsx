@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -158,7 +159,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       try {
         await supabase
           .from('profiles')
-          .update({ banner_seen: true })
+          .update({ 
+            banner_seen: true 
+          } as Partial<ProfileWithCheckIn>)
           .eq('id', user.id);
       } catch (error) {
         console.error("Error updating banner seen status:", error);

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,7 +54,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
             last_notif_sent_at: null,
             notif_this_week_count: 0,
             banner_seen: true
-          })
+          } as Partial<ProfileWithCheckIn>)
           .eq('id', user.id);
           
         // Register service worker
@@ -100,16 +101,20 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         // Send the subscription to the server
         if (user && subscription) {
           // Store subscription data in the analytics_events table temporarily
-          await supabase
-            .from('analytics_events')
-            .insert([{
+          await fetch('https://zmcmrivswbszhqqragli.supabase.co/functions/v1/log-analytics', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
               user_id: user.id,
               event_type: 'push_subscription_created',
               event_data: { 
                 subscription: JSON.stringify(subscription),
                 created_at: new Date().toISOString()
               }
-            } as AnalyticsEvent]);
+            }),
+          });
         }
       } catch (error) {
         console.error('Service Worker registration failed:', error);
