@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckInFields, PushSubscription, AnalyticsEvent } from '@/types/databaseTypes';
+import { ProfileWithCheckIn, AnalyticsEvent } from '@/types/databaseTypes';
 
 interface CheckInBannerProps {
   onDismiss: () => void;
@@ -48,12 +48,11 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         await supabase
           .from('profiles')
           .update({
-            // Use type assertions to work around TypeScript limitations
-            checkin_enabled: true as unknown as string,
-            checkin_time: selectedTime as unknown as string,
-            last_notif_sent_at: null as unknown as string,
-            notif_this_week_count: 0 as unknown as string,
-            banner_seen: true as unknown as string
+            checkin_enabled: true,
+            checkin_time: selectedTime,
+            last_notif_sent_at: null,
+            notif_this_week_count: 0,
+            banner_seen: true
           })
           .eq('id', user.id);
           
@@ -101,20 +100,16 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         // Send the subscription to the server
         if (user && subscription) {
           // Store subscription data in the analytics_events table temporarily
-          // Note: We're working around TypeScript limitations here since the analytics_events
-          // table isn't fully supported in the type definitions yet
-          const eventData = {
-            user_id: user.id,
-            event_type: 'push_subscription_created',
-            event_data: { 
-              subscription: JSON.stringify(subscription),
-              created_at: new Date().toISOString()
-            }
-          } as unknown as any;
-          
           await supabase
-            .from('analytics_events' as any)
-            .insert([eventData]);
+            .from('analytics_events')
+            .insert([{
+              user_id: user.id,
+              event_type: 'push_subscription_created',
+              event_data: { 
+                subscription: JSON.stringify(subscription),
+                created_at: new Date().toISOString()
+              }
+            } as AnalyticsEvent]);
         }
       } catch (error) {
         console.error('Service Worker registration failed:', error);

@@ -13,7 +13,7 @@ import { ScrollToTopFloating } from './ScrollToTopFloating';
 import { CheckInBanner } from './CheckInBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckInFields } from '@/types/databaseTypes';
+import { ProfileWithCheckIn } from '@/types/databaseTypes';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -81,9 +81,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           return;
         }
         
+        // Type the profile data correctly
+        const profile = profileData as ProfileWithCheckIn;
+        
         // Check if the banner_seen property exists and is true
-        // Use the CheckInFields interface to access the relevant fields
-        const profile = profileData as unknown as CheckInFields;
         if (profile && profile.banner_seen === true) {
           return;
         }
@@ -157,10 +158,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       try {
         await supabase
           .from('profiles')
-          .update({ 
-            // Use type assertion to work around TypeScript limitation
-            banner_seen: true as unknown as string 
-          })
+          .update({ banner_seen: true })
           .eq('id', user.id);
       } catch (error) {
         console.error("Error updating banner seen status:", error);
