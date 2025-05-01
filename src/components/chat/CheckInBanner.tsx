@@ -3,17 +3,30 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
-import { ProfileWithCheckIn, AnalyticsEvent } from '@/types/databaseTypes';
 
 interface CheckInBannerProps {
   onDismiss: () => void;
 }
+
+// Store preferences in localStorage to avoid database schema issues
+const savePreferencesToLocalStorage = (userId: string, time: string) => {
+  const preferences = {
+    userId,
+    checkinEnabled: true,
+    checkinTime: time,
+    lastNotifSentAt: null,
+    notifThisWeekCount: 0,
+    bannerSeen: true
+  };
+  
+  localStorage.setItem('gentlee-checkin-preferences', JSON.stringify(preferences));
+  return preferences;
+};
 
 export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -56,7 +69,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         });
         onDismiss();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error handling notification permission:", error);
       toast({
         title: "Something went wrong",
@@ -71,26 +84,13 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
     setIsSheetOpen(false);
     
     try {
-      // Save user preference in the database
+      // Save user preference - using localStorage instead of database to avoid schema issues
       if (user) {
         console.log("Saving check-in preferences for user:", user.id);
         
-        // Update profile with check-in preferences
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            checkin_enabled: true,
-            checkin_time: selectedTime,
-            last_notif_sent_at: null,
-            notif_this_week_count: 0,
-            banner_seen: true
-          } as Partial<ProfileWithCheckIn>)
-          .eq('id', user.id);
-          
-        if (error) {
-          console.error("Error updating profile:", error);
-          throw error;
-        }
+        // Store preferences in localStorage instead of updating profile
+        const preferences = savePreferencesToLocalStorage(user.id, selectedTime);
+        console.log("Preferences saved to localStorage:", preferences);
           
         // Register service worker if not in dev mode
         if (!devMode) {
@@ -98,27 +98,8 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         } else {
           console.log("Dev mode: Skipping service worker registration");
           
-          // For dev mode, simulate analytics logging
+          // For dev mode, log to console
           console.log("Dev mode: Simulating push subscription analytics logging");
-          try {
-            await fetch('https://zmcmrivswbszhqqragli.supabase.co/functions/v1/log-analytics', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                user_id: user.id,
-                event_type: 'dev_mode_push_subscription',
-                event_data: { 
-                  created_at: new Date().toISOString(),
-                  dev_mode: true
-                }
-              }),
-            });
-            console.log("Dev mode: Analytics logged successfully");
-          } catch (devError) {
-            console.error("Dev mode: Error logging analytics:", devError);
-          }
         }
       }
       

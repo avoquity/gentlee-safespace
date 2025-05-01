@@ -66,7 +66,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Check if user is eligible to see the check-in banner
+  // Check if user is eligible to see the check-in banner using localStorage for tracking banner seen status
   useEffect(() => {
     const checkBannerEligibility = async () => {
       if (!user) {
@@ -78,26 +78,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       console.log("Notification permission status:", Notification.permission);
 
       try {
-        // Check if banner has been seen before
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          return;
-        }
+        // Check if banner has been seen before using localStorage
+        const savedPreferences = localStorage.getItem('gentlee-checkin-preferences');
+        const preferences = savedPreferences ? JSON.parse(savedPreferences) : null;
         
-        // Type the profile data correctly
-        const profile = profileData as ProfileWithCheckIn;
+        console.log("Preferences from localStorage:", preferences);
         
-        console.log("Profile data:", profile);
-        console.log("Banner seen status:", profile.banner_seen);
+        // Show the banner if preferences don't exist or banner hasn't been seen
+        const bannerSeen = preferences && preferences.userId === user.id && preferences.bannerSeen;
         
-        // Show the banner if it hasn't been seen before or if banner_seen is explicitly false
-        if (!profile.banner_seen) {
+        console.log("Banner seen status:", bannerSeen);
+        
+        if (!bannerSeen) {
           console.log("Setting showCheckInBanner to true");
           setShowCheckInBanner(true);
           
@@ -190,15 +182,21 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const handleBannerDismiss = async () => {
     setShowCheckInBanner(false);
     
-    // Update user profile to mark banner as seen
+    // Update localStorage to mark banner as seen
     if (user) {
       try {
-        await supabase
-          .from('profiles')
-          .update({ 
-            banner_seen: true 
-          } as Partial<ProfileWithCheckIn>)
-          .eq('id', user.id);
+        // Get existing preferences or create new object
+        const savedPreferences = localStorage.getItem('gentlee-checkin-preferences');
+        const preferences = savedPreferences 
+          ? JSON.parse(savedPreferences) 
+          : { userId: user.id };
+        
+        // Mark banner as seen
+        preferences.bannerSeen = true;
+        
+        // Save back to localStorage
+        localStorage.setItem('gentlee-checkin-preferences', JSON.stringify(preferences));
+        console.log("Banner seen status saved to localStorage");
       } catch (error) {
         console.error("Error updating banner seen status:", error);
       }
@@ -209,12 +207,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const resetBanner = async () => {
     if (user) {
       try {
-        await supabase
-          .from('profiles')
-          .update({ 
-            banner_seen: false 
-          } as Partial<ProfileWithCheckIn>)
-          .eq('id', user.id);
+        // Clear localStorage or update it
+        const savedPreferences = localStorage.getItem('gentlee-checkin-preferences');
+        if (savedPreferences) {
+          const preferences = JSON.parse(savedPreferences);
+          preferences.bannerSeen = false;
+          localStorage.setItem('gentlee-checkin-preferences', JSON.stringify(preferences));
+        }
           
         toast({
           title: "Banner reset",
