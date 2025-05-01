@@ -321,9 +321,9 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
             </SheetDescription>
           </SheetHeader>
           
-          {/* Permission warning alert */}
+          {/* Fix the Alert variant from "warning" to "destructive" with custom styling */}
           {showDevWarning && (
-            <Alert variant="warning" className="mt-4 border-amber-200 bg-amber-50">
+            <Alert variant="destructive" className="mt-4 border-amber-200 bg-amber-50">
               <AlertCircle className="h-4 w-4 text-amber-600" />
               <AlertTitle className="text-amber-800">Developer Testing Mode</AlertTitle>
               <AlertDescription className="text-amber-700">

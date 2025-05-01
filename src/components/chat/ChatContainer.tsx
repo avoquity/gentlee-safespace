@@ -472,9 +472,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           console.log('Current permission state:', permissionStatus.state);
           
           // This only works in some browsers (Chrome/Edge)
-          if (permissionStatus.id && document.hasStorageAccess) {
-            // @ts-ignore
-            permissionStatus.id.openSettings();
+          if (document.hasStorageAccess) {
+            // Just show a toast as we can't directly open settings
+            toast({
+              title: "Settings info",
+              description: "To update notification permissions, please go to your browser settings"
+            });
             setShowPermissionAlert(false);
           } else {
             toast({
@@ -618,7 +621,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               >
                 <RefreshCw className="h-3 w-3" /> Reset SW
               </Button>
-              <Badge variant={swActive ? "success" : "destructive"} className="text-xs">
+              {/* Fix the Badge variant from "success" to "secondary" with custom classes */}
+              <Badge 
+                variant={swActive ? "secondary" : "destructive"} 
+                className={`text-xs ${swActive ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}`}
+              >
                 {swActive ? "SW Active" : "SW Inactive"}
               </Badge>
             </div>
