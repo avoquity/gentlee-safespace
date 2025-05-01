@@ -69,6 +69,8 @@ const Chat = () => {
       if (!location.state) return;
       
       if (location.state.fromNotification) {
+        console.log("User came from notification click");
+        
         // Show confetti effect
         confetti({
           particleCount: 100,
@@ -107,6 +109,8 @@ const Chat = () => {
         } catch (error) {
           console.error("Failed to log analytics event:", error);
         }
+      } else {
+        console.log("Regular navigation, not from notification");
       }
     };
     
@@ -119,14 +123,22 @@ const Chat = () => {
       if ('serviceWorker' in navigator) {
         try {
           await navigator.serviceWorker.register('/sw.js');
-          console.log('Service worker registered successfully');
+          console.log('Service worker registered successfully in Chat.tsx');
         } catch (error) {
-          console.error('Service worker registration failed:', error);
+          console.error('Service worker registration failed in Chat.tsx:', error);
         }
       }
     };
     
     registerServiceWorker();
+    
+    // Log to help with debugging
+    console.log("Chat rendered with:", { 
+      user: user?.id, 
+      chatId: chatIdFromParams,
+      messagesCount: messages.length,
+      isTyping
+    });
   }, []);
 
   return (

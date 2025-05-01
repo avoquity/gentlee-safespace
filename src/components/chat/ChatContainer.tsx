@@ -15,6 +15,7 @@ import { CheckInBanner } from './CheckInBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfileWithCheckIn } from '@/types/databaseTypes';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -54,20 +55,25 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [journalText, setJournalText] = useState('');
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
-  const [isIdleAtBottom, setIsIdleAtBottom] = useState(false);
+  const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); // Default to true to make banner more likely to show
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
   const idleTimerRef = useRef<number | null>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Check if user is eligible to see the check-in banner
   useEffect(() => {
     const checkBannerEligibility = async () => {
-      if (!user || Notification.permission !== 'default' || messages.length === 0) {
+      if (!user) {
+        console.log("Banner eligibility check: No user logged in");
         return;
       }
+
+      // Always check notification permission first
+      console.log("Notification permission status:", Notification.permission);
 
       try {
         // Check if banner has been seen before
@@ -85,19 +91,30 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         // Type the profile data correctly
         const profile = profileData as ProfileWithCheckIn;
         
-        // Check if the banner_seen property exists and is true
-        if (profile && profile.banner_seen === true) {
-          return;
+        console.log("Profile data:", profile);
+        console.log("Banner seen status:", profile.banner_seen);
+        
+        // Show the banner if it hasn't been seen before or if banner_seen is explicitly false
+        if (!profile.banner_seen) {
+          console.log("Setting showCheckInBanner to true");
+          setShowCheckInBanner(true);
+          
+          // Force isIdleAtBottom to true to ensure the banner shows up
+          setTimeout(() => {
+            setIsIdleAtBottom(true);
+          }, 2000);
         }
-
-        // User is eligible to see the banner
-        setShowCheckInBanner(true);
       } catch (error) {
         console.error("Error checking banner eligibility:", error);
       }
     };
 
-    checkBannerEligibility();
+    // Add a slight delay to ensure user data has loaded
+    const timer = setTimeout(() => {
+      checkBannerEligibility();
+    }, 1000);
+    
+    return () => clearTimeout(timer);
   }, [user, messages]);
 
   // Track when user is idle at the bottom of the chat
@@ -111,19 +128,23 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         idleTimerRef.current = null;
       }
 
-      const isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 50;
+      const isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 100; // Increased threshold
       
-      if (isAtBottom && showCheckInBanner) {
+      if (isAtBottom) {
         // Set a timer to detect idle state at bottom
         idleTimerRef.current = window.setTimeout(() => {
+          console.log("User is idle at bottom, setting isIdleAtBottom to true");
           setIsIdleAtBottom(true);
-        }, 3000); // 3 seconds of idle time
+        }, 1500); // Reduced idle time threshold
       } else {
         setIsIdleAtBottom(false);
       }
     };
 
     container.addEventListener('scroll', handleScroll);
+    
+    // Trigger the idle detection immediately
+    handleScroll();
     
     return () => {
       container.removeEventListener('scroll', handleScroll);
@@ -132,6 +153,19 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       }
     };
   }, [showCheckInBanner]);
+
+  // Directly log the values to help with debugging
+  useEffect(() => {
+    console.log("Banner visibility conditions:", { showCheckInBanner, isIdleAtBottom });
+    
+    // For testing: Show a toast when banner conditions change
+    if (showCheckInBanner && isIdleAtBottom) {
+      toast({
+        title: "Banner conditions met",
+        description: "The banner should be visible now",
+      });
+    }
+  }, [showCheckInBanner, isIdleAtBottom, toast]);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
@@ -169,6 +203,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   };
 
+  // Force banner to show for testing purposes
+  const forceShowBanner = () => {
+    setShowCheckInBanner(true);
+    setIsIdleAtBottom(true);
+  };
+
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
       <div className="flex-1 overflow-hidden">
@@ -188,6 +228,20 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             messagesEndRef={messagesEndRef}
           />
           <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
+          
+          {/* Debug button for testing - only visible in development */}
+          {process.env.NODE_ENV !== 'production' && (
+            <div className="mt-4 mb-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={forceShowBanner}
+                className="text-xs"
+              >
+                Force Show Check-In Banner
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -195,7 +249,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          {/* Check-in banner - only shown when eligible and idle at bottom */}
+          {/* Check-in banner - show whenever both conditions are true */}
           {showCheckInBanner && isIdleAtBottom && (
             <CheckInBanner onDismiss={handleBannerDismiss} />
           )}

@@ -22,31 +22,56 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
   const { user } = useAuth();
 
   const handleYesClick = async () => {
+    console.log("Yes clicked - current notification permission:", Notification.permission);
+    
     // Request notification permission
-    if (Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
+    try {
+      if (Notification.permission === 'default') {
+        console.log("Requesting notification permission");
+        const permission = await Notification.requestPermission();
+        console.log("Permission result:", permission);
+        
+        if (permission === 'granted') {
+          setIsSheetOpen(true);
+        } else {
+          toast({
+            title: "Notifications declined",
+            description: "That's okay! You can always enable them later in your browser settings.",
+          });
+          onDismiss();
+        }
+      } else if (Notification.permission === 'granted') {
+        console.log("Notification permission already granted, opening sheet");
         setIsSheetOpen(true);
       } else {
+        console.log("Notifications are blocked, showing toast");
         toast({
-          title: "Notifications declined",
-          description: "That's okay! You can always enable them later in your browser settings.",
+          title: "Notifications are blocked",
+          description: "Please enable notifications in your browser settings to use this feature.",
         });
         onDismiss();
       }
-    } else if (Notification.permission === 'granted') {
-      setIsSheetOpen(true);
+    } catch (error) {
+      console.error("Error handling notification permission:", error);
+      toast({
+        title: "Something went wrong",
+        description: "We couldn't request notification permission.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleTimeSelection = async () => {
+    console.log("Time selected:", selectedTime);
     setIsSheetOpen(false);
     
     try {
       // Save user preference in the database
       if (user) {
+        console.log("Saving check-in preferences for user:", user.id);
+        
         // Update profile with check-in preferences
-        await supabase
+        const { error } = await supabase
           .from('profiles')
           .update({
             checkin_enabled: true,
@@ -56,6 +81,11 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
             banner_seen: true
           } as Partial<ProfileWithCheckIn>)
           .eq('id', user.id);
+          
+        if (error) {
+          console.error("Error updating profile:", error);
+          throw error;
+        }
           
         // Register service worker
         await registerServiceWorker();
@@ -82,43 +112,57 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
   const registerServiceWorker = async () => {
     if ('serviceWorker' in navigator) {
       try {
+        console.log("Registering service worker");
         const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log("Service worker registered:", registration);
         
         // Get the push subscription
         let subscription = await registration.pushManager.getSubscription();
+        console.log("Existing push subscription:", subscription);
         
         // If no subscription exists, create one
         if (!subscription) {
           const vapidPublicKey = 'BFnrxYozGnJHHNBdYNwMSDXJXAtptGs0m8qDfXjdKQuR47dFB_bYVJb5WkvIQVjGtOFQ91p5JKOP9jAjBFLwMjQ';
           const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
           
+          console.log("Creating new push subscription");
           subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: convertedVapidKey
           });
+          console.log("New subscription created:", subscription);
         }
         
         // Send the subscription to the server
         if (user && subscription) {
-          // Store subscription data in the analytics_events table temporarily
-          await fetch('https://zmcmrivswbszhqqragli.supabase.co/functions/v1/log-analytics', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              user_id: user.id,
-              event_type: 'push_subscription_created',
-              event_data: { 
-                subscription: JSON.stringify(subscription),
-                created_at: new Date().toISOString()
-              }
-            }),
-          });
+          console.log("Sending subscription to server for user:", user.id);
+          // Store subscription data via edge function
+          try {
+            const response = await fetch('https://zmcmrivswbszhqqragli.supabase.co/functions/v1/log-analytics', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                user_id: user.id,
+                event_type: 'push_subscription_created',
+                event_data: { 
+                  subscription: JSON.stringify(subscription),
+                  created_at: new Date().toISOString()
+                }
+              }),
+            });
+            
+            console.log("Subscription sent to server, response:", response.status);
+          } catch (fetchError) {
+            console.error("Fetch error sending subscription:", fetchError);
+          }
         }
       } catch (error) {
         console.error('Service Worker registration failed:', error);
       }
+    } else {
+      console.log("Service Workers are not supported in this browser");
     }
   };
 
