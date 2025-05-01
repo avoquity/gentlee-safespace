@@ -33,29 +33,49 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     (msg.user_role === 'assistant' || msg.sender === 'ai')
   );
   const insertBannerAfter = lastAiMessageIndex !== -1 ? messages.length - 1 - lastAiMessageIndex : -1;
-
-  return (
-    <div className="chat-messages-container space-y-8">
-      {messages.map((message, index) => (
-        <React.Fragment key={message.id}>
-          <ChatMessage
-            message={message}
-            highlights={highlights.filter(h => h.message_id.toString() === message.id)}
-            onHighlightChange={onHighlightChange}
-            onHighlightRemove={onHighlightRemove}
-          />
-          
-          {/* Insert CheckInBanner after the last AI message */}
-          {showCheckInBanner && index === insertBannerAfter && (
-            <div className="my-6">
+  
+  // Groups messages into sequence blocks
+  const renderMessages = () => {
+    const result: JSX.Element[] = [];
+    
+    messages.forEach((message, index) => {
+      // Add the message
+      result.push(
+        <ChatMessage
+          key={`msg-${message.id}`}
+          message={message}
+          highlights={highlights.filter(h => h.message_id.toString() === message.id)}
+          onHighlightChange={onHighlightChange}
+          onHighlightRemove={onHighlightRemove}
+        />
+      );
+      
+      // Insert CheckInBanner after the last AI message but only if the next message is from a user or it's the last message
+      if (showCheckInBanner && checkInEnabled && index === insertBannerAfter) {
+        // Check if this is the last message or the next message is from a user
+        const isLastMessage = index === messages.length - 1;
+        const nextMessageIsFromUser = !isLastMessage && 
+          (messages[index + 1].sender === 'user' || messages[index + 1].user_role === 'user');
+        
+        if (isLastMessage || nextMessageIsFromUser) {
+          result.push(
+            <div key="check-in-banner" className="my-6">
               <CheckInBanner 
                 onToggle={onCheckInToggle}
                 initialEnabled={checkInEnabled}
               />
             </div>
-          )}
-        </React.Fragment>
-      ))}
+          );
+        }
+      }
+    });
+    
+    return result;
+  };
+
+  return (
+    <div className="chat-messages-container space-y-8">
+      {renderMessages()}
       {isTyping && <ChatTypingIndicator />}
       <div ref={messagesEndRef} />
     </div>
