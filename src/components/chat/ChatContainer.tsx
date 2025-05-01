@@ -68,13 +68,25 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); 
   const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const isMobile = useIsMobile();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-  const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
-  const idleTimerRef = useRef<number | null>(null);
-  const { user } = useAuth();
-  const { toast } = useToast();
+  
+  // Always force banner to show in development mode
+  useEffect(() => {
+    if (isDevelopment) {
+      console.log("Development mode: Forcing check-in banner visibility");
+      setShowCheckInBanner(true);
+      setIsIdleAtBottom(true);
+      
+      // Check if user has previously set check-in preferences
+      try {
+        const savedEnabledState = localStorage.getItem('gentlee-checkin-enabled');
+        if (savedEnabledState) {
+          setCheckInEnabled(JSON.parse(savedEnabledState));
+        }
+      } catch (error) {
+        console.error("Error checking saved preferences:", error);
+      }
+    }
+  }, [isDevelopment]);
   
   // New state for permission alert
   const [showPermissionAlert, setShowPermissionAlert] = useState(false);
@@ -573,6 +585,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   };
 
+  // Modified banner visibility conditions to always show in dev mode
+  const shouldShowBanner = isDevelopment || (showCheckInBanner && isIdleAtBottom);
+  
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
       {isDevelopment && (
@@ -679,8 +694,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          {/* Always show the banner if conditions are met, regardless of user scrolling */}
-          {showCheckInBanner && (
+          {/* Modified to force banner display in development mode */}
+          {shouldShowBanner && (
             <CheckInBanner 
               onToggle={handleCheckInToggle} 
               initialEnabled={checkInEnabled}

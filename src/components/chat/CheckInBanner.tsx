@@ -20,6 +20,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const isDevelopment = process.env.NODE_ENV !== 'production';
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -34,6 +35,13 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Log component mount for debugging
+  useEffect(() => {
+    if (isDevelopment) {
+      console.log('CheckInBanner mounted with props:', { initialEnabled, enabled, showConfetti });
+    }
+  }, [initialEnabled, enabled, showConfetti, isDevelopment]);
+
   const handleToggle = async () => {
     const newState = !enabled;
     setEnabled(newState);
@@ -42,6 +50,10 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       // User is turning check-ins on
       setShowConfetti(true);
       setShowConfirmation(true);
+      
+      if (isDevelopment) {
+        console.log('Confetti animation triggered:', { showConfetti });
+      }
       
       // Request notification permission if needed
       if ('Notification' in window && Notification.permission === 'default') {
@@ -109,6 +121,29 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       }
     }
   }, [enabled, user]);
+
+  // Force trigger confetti in development mode for testing
+  useEffect(() => {
+    if (isDevelopment && showConfetti) {
+      // Add a small delay to ensure the component is fully rendered
+      const timer = setTimeout(() => {
+        console.log('Development mode: Force showing confetti animation');
+        // Set a flag in sessionStorage to track if we've shown the test confetti
+        const testShown = sessionStorage.getItem('confetti-test-shown');
+        if (!testShown) {
+          setShowConfetti(true);
+          sessionStorage.setItem('confetti-test-shown', 'true');
+          
+          // Reset the flag after 2 seconds so we can test again if needed
+          setTimeout(() => {
+            sessionStorage.removeItem('confetti-test-shown');
+          }, 2000);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isDevelopment, showConfetti]);
 
   return (
     <AnimatePresence>
