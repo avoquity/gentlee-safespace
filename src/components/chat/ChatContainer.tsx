@@ -64,6 +64,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [journalText, setJournalText] = useState('');
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
+  const [checkInEnabled, setCheckInEnabled] = useState(false);
   const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); 
   const isDevelopment = process.env.NODE_ENV !== 'production';
   const isMobile = useIsMobile();
@@ -79,7 +80,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [swActive, setSwActive] = useState(false);
 
-  // Check if user is eligible to see the check-in banner using localStorage for tracking banner seen status
+  // Check if user is eligible to see the check-in banner
   useEffect(() => {
     const checkBannerEligibility = async () => {
       if (!user) {
@@ -87,30 +88,25 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         return;
       }
 
-      // Always check notification permission first
-      console.log("Notification permission status:", Notification.permission);
+      if (messages.length === 0) {
+        console.log("Banner eligibility: No messages yet");
+        return;
+      }
 
       try {
-        // Check if banner has been seen before using localStorage
-        const savedPreferences = localStorage.getItem('gentlee-checkin-preferences');
-        const preferences = savedPreferences ? JSON.parse(savedPreferences) : null;
-        
-        console.log("Preferences from localStorage:", preferences);
-        
-        // Show the banner if preferences don't exist or banner hasn't been seen
-        const bannerSeen = preferences && preferences.userId === user.id && preferences.bannerSeen;
-        
-        console.log("Banner seen status:", bannerSeen);
-        
-        if (!bannerSeen) {
-          console.log("Setting showCheckInBanner to true");
-          setShowCheckInBanner(true);
-          
-          // Force isIdleAtBottom to true to ensure the banner shows up
-          setTimeout(() => {
-            setIsIdleAtBottom(true);
-          }, 2000);
+        // Check if user has previously set check-in preferences
+        const savedEnabledState = localStorage.getItem('gentlee-checkin-enabled');
+        if (savedEnabledState) {
+          setCheckInEnabled(JSON.parse(savedEnabledState));
         }
+        
+        // Always show the banner if user has at least 1 message
+        setShowCheckInBanner(true);
+        
+        // Force isIdleAtBottom to true to ensure the banner shows up
+        setTimeout(() => {
+          setIsIdleAtBottom(true);
+        }, 1000);
       } catch (error) {
         console.error("Error checking banner eligibility:", error);
       }
@@ -542,6 +538,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   };
 
+  const handleCheckInToggle = async (enabled: boolean) => {
+    setCheckInEnabled(enabled);
+    
+    // In a production app, we would update the user's profile in the database
+    // For now, just use localStorage
+    localStorage.setItem('gentlee-checkin-enabled', JSON.stringify(enabled));
+    
+    // Log to console for demonstration
+    console.log(`Check-in ${enabled ? 'enabled' : 'disabled'}`);
+  };
+
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
       {isDevelopment && (
@@ -637,18 +644,15 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          {/* Check-in banner - show whenever both conditions are true */}
-          {showCheckInBanner && isIdleAtBottom && (
-            <CheckInBanner onDismiss={handleBannerDismiss} />
+          {/* Always show the banner if conditions are met, regardless of user scrolling */}
+          {showCheckInBanner && (
+            <CheckInBanner 
+              onToggle={handleCheckInToggle} 
+              initialEnabled={checkInEnabled}
+            />
           )}
           
-          <form ref={formRef} onSubmit={(e) => {
-            onSubmit(e);
-            // Hide check-in banner if user sends a message
-            if (showCheckInBanner) {
-              handleBannerDismiss();
-            }
-          }}>
+          <form ref={formRef} onSubmit={onSubmit}>
             <ChatInput 
               input={input}
               setInput={setInput}

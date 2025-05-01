@@ -7,7 +7,7 @@ interface CheckInConfettiProps {
   prefersReducedMotion: boolean;
 }
 
-// Confetti shapes and colors
+// Confetti shapes and colors in brand pastel palette
 const confettiItems = [
   // Circles and rectangles in brand pastel palette
   { type: 'circle', color: '#E8E6F5', size: 8, x: '10%', y: '20%', delay: 0 },
@@ -29,7 +29,7 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
       {confettiItems.map((item, index) => {
         const key = `confetti-${index}`;
         
-        // Common animation properties
+        // Common animation properties - 400ms fade+drift animation
         const animate = {
           y: [0, 20],
           opacity: [0, 1, 0],
