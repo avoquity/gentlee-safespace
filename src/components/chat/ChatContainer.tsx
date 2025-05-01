@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NotebookPen, Bell, RefreshCw } from 'lucide-react';
+import { NotebookPen, Bell, RefreshCw, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -66,6 +66,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
   const [checkInEnabled, setCheckInEnabled] = useState(false);
   const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); 
+  const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
   const isDevelopment = process.env.NODE_ENV !== 'production';
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,6 +120,19 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     
     return () => clearTimeout(timer);
   }, [user, messages]);
+
+  // Show greeting pill briefly when check-in banner is activated
+  useEffect(() => {
+    if (checkInEnabled && !showCheckInGreeting) {
+      // Show the greeting pill
+      setShowCheckInGreeting(true);
+      
+      // Hide greeting after 60 seconds
+      setTimeout(() => {
+        setShowCheckInGreeting(false);
+      }, 60000);
+    }
+  }, [checkInEnabled]);
 
   // Track when user is idle at the bottom of the chat
   useEffect(() => {
@@ -547,6 +561,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     
     // Log to console for demonstration
     console.log(`Check-in ${enabled ? 'enabled' : 'disabled'}`);
+    
+    // Show greeting pill briefly when enabled
+    if (enabled) {
+      setShowCheckInGreeting(true);
+      
+      // Hide after 60 seconds
+      setTimeout(() => {
+        setShowCheckInGreeting(false);
+      }, 60000);
+    }
   };
 
   return (
@@ -576,6 +600,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             messagesEndRef={messagesEndRef}
           />
           <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
+          
+          {/* Check-in greeting pill - appears when check-ins are enabled */}
+          {showCheckInGreeting && (
+            <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+              <div className="bg-soft-amber px-6 py-3 rounded-full shadow-md">
+                <p className="font-poppins text-sm text-deep-charcoal">
+                  Thanks for letting me check in 💛
+                </p>
+              </div>
+            </div>
+          )}
           
           {/* Debug buttons for testing - only visible in development */}
           {isDevelopment && (

@@ -25,16 +25,16 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
   if (prefersReducedMotion || !isActive) return null;
   
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-10" aria-hidden="true">
       {confettiItems.map((item, index) => {
         const key = `confetti-${index}`;
         
-        // Common animation properties - 400ms fade+drift animation
+        // Enhanced animation properties - more visible with longer duration
         const animate = {
           y: [0, 20],
           opacity: [0, 1, 0],
           transition: {
-            duration: 0.4,
+            duration: 0.6,
             ease: "easeOut",
             delay: item.delay,
           }
@@ -44,6 +44,8 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
           return (
             <motion.div
               key={key}
+              initial={{ opacity: 0, y: 0 }}
+              animate={animate}
               style={{
                 position: 'absolute',
                 left: item.x,
@@ -52,15 +54,15 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
                 height: item.size,
                 borderRadius: '50%',
                 backgroundColor: item.color,
-                opacity: 0
               }}
-              animate={animate}
             />
           );
         } else {
           return (
             <motion.div
               key={key}
+              initial={{ opacity: 0, y: 0 }}
+              animate={animate}
               style={{
                 position: 'absolute',
                 left: item.x,
@@ -68,9 +70,7 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
                 width: (item as any).width,
                 height: (item as any).height,
                 backgroundColor: item.color,
-                opacity: 0
               }}
-              animate={animate}
             />
           );
         }
