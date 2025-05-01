@@ -29,7 +29,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   onCheckInToggle = () => {}
 }: ChatMessagesProps) => {
   // Find last AI message to render check-in banner after it
-  const lastAiMessageIndex = [...messages].reverse().findIndex(msg => msg.user_role === 'assistant');
+  const lastAiMessageIndex = [...messages].reverse().findIndex(msg => 
+    (msg.user_role === 'assistant' || msg.sender === 'ai')
+  );
   const insertBannerAfter = lastAiMessageIndex !== -1 ? messages.length - 1 - lastAiMessageIndex : -1;
 
   return (

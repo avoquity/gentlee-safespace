@@ -4,6 +4,7 @@ export interface Message {
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  user_role?: 'user' | 'assistant'; // Adding user_role property to match DatabaseMessage
 }
 
 export interface ChatEntry {
