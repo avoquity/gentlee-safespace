@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CheckInBannerProps {
@@ -32,6 +34,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>("21:00");
   const [devMode, setDevMode] = useState(process.env.NODE_ENV !== 'production');
+  const [testNotifications, setTestNotifications] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -92,9 +95,16 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         const preferences = savePreferencesToLocalStorage(user.id, selectedTime);
         console.log("Preferences saved to localStorage:", preferences);
           
-        // Register service worker if not in dev mode
-        if (!devMode) {
+        // Register service worker if not in dev mode or if test notifications is enabled
+        if (!devMode || testNotifications) {
           await registerServiceWorker();
+          
+          // For testing: show a test notification if in dev mode with test notifications enabled
+          if (devMode && testNotifications) {
+            setTimeout(() => {
+              showTestNotification();
+            }, 2000);
+          }
         } else {
           console.log("Dev mode: Skipping service worker registration");
           
@@ -117,6 +127,42 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         title: "Something went wrong",
         description: "We couldn't save your preferences. Please try again later.",
         variant: "destructive",
+      });
+    }
+  };
+
+  const showTestNotification = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const title = 'Gentlee Check-in (Test)';
+      const options = {
+        body: 'This is a test notification. How are you feeling today?',
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        data: {
+          url: '/chat',
+          type: 'test'
+        }
+      };
+      
+      try {
+        new Notification(title, options);
+        console.log('Test notification shown');
+        toast({
+          title: "Test notification sent",
+          description: "Check your notification tray"
+        });
+      } catch (error) {
+        console.error('Error showing test notification:', error);
+        toast({
+          title: "Error",
+          description: "Could not display test notification"
+        });
+      }
+    } else {
+      console.log('Notifications not permitted');
+      toast({
+        title: "Notifications not permitted",
+        description: "Please enable notifications in your browser settings"
       });
     }
   };
@@ -245,21 +291,31 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
               </div>
             </RadioGroup>
             
-            {/* Development mode toggle */}
+            {/* Development mode settings */}
             {process.env.NODE_ENV !== 'production' && (
-              <div className="mt-6 p-3 bg-gray-50 rounded-md">
+              <div className="mt-6 p-3 bg-gray-50 rounded-md space-y-4">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="dev-mode" className="text-sm text-gray-600">Development testing mode</label>
-                  <input
+                  <Label htmlFor="dev-mode" className="text-sm text-gray-600">Development testing mode</Label>
+                  <Switch
                     id="dev-mode"
-                    type="checkbox"
                     checked={devMode}
-                    onChange={(e) => setDevMode(e.target.checked)}
-                    className="h-4 w-4 text-blue-500 focus:ring-blue-400"
+                    onCheckedChange={setDevMode}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500">
                   Bypasses notification permission checks for testing
+                </p>
+                
+                <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                  <Label htmlFor="test-notifs" className="text-sm text-gray-600">Test notifications</Label>
+                  <Switch
+                    id="test-notifs"
+                    checked={testNotifications}
+                    onCheckedChange={setTestNotifications}
+                  />
+                </div>
+                <p className="text-xs text-gray-500">
+                  Enables immediate test notification after saving
                 </p>
               </div>
             )}

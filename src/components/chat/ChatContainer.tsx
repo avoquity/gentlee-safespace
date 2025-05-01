@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { NotebookPen } from 'lucide-react';
+import { NotebookPen, Bell } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -237,6 +237,84 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     setShowCheckInBanner(true);
     setIsIdleAtBottom(true);
   };
+  
+  // Send test notification
+  const sendTestNotification = async () => {
+    // First check if notification permission is granted
+    if (Notification.permission !== 'granted') {
+      // Request permission
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          toast({
+            title: "Permission denied",
+            description: "Please allow notifications to test this feature."
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error requesting notification permission:", error);
+        toast({
+          title: "Error",
+          description: "Could not request notification permission."
+        });
+        return;
+      }
+    }
+    
+    // Try to show notification directly first
+    try {
+      new Notification("Gentlee Test", {
+        body: "This is a direct test notification.",
+        icon: '/favicon.ico'
+      });
+      
+      toast({
+        title: "Test notification sent",
+        description: "Check your notification tray."
+      });
+    } catch (error) {
+      console.error("Error showing direct notification:", error);
+      
+      // If direct notification fails, try via service worker
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        try {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SHOW_TEST_NOTIFICATION',
+            title: 'Gentlee Service Worker Test',
+            message: 'This notification comes from the service worker!'
+          });
+          
+          toast({
+            title: "Test notification request sent to service worker",
+            description: "Check your notification tray."
+          });
+        } catch (swError) {
+          console.error("Error sending message to service worker:", swError);
+          toast({
+            title: "Error",
+            description: "Could not send test notification via service worker."
+          });
+        }
+      } else {
+        toast({
+          title: "Service worker not available",
+          description: "Service worker is not controlling the page yet."
+        });
+        
+        // Try registering service worker
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          toast({
+            title: "Service worker registered",
+            description: "Please try the test again in a few seconds."
+          });
+        } catch (regError) {
+          console.error("Error registering service worker:", regError);
+        }
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
@@ -268,7 +346,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           
           {/* Debug buttons for testing - only visible in development */}
           {isDevelopment && (
-            <div className="mt-4 mb-4 flex gap-2">
+            <div className="mt-4 mb-4 flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -284,6 +362,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 className="text-xs"
               >
                 Reset Banner Status
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={sendTestNotification}
+                className="text-xs flex items-center gap-1"
+              >
+                <Bell className="h-3 w-3" /> Test Notification
               </Button>
             </div>
           )}

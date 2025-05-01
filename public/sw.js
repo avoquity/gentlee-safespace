@@ -90,6 +90,24 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
+// Test notification handling - detect messages from the client
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SHOW_TEST_NOTIFICATION') {
+    const title = event.data.title || 'Gentlee Test Notification';
+    const message = event.data.message || 'This is a test notification from the service worker.';
+    
+    self.registration.showNotification(title, {
+      body: message,
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      data: {
+        url: '/chat',
+        type: 'test'
+      }
+    });
+  }
+});
+
 // Fetch event
 self.addEventListener('fetch', (event) => {
   event.respondWith(
