@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, Heart, Waves } from 'lucide-react';
+import { Heart, Waves } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface CheckInBannerProps {
 export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialEnabled = false }) => {
   const [enabled, setEnabled] = useState(initialEnabled);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -39,6 +41,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
     if (newState) {
       // User is turning check-ins on
       setShowConfetti(true);
+      setShowConfirmation(true);
       
       // Request notification permission if needed
       if ('Notification' in window && Notification.permission === 'default') {
@@ -50,6 +53,8 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
             variant: "destructive"
           });
           setEnabled(false);
+          setShowConfetti(false);
+          setShowConfirmation(false);
           return;
         }
       }
@@ -66,14 +71,11 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
             variant: "destructive"
           });
           setEnabled(false);
+          setShowConfetti(false);
+          setShowConfirmation(false);
           return;
         }
       }
-      
-      // Hide confetti after animation completes
-      setTimeout(() => {
-        setShowConfetti(false);
-      }, 2000);
       
       // Log analytics event
       try {
@@ -83,6 +85,8 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       }
     } else {
       // User is turning check-ins off
+      setShowConfirmation(false);
+      
       // Log analytics event
       try {
         console.log("Analytics: checkin_toggle_off");
@@ -106,7 +110,6 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
     }
   }, [enabled, user]);
 
-  // New UI according to requirements
   return (
     <AnimatePresence>
       <motion.div
@@ -120,27 +123,24 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
         <div className="w-full flex items-center justify-between relative">
           <div className="flex items-center">
             <Waves size={24} className="text-[#6D6A8A] mr-3" />
-            <p className="text-[#333333] text-base leading-6 font-medium">
-              Can I check in with you now and then?
-            </p>
+            {showConfirmation ? (
+              <p className="text-[#333333] text-base leading-6 font-medium">
+                Lovely! I'll check in soon!
+              </p>
+            ) : (
+              <p className="text-[#333333] text-base leading-6 font-medium">
+                Can I check in with you now and then?
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
             {enabled ? (
-              <div className="flex items-center">
-                <Switch 
-                  checked={enabled} 
-                  onCheckedChange={handleToggle} 
-                  className={`${enabled ? 'bg-[#6D6A8A]' : 'bg-[#E8E6F5]'} relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors`}
-                />
-                <button
-                  className="text-[#999999] ml-2 p-1 hover:text-gray-600 transition-colors"
-                  onClick={handleToggle}
-                  aria-label="Turn off check-ins"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+              <Switch 
+                checked={enabled} 
+                onCheckedChange={handleToggle} 
+                className={`${enabled ? 'bg-[#6D6A8A]' : 'bg-[#E8E6F5]'} relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors`}
+              />
             ) : (
               <Button
                 variant="outline"
@@ -154,15 +154,6 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
           
           {/* Confetti animation overlay */}
           <CheckInConfetti isActive={showConfetti} prefersReducedMotion={prefersReducedMotion} />
-          
-          {/* Show temporary confirmation message when enabled */}
-          {enabled && showConfetti && (
-            <div className="absolute inset-0 bg-white/85 flex items-center px-5 animate-fade-in">
-              <p className="text-[#333333] text-base leading-6 font-medium">
-                Lovely! I'll check in soon!
-              </p>
-            </div>
-          )}
         </div>
       </motion.div>
     </AnimatePresence>

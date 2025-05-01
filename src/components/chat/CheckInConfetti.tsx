@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface CheckInConfettiProps {
@@ -22,6 +22,11 @@ const confettiItems = [
 ];
 
 export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, prefersReducedMotion }) => {
+  useEffect(() => {
+    // Debug log to verify the component is receiving the correct props
+    console.log("CheckInConfetti rendered with isActive:", isActive);
+  }, [isActive]);
+
   if (prefersReducedMotion || !isActive) return null;
   
   return (
@@ -29,15 +34,16 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
       {confettiItems.map((item, index) => {
         const key = `confetti-${index}`;
         
-        // Enhanced animation properties - more visible with longer duration
+        // Enhanced animation properties for better visibility
         const animate = {
-          y: [0, 20],
+          y: [0, 30],
           opacity: [0, 1, 0],
-          transition: {
-            duration: 0.6,
-            ease: "easeOut",
-            delay: item.delay,
-          }
+        };
+        
+        const transition = {
+          duration: 0.8,
+          ease: "easeOut",
+          delay: item.delay,
         };
         
         if (item.type === 'circle') {
@@ -46,6 +52,7 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
               key={key}
               initial={{ opacity: 0, y: 0 }}
               animate={animate}
+              transition={transition}
               style={{
                 position: 'absolute',
                 left: item.x,
@@ -63,6 +70,7 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
               key={key}
               initial={{ opacity: 0, y: 0 }}
               animate={animate}
+              transition={transition}
               style={{
                 position: 'absolute',
                 left: item.x,
