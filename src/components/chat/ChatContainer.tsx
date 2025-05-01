@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,9 @@ import { ChatInput } from './ChatInput';
 import { ScrollToTop } from './ScrollToTop';
 import { Highlight, Message } from '@/types/chat';
 import { ScrollToTopFloating } from './ScrollToTopFloating';
+import { CheckInBanner } from './CheckInBanner';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -49,10 +52,76 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [journalText, setJournalText] = useState('');
+  const [showCheckInBanner, setShowCheckInBanner] = useState(false);
+  const [isIdleAtBottom, setIsIdleAtBottom] = useState(false);
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
+  const idleTimerRef = useRef<number | null>(null);
+  const { user } = useAuth();
+
+  // Check if user is eligible to see the check-in banner
+  useEffect(() => {
+    const checkBannerEligibility = async () => {
+      if (!user || Notification.permission !== 'default' || messages.length === 0) {
+        return;
+      }
+
+      try {
+        // Check if banner has been seen before
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('banner_seen')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError || (profileData && profileData.banner_seen === true)) {
+          return;
+        }
+
+        // User is eligible to see the banner
+        setShowCheckInBanner(true);
+      } catch (error) {
+        console.error("Error checking banner eligibility:", error);
+      }
+    };
+
+    checkBannerEligibility();
+  }, [user, messages]);
+
+  // Track when user is idle at the bottom of the chat
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (idleTimerRef.current) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+
+      const isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 50;
+      
+      if (isAtBottom && showCheckInBanner) {
+        // Set a timer to detect idle state at bottom
+        idleTimerRef.current = window.setTimeout(() => {
+          setIsIdleAtBottom(true);
+        }, 3000); // 3 seconds of idle time
+      } else {
+        setIsIdleAtBottom(false);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (idleTimerRef.current) {
+        window.clearTimeout(idleTimerRef.current);
+      }
+    };
+  }, [showCheckInBanner]);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
@@ -70,6 +139,22 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const handleModalCancel = (text: string) => {
     setInput(text);
+  };
+
+  const handleBannerDismiss = async () => {
+    setShowCheckInBanner(false);
+    
+    // Update user profile to mark banner as seen
+    if (user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ banner_seen: true })
+          .eq('id', user.id);
+      } catch (error) {
+        console.error("Error updating banner seen status:", error);
+      }
+    }
   };
 
   return (
@@ -98,7 +183,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          <form ref={formRef} onSubmit={onSubmit}>
+          {/* Check-in banner - only shown when eligible and idle at bottom */}
+          {showCheckInBanner && isIdleAtBottom && (
+            <CheckInBanner onDismiss={handleBannerDismiss} />
+          )}
+          
+          <form ref={formRef} onSubmit={(e) => {
+            onSubmit(e);
+            // Hide check-in banner if user sends a message
+            if (showCheckInBanner) {
+              handleBannerDismiss();
+            }
+          }}>
             <ChatInput 
               input={input}
               setInput={setInput}
