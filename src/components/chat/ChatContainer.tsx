@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { NotebookPen, Bell, RefreshCw, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -66,15 +65,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [journalText, setJournalText] = useState('');
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
   const [checkInEnabled, setCheckInEnabled] = useState(false);
-  const [isIdleAtBottom, setIsIdleAtBottom] = useState(true); 
   const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const [showPermissionAlert, setShowPermissionAlert] = useState(false);
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [swActive, setSwActive] = useState(false);
   
-  // Create the missing refs
+  // Environment detection
+  const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+  
+  // Create refs
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const idleTimerRef = useRef<number | null>(null);
   
   // Get user from auth context
   const { user } = useAuth();
@@ -86,7 +88,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     if (isDevelopment) {
       console.log("Development mode: Forcing check-in banner visibility");
       setShowCheckInBanner(true);
-      setIsIdleAtBottom(true);
       
       // Check if user has previously set check-in preferences
       try {
@@ -99,11 +100,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       }
     }
   }, [isDevelopment]);
-  
-  // New state for permission alert
-  const [showPermissionAlert, setShowPermissionAlert] = useState(false);
-  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
-  const [swActive, setSwActive] = useState(false);
 
   // Check if user is eligible to see the check-in banner
   useEffect(() => {
@@ -127,11 +123,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         
         // Always show the banner if user has at least 1 message
         setShowCheckInBanner(true);
-        
-        // Force isIdleAtBottom to true to ensure the banner shows up
-        setTimeout(() => {
-          setIsIdleAtBottom(true);
-        }, 1000);
       } catch (error) {
         console.error("Error checking banner eligibility:", error);
       }
@@ -156,57 +147,20 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         setShowCheckInGreeting(false);
       }, 60000);
     }
-  }, [checkInEnabled]);
-
-  // Track when user is idle at the bottom of the chat
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      if (idleTimerRef.current) {
-        window.clearTimeout(idleTimerRef.current);
-        idleTimerRef.current = null;
-      }
-
-      const isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 100; // Increased threshold
-      
-      if (isAtBottom) {
-        // Set a timer to detect idle state at bottom
-        idleTimerRef.current = window.setTimeout(() => {
-          console.log("User is idle at bottom, setting isIdleAtBottom to true");
-          setIsIdleAtBottom(true);
-        }, 1500); // Reduced idle time threshold
-      } else {
-        setIsIdleAtBottom(false);
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    
-    // Trigger the idle detection immediately
-    handleScroll();
-    
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (idleTimerRef.current) {
-        window.clearTimeout(idleTimerRef.current);
-      }
-    };
-  }, [showCheckInBanner]);
+  }, [checkInEnabled, showCheckInGreeting]);
 
   // Directly log the values to help with debugging
   useEffect(() => {
-    console.log("Banner visibility conditions:", { showCheckInBanner, isIdleAtBottom });
+    console.log("Banner visibility conditions:", { showCheckInBanner, checkInEnabled });
     
     // For testing: Show a toast when banner conditions change
-    if (showCheckInBanner && isIdleAtBottom && isDevelopment) {
+    if (showCheckInBanner && isDevelopment) {
       toast({
         title: "Banner conditions met",
         description: "The banner should be visible now",
       });
     }
-  }, [showCheckInBanner, isIdleAtBottom, toast, isDevelopment]);
+  }, [showCheckInBanner, isDevelopment, toast]);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
@@ -224,30 +178,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const handleModalCancel = (text: string) => {
     setInput(text);
-  };
-
-  const handleBannerDismiss = async () => {
-    setShowCheckInBanner(false);
-    
-    // Update localStorage to mark banner as seen
-    if (user) {
-      try {
-        // Get existing preferences or create new object
-        const savedPreferences = localStorage.getItem('gentlee-checkin-preferences');
-        const preferences = savedPreferences 
-          ? JSON.parse(savedPreferences) 
-          : { userId: user.id };
-        
-        // Mark banner as seen
-        preferences.bannerSeen = true;
-        
-        // Save back to localStorage
-        localStorage.setItem('gentlee-checkin-preferences', JSON.stringify(preferences));
-        console.log("Banner seen status saved to localStorage");
-      } catch (error) {
-        console.error("Error updating banner seen status:", error);
-      }
-    }
   };
 
   // Register service worker and set up listeners
@@ -334,6 +264,27 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     };
   }, [toast]);
 
+  // Handle check-in toggle
+  const handleCheckInToggle = async (enabled: boolean) => {
+    setCheckInEnabled(enabled);
+    
+    // Save preference to localStorage
+    localStorage.setItem('gentlee-checkin-enabled', JSON.stringify(enabled));
+    
+    // Log to console for demonstration
+    console.log(`Check-in ${enabled ? 'enabled' : 'disabled'}`);
+    
+    // Show greeting pill briefly when enabled
+    if (enabled) {
+      setShowCheckInGreeting(true);
+      
+      // Hide after 60 seconds
+      setTimeout(() => {
+        setShowCheckInGreeting(false);
+      }, 60000);
+    }
+  };
+  
   // Reset banner visibility for testing
   const resetBanner = async () => {
     if (user) {
@@ -352,7 +303,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         });
         
         setShowCheckInBanner(true);
-        setIsIdleAtBottom(true);
       } catch (error) {
         console.error("Error resetting banner status:", error);
         toast({
@@ -366,7 +316,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   // Force banner to show for testing purposes
   const forceShowBanner = () => {
     setShowCheckInBanner(true);
-    setIsIdleAtBottom(true);
   };
   
   // Check notification permission status
@@ -576,30 +525,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   };
 
-  const handleCheckInToggle = async (enabled: boolean) => {
-    setCheckInEnabled(enabled);
-    
-    // In a production app, we would update the user's profile in the database
-    // For now, just use localStorage
-    localStorage.setItem('gentlee-checkin-enabled', JSON.stringify(enabled));
-    
-    // Log to console for demonstration
-    console.log(`Check-in ${enabled ? 'enabled' : 'disabled'}`);
-    
-    // Show greeting pill briefly when enabled
-    if (enabled) {
-      setShowCheckInGreeting(true);
-      
-      // Hide after 60 seconds
-      setTimeout(() => {
-        setShowCheckInGreeting(false);
-      }, 60000);
-    }
-  };
-
-  // Modified banner visibility conditions to always show in dev mode
-  const shouldShowBanner = isDevelopment || (showCheckInBanner && isIdleAtBottom);
-  
   return (
     <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
       {isDevelopment && (
@@ -625,6 +550,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             onHighlightChange={onHighlightChange}
             onHighlightRemove={onHighlightRemove}
             messagesEndRef={messagesEndRef}
+            showCheckInBanner={showCheckInBanner}
+            checkInEnabled={checkInEnabled}
+            onCheckInToggle={handleCheckInToggle}
           />
           <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
           
@@ -645,7 +573,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={forceShowBanner}
+                onClick={() => setShowCheckInBanner(true)}
                 className="text-xs"
               >
                 Force Show Banner
@@ -706,14 +634,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          {/* Modified to force banner display in development mode */}
-          {shouldShowBanner && (
-            <CheckInBanner 
-              onToggle={handleCheckInToggle} 
-              initialEnabled={checkInEnabled}
-            />
-          )}
-          
           <form ref={formRef} onSubmit={onSubmit}>
             <ChatInput 
               input={input}
