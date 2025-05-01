@@ -52,21 +52,19 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       
       // Insert CheckInBanner after the last AI message but only if the next message is from a user or it's the last message
       if (showCheckInBanner && checkInEnabled && index === insertBannerAfter) {
-        // Check if this is the last message or the next message is from a user
         const isLastMessage = index === messages.length - 1;
         const nextMessageIsFromUser = !isLastMessage && 
           (messages[index + 1].sender === 'user' || messages[index + 1].user_role === 'user');
         
-        if (isLastMessage || nextMessageIsFromUser) {
-          result.push(
-            <div key="check-in-banner" className="my-6">
-              <CheckInBanner 
-                onToggle={onCheckInToggle}
-                initialEnabled={checkInEnabled}
-              />
-            </div>
-          );
-        }
+        // Always show the banner regardless of what comes next, it should appear right after an AI message
+        result.push(
+          <div key="check-in-banner" className="my-6">
+            <CheckInBanner 
+              onToggle={onCheckInToggle}
+              initialEnabled={checkInEnabled}
+            />
+          </div>
+        );
       }
     });
     
