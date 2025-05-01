@@ -28,8 +28,10 @@ export const useStreamResponse = (userId: string | undefined) => {
       abortControllerRef.current = new AbortController();
       const { signal } = abortControllerRef.current;
 
-      // Fix: Using the complete absolute URL instead of supabase.functions.url property
-      const functionUrl = `${process.env.SUPABASE_URL || 'https://zmcmrivswbszhqqragli.supabase.co'}/functions/v1/chat-completion`;
+      // Fix: Using a hardcoded URL or import.meta.env instead of process.env
+      // This resolves the "process is not defined" error
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://zmcmrivswbszhqqragli.supabase.co';
+      const functionUrl = `${supabaseUrl}/functions/v1/chat-completion`;
       
       const sessionResponse = await supabase.auth.getSession();
       const accessToken = sessionResponse.data.session?.access_token;

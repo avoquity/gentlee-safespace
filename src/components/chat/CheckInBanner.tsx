@@ -20,7 +20,9 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
+  // Use safely access env vars in browser environment
+  const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -124,7 +126,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
 
   // Force trigger confetti in development mode for testing
   useEffect(() => {
-    if (isDevelopment && showConfetti) {
+    if (isDevelopment && enabled) {
       // Add a small delay to ensure the component is fully rendered
       const timer = setTimeout(() => {
         console.log('Development mode: Force showing confetti animation');
@@ -143,7 +145,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       
       return () => clearTimeout(timer);
     }
-  }, [isDevelopment, showConfetti]);
+  }, [isDevelopment, enabled]);
 
   return (
     <AnimatePresence>
