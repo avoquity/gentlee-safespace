@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,6 +13,7 @@ import { ScrollToTopFloating } from './ScrollToTopFloating';
 import { CheckInBanner } from './CheckInBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { CheckInFields } from '@/types/databaseTypes';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -72,11 +72,19 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         // Check if banner has been seen before
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('banner_seen')
+          .select('*') // Select all columns instead of just banner_seen
           .eq('id', user.id)
           .single();
 
-        if (profileError || (profileData && profileData.banner_seen === true)) {
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          return;
+        }
+        
+        // Check if the banner_seen property exists and is true
+        // TypeScript workaround since the type doesn't have banner_seen yet
+        const profile = profileData as unknown as CheckInFields;
+        if (profile && profile.banner_seen === true) {
           return;
         }
 
@@ -147,9 +155,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     // Update user profile to mark banner as seen
     if (user) {
       try {
+        // Use an object with only the required fields for the update operation
         await supabase
           .from('profiles')
-          .update({ banner_seen: true })
+          .update({ 
+            // Cast to any to work around TypeScript limitation until database types are updated
+            banner_seen: true as any
+          })
           .eq('id', user.id);
       } catch (error) {
         console.error("Error updating banner seen status:", error);
