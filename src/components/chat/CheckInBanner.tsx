@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -9,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { CheckInConfetti } from './CheckInConfetti';
 import { 
   Alert, 
   AlertDescription, 
@@ -42,8 +42,24 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const [showDevWarning, setShowDevWarning] = useState(false);
   const [swRegistered, setSwRegistered] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // Check notification permission on component mount
   React.useEffect(() => {
@@ -146,14 +162,28 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         }
       }
       
-      // Show confirmation toast with formatted time
-      const timeFormat = selectedTime === "08:00" ? "8:00 AM" : "9:00 PM";
-      toast({
-        title: "Lovely!",
-        description: `I'll check in around ${timeFormat}.${devMode ? " (Dev mode)" : ""}`,
-      });
+      // Show confirmation banner instead of toast
+      setShowConfirmation(true);
+      setShowConfetti(true);
       
-      onDismiss();
+      // Format time for display
+      const timeFormat = selectedTime === "08:00" ? "08:00" : "21:00";
+      
+      // Auto-dismiss after 2 seconds or on keypress
+      const keyHandler = () => {
+        setShowConfirmation(false);
+        document.removeEventListener('keydown', keyHandler);
+        onDismiss();
+      };
+      
+      document.addEventListener('keydown', keyHandler);
+      
+      setTimeout(() => {
+        setShowConfirmation(false);
+        document.removeEventListener('keydown', keyHandler);
+        onDismiss();
+      }, 2000);
+      
     } catch (error) {
       console.error("Error saving check-in preferences:", error);
       toast({
@@ -281,34 +311,59 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
     }
   };
 
+  // Content for confirmation state
+  const renderConfirmationContent = () => {
+    const timeFormat = selectedTime === "08:00" ? "08:00" : "21:00";
+    
+    return (
+      <div className="flex items-center justify-center w-full relative">
+        <p className="text-deep-charcoal text-[17px] leading-6 font-medium">
+          Wonderful! I'll check in around {timeFormat} 🌱
+        </p>
+        
+        {/* Add confetti animation */}
+        <CheckInConfetti isActive={showConfetti} prefersReducedMotion={prefersReducedMotion} />
+      </div>
+    );
+  };
+
   return (
     <>
       <AnimatePresence>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className="bg-white border border-deep-charcoal/10 rounded-lg shadow-sm p-4 mb-4 flex items-center justify-between"
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.12 }}
+          className="bg-[#F2F0EB] border border-deep-charcoal/10 rounded-lg shadow-sm mb-4 h-[56px] flex items-center justify-between"
         >
-          <p className="text-deep-charcoal text-sm mr-4">
-            Would it help if I checked in with you now and then? 🌱
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="border-muted-sage hover:bg-muted-sage hover:text-white text-sm px-3 py-2 h-auto"
-              onClick={handleYesClick}
-            >
-              Yes, please
-            </Button>
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full"
-              onClick={onDismiss}
-              aria-label="Dismiss"
-            >
-              <X size={16} />
-            </button>
-          </div>
+          {showConfirmation ? (
+            renderConfirmationContent()
+          ) : (
+            <>
+              <p className="text-[#1D1D1D] text-[17px] leading-6 font-medium px-4 mr-4">
+                Would it help if I checked in with you now and then? 🌱
+              </p>
+              <div className="flex items-center gap-2 pr-3">
+                <Button
+                  variant="outline"
+                  className="border-[#E8E6F5] hover:bg-[#E8E6F5] hover:text-deep-charcoal text-deep-charcoal px-4 py-2 h-auto font-medium"
+                  onClick={handleYesClick}
+                >
+                  Yes, please
+                </Button>
+                {!showConfirmation && (
+                  <button
+                    className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full"
+                    onClick={onDismiss}
+                    aria-label="Dismiss"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </motion.div>
       </AnimatePresence>
 
@@ -380,7 +435,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
           </div>
           <div className="mt-4 flex justify-end">
             <Button onClick={handleTimeSelection} className="bg-muted-sage hover:bg-muted-sage/90 text-white">
-              Save preference
+              Done
             </Button>
           </div>
         </SheetContent>
