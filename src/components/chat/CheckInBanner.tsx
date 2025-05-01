@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { X, Heart, Wave } from 'lucide-react';
+import { X, Heart, Waves } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -120,7 +119,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       >
         <div className="w-full flex items-center justify-between relative">
           <div className="flex items-center">
-            <Wave size={24} className="text-[#6D6A8A] mr-3" />
+            <Waves size={24} className="text-[#6D6A8A] mr-3" />
             <p className="text-[#333333] text-base leading-6 font-medium">
               Can I check in with you now and then?
             </p>
