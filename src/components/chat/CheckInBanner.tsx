@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckInFields, PushSubscription } from '@/types/databaseTypes';
+import { CheckInFields, PushSubscription, AnalyticsEvent } from '@/types/databaseTypes';
 
 interface CheckInBannerProps {
   onDismiss: () => void;
@@ -44,16 +44,16 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
     try {
       // Save user preference in the database
       if (user) {
-        // Use an object with only the required fields for the update operation
+        // Update profile with check-in preferences
         await supabase
           .from('profiles')
           .update({
-            // Cast to any to work around TypeScript limitation until database types are updated
-            checkin_enabled: true as any,
-            checkin_time: selectedTime as any,
-            last_notif_sent_at: null as any,
-            notif_this_week_count: 0 as any,
-            banner_seen: true as any
+            // Use type assertions to work around TypeScript limitations
+            checkin_enabled: true as unknown as string,
+            checkin_time: selectedTime as unknown as string,
+            last_notif_sent_at: null as unknown as string,
+            notif_this_week_count: 0 as unknown as string,
+            banner_seen: true as unknown as string
           })
           .eq('id', user.id);
           
@@ -100,19 +100,21 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
         
         // Send the subscription to the server
         if (user && subscription) {
-          // Save to custom events table instead of push_subscriptions table for now
+          // Store subscription data in the analytics_events table temporarily
+          // Note: We're working around TypeScript limitations here since the analytics_events
+          // table isn't fully supported in the type definitions yet
+          const eventData = {
+            user_id: user.id,
+            event_type: 'push_subscription_created',
+            event_data: { 
+              subscription: JSON.stringify(subscription),
+              created_at: new Date().toISOString()
+            }
+          } as unknown as any;
+          
           await supabase
-            .from('analytics_events')
-            .insert([
-              {
-                user_id: user.id,
-                event_type: 'push_subscription_created',
-                event_data: { 
-                  subscription: JSON.stringify(subscription),
-                  created_at: new Date().toISOString()
-                }
-              }
-            ]);
+            .from('analytics_events' as any)
+            .insert([eventData]);
         }
       } catch (error) {
         console.error('Service Worker registration failed:', error);
@@ -126,7 +128,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onDismiss }) => {
     const base64 = (base64String + padding)
       .replace(/-/g, '+')
       .replace(/_/g, '/');
-
+    
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
 

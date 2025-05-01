@@ -72,7 +72,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         // Check if banner has been seen before
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*') // Select all columns instead of just banner_seen
+          .select('*')
           .eq('id', user.id)
           .single();
 
@@ -82,7 +82,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         }
         
         // Check if the banner_seen property exists and is true
-        // TypeScript workaround since the type doesn't have banner_seen yet
+        // Use the CheckInFields interface to access the relevant fields
         const profile = profileData as unknown as CheckInFields;
         if (profile && profile.banner_seen === true) {
           return;
@@ -155,12 +155,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     // Update user profile to mark banner as seen
     if (user) {
       try {
-        // Use an object with only the required fields for the update operation
         await supabase
           .from('profiles')
           .update({ 
-            // Cast to any to work around TypeScript limitation until database types are updated
-            banner_seen: true as any
+            // Use type assertion to work around TypeScript limitation
+            banner_seen: true as unknown as string 
           })
           .eq('id', user.id);
       } catch (error) {

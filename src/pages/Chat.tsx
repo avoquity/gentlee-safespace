@@ -4,8 +4,8 @@ import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import confetti from 'canvas-confetti';
 import { useToast } from '@/hooks/use-toast';
+import confetti from 'canvas-confetti';
 
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
