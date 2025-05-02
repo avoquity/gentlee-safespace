@@ -107,6 +107,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     
     let bannerInserted = false;
     
+    // First, add all messages up to and including the last AI message,
+    // then insert the banner, then add the remaining messages
     messages.forEach((message, index) => {
       // Add the message
       result.push(
@@ -140,11 +142,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     });
     
     // If banner wasn't inserted yet but should be shown (fallback)
-    // This ensures the banner is always shown when needed
+    // This ensures the banner is always shown when needed, but position it before typing indicator
     if ((shouldShowBanner || checkInEnabled) && 
         showCheckInBanner && 
         !bannerInserted && 
         insertBannerAfter !== -1) {
+      // Important: We insert the banner before the typing indicator to ensure
+      // it's not at the very bottom of the chat
       result.push(
         <div key="check-in-banner" className="my-6">
           <CheckInBanner 
@@ -153,6 +157,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           />
         </div>
       );
+      bannerInserted = true;
     }
     
     return result;
