@@ -108,19 +108,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     let bannerInserted = false;
     
     messages.forEach((message, index) => {
-      // Add the message
-      result.push(
-        <ChatMessage
-          key={`msg-${message.id}`}
-          message={message}
-          highlights={highlights.filter(h => h.message_id.toString() === message.id)}
-          onHighlightChange={onHighlightChange}
-          onHighlightRemove={onHighlightRemove}
-        />
-      );
-      
       // Insert CheckInBanner right after the last AI message
-      // Critical fix: Place the banner immediately after the last AI message
       if ((shouldShowBanner || checkInEnabled) && 
           showCheckInBanner && 
           index === insertBannerAfter &&
@@ -137,6 +125,17 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         );
         bannerInserted = true;
       }
+      
+      // Add the message
+      result.push(
+        <ChatMessage
+          key={`msg-${message.id}`}
+          message={message}
+          highlights={highlights.filter(h => h.message_id.toString() === message.id)}
+          onHighlightChange={onHighlightChange}
+          onHighlightRemove={onHighlightRemove}
+        />
+      );
     });
     
     // If banner wasn't inserted yet but should be shown (fallback)

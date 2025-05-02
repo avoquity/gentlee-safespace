@@ -43,8 +43,22 @@ function getNotificationMessage(context: "negative" | "neutral" | "positive",
                               hoursSinceLastChat: number, 
                               timeOfDay: "morning" | "midday" | "evening",
                               keyword: string = ""): string {
+  // 7+ days of inactivity - switch to thought-starter prompt
+  if (hoursSinceLastChat >= 168) { // 7 days * 24 hours = 168 hours
+    // Collection of thought-starter prompts for extended inactivity
+    const thoughtStarters = [
+      "If your mood had a colour, what shade shows up?",
+      "Talk to yourself like a friend—what would you say right now?",
+      "What's one small thing bringing you comfort lately?",
+      "If today was a chapter in your story, what would you title it?", 
+      "What's something you're learning about yourself lately?",
+      "What small moment deserves your attention today?"
+    ];
+    return thoughtStarters[Math.floor(Math.random() * thoughtStarters.length)];
+  }
+  
   // Context follow-up messages (< 24h)
-  if (hoursSinceLastChat < 24) {
+  else if (hoursSinceLastChat < 24) {
     if (context === "negative") {
       return `Yesterday felt heavy with ${keyword || "everything"}. How are you holding up?`;
     } else if (context === "positive") {
@@ -65,7 +79,7 @@ function getNotificationMessage(context: "negative" | "neutral" | "positive",
     }
   }
   
-  // Thought-starter (>72h)
+  // Thought-starter (72h-7d)
   else {
     // Randomly select one of the thought-starter messages
     const thoughtStarters = [
