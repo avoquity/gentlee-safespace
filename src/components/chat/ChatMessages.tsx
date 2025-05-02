@@ -35,6 +35,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const lastAiMessageIndex = [...messages].reverse().findIndex(msg => 
     (msg.user_role === 'assistant' || msg.sender === 'ai')
   );
+  
+  // Important: Calculate the actual index in the original array (not the reversed one)
   const insertBannerAfter = lastAiMessageIndex !== -1 ? messages.length - 1 - lastAiMessageIndex : -1;
   
   // Check if user has sent at least 3 messages
@@ -103,6 +105,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const renderMessages = () => {
     const result: JSX.Element[] = [];
     
+    let bannerInserted = false;
+    
     messages.forEach((message, index) => {
       // Add the message
       result.push(
@@ -115,10 +119,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         />
       );
       
-      // Insert CheckInBanner after the last AI message
+      // Insert CheckInBanner right after the last AI message
+      // Critical fix: Place the banner immediately after the last AI message
       if ((shouldShowBanner || checkInEnabled) && 
           showCheckInBanner && 
-          index === insertBannerAfter) {
+          index === insertBannerAfter &&
+          !bannerInserted) {
         
         // Show the banner right after an AI message
         result.push(
@@ -129,8 +135,25 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             />
           </div>
         );
+        bannerInserted = true;
       }
     });
+    
+    // If banner wasn't inserted yet but should be shown (fallback)
+    // This ensures the banner is always shown when needed
+    if ((shouldShowBanner || checkInEnabled) && 
+        showCheckInBanner && 
+        !bannerInserted && 
+        insertBannerAfter !== -1) {
+      result.push(
+        <div key="check-in-banner" className="my-6">
+          <CheckInBanner 
+            onToggle={onCheckInToggle}
+            initialEnabled={checkInEnabled}
+          />
+        </div>
+      );
+    }
     
     return result;
   };
