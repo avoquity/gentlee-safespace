@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 
 interface CheckInConfettiProps {
   isActive: boolean;
@@ -23,8 +24,25 @@ const confettiItems = [
 
 export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, prefersReducedMotion }) => {
   // Development mode debugging
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
   
+  // Trigger canvas confetti when isActive changes to true
+  useEffect(() => {
+    if (isActive && !prefersReducedMotion) {
+      console.log("CheckInConfetti - Triggering canvas confetti animation");
+      
+      // Add a small delay to ensure DOM is ready
+      setTimeout(() => {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#E8E6F5', '#D7EADA', '#FCEFE3']
+        });
+      }, 100);
+    }
+  }, [isActive, prefersReducedMotion]);
+
   useEffect(() => {
     // Debug log to verify the component is receiving the correct props
     if (isDevelopment) {

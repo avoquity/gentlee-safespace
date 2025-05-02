@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { ChatMessage } from './ChatMessage';
 import { ChatTypingIndicator } from './ChatTypingIndicator';
@@ -28,11 +28,76 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   checkInEnabled = false,
   onCheckInToggle = () => {}
 }: ChatMessagesProps) => {
+  const [timeAtBottom, setTimeAtBottom] = useState<number | null>(null);
+  const [shouldShowBanner, setShouldShowBanner] = useState(false);
+  
   // Find last AI message to render check-in banner after it
   const lastAiMessageIndex = [...messages].reverse().findIndex(msg => 
     (msg.user_role === 'assistant' || msg.sender === 'ai')
   );
   const insertBannerAfter = lastAiMessageIndex !== -1 ? messages.length - 1 - lastAiMessageIndex : -1;
+  
+  // Check if user has sent at least 3 messages
+  const userMessageCount = messages.filter(msg => 
+    msg.sender === 'user' || msg.user_role === 'user'
+  ).length;
+  
+  // Handle scroll detection
+  useEffect(() => {
+    if (!showCheckInBanner || checkInEnabled) return;
+    
+    const handleScroll = () => {
+      // Check if user has scrolled to bottom
+      if (messagesEndRef.current) {
+        const distanceToBottom = 
+          document.documentElement.scrollHeight - 
+          (window.innerHeight + window.scrollY);
+        
+        if (distanceToBottom < 50) {
+          // User is at bottom
+          if (!timeAtBottom) {
+            setTimeAtBottom(Date.now());
+          }
+        } else {
+          // User scrolled away from bottom
+          setTimeAtBottom(null);
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [showCheckInBanner, checkInEnabled, messagesEndRef, timeAtBottom]);
+  
+  // Handle timer for showing banner
+  useEffect(() => {
+    if (!showCheckInBanner || checkInEnabled || !timeAtBottom) return;
+    
+    // Show banner after 10 seconds of being at bottom
+    const timer = setTimeout(() => {
+      if (insertBannerAfter !== -1) {
+        setShouldShowBanner(true);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(timer);
+  }, [showCheckInBanner, checkInEnabled, timeAtBottom, insertBannerAfter]);
+  
+  // Force show banner if user has sent at least 3 messages
+  useEffect(() => {
+    if (!showCheckInBanner || checkInEnabled) return;
+    
+    if (userMessageCount >= 3 && insertBannerAfter !== -1) {
+      setShouldShowBanner(true);
+    }
+  }, [showCheckInBanner, checkInEnabled, userMessageCount, insertBannerAfter]);
+  
+  // Reset banner state when checkInEnabled changes
+  useEffect(() => {
+    if (checkInEnabled) {
+      setShouldShowBanner(false);
+    }
+  }, [checkInEnabled]);
   
   // Groups messages into sequence blocks
   const renderMessages = () => {
@@ -50,13 +115,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         />
       );
       
-      // Insert CheckInBanner after the last AI message but only if the next message is from a user or it's the last message
-      if (showCheckInBanner && checkInEnabled && index === insertBannerAfter) {
-        const isLastMessage = index === messages.length - 1;
-        const nextMessageIsFromUser = !isLastMessage && 
-          (messages[index + 1].sender === 'user' || messages[index + 1].user_role === 'user');
+      // Insert CheckInBanner after the last AI message
+      if ((shouldShowBanner || checkInEnabled) && 
+          showCheckInBanner && 
+          index === insertBannerAfter) {
         
-        // Always show the banner regardless of what comes next, it should appear right after an AI message
+        // Show the banner right after an AI message
         result.push(
           <div key="check-in-banner" className="my-6">
             <CheckInBanner 

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Heart, Waves } from 'lucide-react';
+import { Sprout } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -126,26 +126,20 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
 
   // Force trigger confetti in development mode for testing
   useEffect(() => {
-    if (isDevelopment && enabled) {
+    if (isDevelopment && enabled && showConfetti) {
       // Add a small delay to ensure the component is fully rendered
+      console.log('Development mode: Force showing confetti animation');
+      
+      // Give the browser a moment to render before triggering the animation
       const timer = setTimeout(() => {
-        console.log('Development mode: Force showing confetti animation');
-        // Set a flag in sessionStorage to track if we've shown the test confetti
-        const testShown = sessionStorage.getItem('confetti-test-shown');
-        if (!testShown) {
-          setShowConfetti(true);
-          sessionStorage.setItem('confetti-test-shown', 'true');
-          
-          // Reset the flag after 2 seconds so we can test again if needed
-          setTimeout(() => {
-            sessionStorage.removeItem('confetti-test-shown');
-          }, 2000);
-        }
-      }, 500);
+        // Explicitly trigger confetti animation by toggling it off and on
+        setShowConfetti(false);
+        setTimeout(() => setShowConfetti(true), 50);
+      }, 200);
       
       return () => clearTimeout(timer);
     }
-  }, [isDevelopment, enabled]);
+  }, [isDevelopment, enabled, showConfetti]);
 
   return (
     <AnimatePresence>
@@ -159,10 +153,11 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       >
         <div className="w-full flex items-center justify-between relative">
           <div className="flex items-center">
-            <Waves size={24} className="text-[#6D6A8A] mr-3" />
+            {/* Replace Waves icon with Sprout */}
+            <span className="text-[24px] mr-3">🌱</span>
             {showConfirmation ? (
               <p className="text-[#333333] text-base leading-6 font-medium">
-                Lovely! I'll check in soon!
+                Lovely! You're all set! I'll check in tomorrow!
               </p>
             ) : (
               <p className="text-[#333333] text-base leading-6 font-medium">
@@ -172,12 +167,9 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
           </div>
 
           <div className="flex items-center gap-4">
-            {enabled ? (
-              <Switch 
-                checked={enabled} 
-                onCheckedChange={handleToggle} 
-                className={`${enabled ? 'bg-[#6D6A8A]' : 'bg-[#E8E6F5]'} relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors`}
-              />
+            {showConfirmation ? (
+              // Don't show any toggle when in confirmation state
+              <></>
             ) : (
               <Button
                 variant="outline"
