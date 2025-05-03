@@ -93,10 +93,10 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
         }
       }
       
-      // Hide the thank you note after the animation sequence completes - extended to 2500ms (was 1500ms)
+      // Hide the thank you note after the animation sequence completes - extended to 10 seconds
       setTimeout(() => {
         setShowThankYouNote(false);
-      }, 2500);
+      }, 10000);
       
       // Log analytics event
       try {
@@ -179,7 +179,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
           {/* Tree pop animation */}
           <TreePop isActive={showTreeAnimation} prefersReducedMotion={prefersReducedMotion} />
           
-          {/* Thank you note with updated styling - now synchronized with tree animation */}
+          {/* Thank you note with updated positioning - now positioned to not overlap trees */}
           <AnimatePresence>
             {showThankYouNote && (
               <motion.div 
@@ -187,10 +187,10 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ 
-                  opacity: { duration: 0.2 },
+                  opacity: { duration: 0.5 },
                   exit: { duration: 0.3 }
                 }}
-                className="absolute top-[-48px] left-1/2 transform -translate-x-1/2"
+                className="absolute top-[-110px] left-1/2 transform -translate-x-1/2"
               >
                 <div 
                   className="bg-[#F5EFE0]/90 px-6 py-2 rounded-full"

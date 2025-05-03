@@ -17,7 +17,6 @@ const Chat = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
-  const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -79,14 +78,6 @@ const Chat = () => {
           colors: ['#FFC0CB', '#FFD700', '#98FB98', '#ADD8E6']
         });
         
-        // Show special greeting pill
-        setShowCheckInGreeting(true);
-        
-        // Hide greeting after 60 seconds
-        setTimeout(() => {
-          setShowCheckInGreeting(false);
-        }, 60000);
-        
         // Show brief toast
         toast({
           title: "Check-in",
@@ -143,16 +134,6 @@ const Chat = () => {
 
   return (
     <div className="relative">
-      {showCheckInGreeting && (
-        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
-          <div className="bg-soft-amber px-6 py-3 rounded-full shadow-md">
-            <p className="font-poppins text-sm text-deep-charcoal">
-              Thanks for letting me check in 💛
-            </p>
-          </div>
-        </div>
-      )}
-      
       <ChatContainer
         messages={messages}
         input={input}

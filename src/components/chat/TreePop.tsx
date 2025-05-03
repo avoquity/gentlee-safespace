@@ -27,8 +27,8 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
         setTimeout(() => setCurrentTreeIndex(0), 0),
         setTimeout(() => setCurrentTreeIndex(1), 250),
         setTimeout(() => setCurrentTreeIndex(2), 500),
-        // Hide all trees after the animation completes - extended to 2500ms (was 1500ms)
-        setTimeout(() => setShowTrees(false), 2500)
+        // Extended display time to 10 seconds (10000ms) before hiding
+        setTimeout(() => setShowTrees(false), 10000)
       ];
       
       return () => {
@@ -42,26 +42,29 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
   
   if (!showTrees) return null;
   
-  // Updated to use Gentlee's branding sage green color for all trees
+  // Sage green trees with increased size
   const trees = [
-    <TreeDeciduous key="deciduous" size={32} className="text-muted-sage" />,
-    <TreePalm key="palm" size={32} className="text-muted-sage" />,
-    <TreePine key="pine" size={32} className="text-muted-sage" />
+    <TreeDeciduous key="deciduous" size={48} className="text-muted-sage" />,
+    <TreePalm key="palm" size={48} className="text-muted-sage" />,
+    <TreePine key="pine" size={48} className="text-muted-sage" />
   ];
   
   return (
-    <div className="absolute top-[-40px] left-0 right-0 flex justify-center items-end h-12 pointer-events-none">
+    <div className="absolute top-[-70px] left-0 right-0 flex justify-center items-end h-16 pointer-events-none">
       <div className="flex gap-4 items-end">
         {trees.map((tree, index) => (
           <AnimatePresence key={index}>
             {index <= currentTreeIndex && (
               <motion.div
-                initial={{ opacity: 0, scale: 0, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0, y: 20 }}
+                animate={{ opacity: 1, scale: 1.2, y: 0 }}
                 exit={{ opacity: 0, scale: 0, y: 5 }}
                 transition={{
-                  duration: index === currentTreeIndex ? 0.2 : 0.01, // Quick appearance for trees that should already be visible
-                  exit: { duration: 0.3 }
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20,
+                  duration: index === currentTreeIndex ? 0.5 : 0.01,
+                  exit: { duration: 0.5 }
                 }}
               >
                 {tree}
