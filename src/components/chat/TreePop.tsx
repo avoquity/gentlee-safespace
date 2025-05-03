@@ -42,11 +42,11 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
   
   if (!showTrees) return null;
   
-  // Updated to use the same green color for all trees and increased size
+  // Updated to use Gentlee's branding sage green color for all trees
   const trees = [
-    <TreeDeciduous key="deciduous" size={32} className="text-green-600" />,
-    <TreePalm key="palm" size={32} className="text-green-600" />,
-    <TreePine key="pine" size={32} className="text-green-600" />
+    <TreeDeciduous key="deciduous" size={32} className="text-muted-sage" />,
+    <TreePalm key="palm" size={32} className="text-muted-sage" />,
+    <TreePine key="pine" size={32} className="text-muted-sage" />
   ];
   
   return (
