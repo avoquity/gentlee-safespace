@@ -42,7 +42,7 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
   
   if (!showTrees) return null;
   
-  // Sage green trees with increased size
+  // Sage green trees with increased size for cartoon-like appearance
   const trees = [
     <TreeDeciduous key="deciduous" size={48} className="text-muted-sage" />,
     <TreePalm key="palm" size={48} className="text-muted-sage" />,
