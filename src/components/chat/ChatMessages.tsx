@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { Message, Highlight } from '@/types/chat';
 import { ChatMessage } from './ChatMessage';

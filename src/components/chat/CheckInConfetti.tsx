@@ -22,28 +22,29 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
     }
   }, [isActive]);
   
-  // Trigger the multi-burst confetti animation when isActive changes to true
+  // Trigger the confetti animation when isActive changes to true
   useEffect(() => {
     if (isActive && !prefersReducedMotion) {
       if (isDevelopment) {
-        console.log("CheckInConfetti - Triggering multi-burst confetti animation");
+        console.log("CheckInConfetti - Triggering confetti animation");
       }
       
-      // Confetti configuration for more calming, vibrant bursts
+      // Confetti configuration for more visible, firework-like confetti
       const confettiConfig = {
-        particleCount: 6,  // 4-6 pieces per burst
-        spread: 30,        // narrower fan
-        startVelocity: 25, // gentle arc
-        gravity: 0.8,      // moderate fall speed
-        colors: ['#8C7AE6', '#3CAEA3', '#FF6F61', '#FFD166'], // new vibrant palette
+        particleCount: 25,       // More particles
+        spread: 90,              // Wider spread
+        startVelocity: 40,       // Faster initial velocity
+        gravity: 0.7,            // Slightly slower fall
+        colors: ['#8C7AE6', '#3CAEA3', '#FF6F61', '#FFD166'], // Vibrant colors
         origin: { y: 0, x: 0.5 }, // default origin (will be updated)
-        scalar: 0.8,       // slightly smaller pieces
-        shapes: ['circle', 'square'],
+        scalar: 1.5,             // Larger pieces for better visibility
+        shapes: ['square'],      // Just squares for better visibility
+        ticks: 150,              // Longer confetti life
         disableForReducedMotion: true
       };
       
-      // Set up the multi-burst sequence
-      const triggerBurst = (delay: number) => {
+      // Set up just 2 bursts
+      const triggerBurst = (delay: number, velocity: number) => {
         setTimeout(() => {
           if (bannerRef.current) {
             const rect = bannerRef.current.getBoundingClientRect();
@@ -54,24 +55,27 @@ export const CheckInConfetti: React.FC<CheckInConfettiProps> = ({ isActive, pref
             
             confetti({
               ...confettiConfig,
+              startVelocity: velocity, // Use the specific velocity for this burst
               origin: { x: originX, y: originY }
             });
             
-            // Clean up after 700ms
+            // Clean up after 1.5s
             setTimeout(() => {
               confetti.reset();
-            }, 700);
+            }, 1500);
           } else {
             // Fallback to center of viewport if banner not found
-            confetti(confettiConfig);
+            confetti({
+              ...confettiConfig,
+              startVelocity: velocity
+            });
           }
         }, delay);
       };
       
-      // Trigger three bursts in sequence
-      triggerBurst(0);    // First burst immediately
-      triggerBurst(400);  // Second burst after 400ms
-      triggerBurst(800);  // Third burst after 800ms
+      // Trigger just two bursts with different velocities
+      triggerBurst(0, 40);    // First burst immediately - faster
+      triggerBurst(600, 25);  // Second burst after 600ms - slower
     }
   }, [isActive, prefersReducedMotion, isDevelopment]);
   

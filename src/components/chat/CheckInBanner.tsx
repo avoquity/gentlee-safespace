@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -154,13 +153,11 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
         initial={{ opacity: 0, y: -10 }}
         animate={{ 
           opacity: 1, 
-          y: 0,
-          scale: enabled && showConfetti ? [1, 1.1, 1] : 1 
+          y: 0
         }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ 
-          duration: 0.12,
-          scale: { duration: 0.15 }
+          duration: 0.12
         }}
         className="check-in-banner bg-white/85 rounded-xl shadow-sm mb-4 h-[56px] flex items-center justify-between relative overflow-hidden px-5 py-4"
         style={{ boxShadow: '0px 4px 8px rgba(0,0,0,0.05)' }}
