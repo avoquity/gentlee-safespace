@@ -27,8 +27,8 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
         setTimeout(() => setCurrentTreeIndex(0), 0),
         setTimeout(() => setCurrentTreeIndex(1), 250),
         setTimeout(() => setCurrentTreeIndex(2), 500),
-        // Hide all trees after the animation completes
-        setTimeout(() => setShowTrees(false), 1500)
+        // Hide all trees after the animation completes - extended to 2500ms (was 1500ms)
+        setTimeout(() => setShowTrees(false), 2500)
       ];
       
       return () => {

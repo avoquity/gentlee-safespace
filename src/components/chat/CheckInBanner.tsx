@@ -93,10 +93,10 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
         }
       }
       
-      // Hide the thank you note after the animation sequence completes
+      // Hide the thank you note after the animation sequence completes - extended to 2500ms (was 1500ms)
       setTimeout(() => {
         setShowThankYouNote(false);
-      }, 1500);
+      }, 2500);
       
       // Log analytics event
       try {
