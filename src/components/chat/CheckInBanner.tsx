@@ -143,7 +143,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
         transition={{ 
           duration: 0.12
         }}
-        className="check-in-banner bg-white/85 rounded-xl shadow-sm mb-4 h-[56px] flex items-center justify-between relative overflow-hidden px-5 py-4"
+        className="check-in-banner bg-white/85 rounded-xl shadow-sm mb-4 h-[56px] flex items-center justify-between relative overflow-visible px-5 py-4"
         style={{ boxShadow: '0px 4px 8px rgba(0,0,0,0.05)' }}
       >
         <div className="w-full flex items-center justify-between relative">
@@ -179,7 +179,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
           {/* Tree pop animation */}
           <TreePop isActive={showTreeAnimation} prefersReducedMotion={prefersReducedMotion} />
           
-          {/* Thank you note with updated styling */}
+          {/* Thank you note with updated styling - now synchronized with tree animation */}
           <AnimatePresence>
             {showThankYouNote && (
               <motion.div 

@@ -42,14 +42,15 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
   
   if (!showTrees) return null;
   
+  // Updated to use the same green color for all trees and increased size
   const trees = [
-    <TreeDeciduous key="deciduous" className="text-muted-sage" />,
-    <TreePalm key="palm" className="text-soft-yellow" />,
-    <TreePine key="pine" className="text-dusty-rose" />
+    <TreeDeciduous key="deciduous" size={32} className="text-green-600" />,
+    <TreePalm key="palm" size={32} className="text-green-600" />,
+    <TreePine key="pine" size={32} className="text-green-600" />
   ];
   
   return (
-    <div className="absolute top-[-30px] left-0 right-0 flex justify-center items-end h-8 pointer-events-none">
+    <div className="absolute top-[-40px] left-0 right-0 flex justify-center items-end h-12 pointer-events-none">
       <div className="flex gap-4 items-end">
         {trees.map((tree, index) => (
           <AnimatePresence key={index}>
