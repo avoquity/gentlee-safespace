@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { CheckInConfetti } from './CheckInConfetti';
+import { TreePop } from './TreePop';
 
 interface CheckInBannerProps {
   onToggle: (enabled: boolean) => void;
@@ -12,7 +13,7 @@ interface CheckInBannerProps {
 
 export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialEnabled = false }) => {
   const [enabled, setEnabled] = useState(initialEnabled);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showTreeAnimation, setShowTreeAnimation] = useState(false);
   const [showThankYouNote, setShowThankYouNote] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -38,9 +39,9 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
   // Log component mount for debugging
   useEffect(() => {
     if (isDevelopment) {
-      console.log('CheckInBanner mounted with props:', { initialEnabled, enabled, showConfetti });
+      console.log('CheckInBanner mounted with props:', { initialEnabled, enabled });
     }
-  }, [initialEnabled, enabled, showConfetti, isDevelopment]);
+  }, [initialEnabled, enabled, isDevelopment]);
 
   const handleToggle = async () => {
     const newState = !enabled;
@@ -48,12 +49,12 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
     
     if (newState) {
       // User is turning check-ins on
-      setShowConfetti(true);
+      setShowTreeAnimation(true);
       setShowThankYouNote(true);
       setShowConfirmation(true);
       
       if (isDevelopment) {
-        console.log('Confetti animation triggered:', { showConfetti });
+        console.log('Tree animation triggered');
       }
       
       // Request notification permission if needed
@@ -66,7 +67,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
             variant: "destructive"
           });
           setEnabled(false);
-          setShowConfetti(false);
+          setShowTreeAnimation(false);
           setShowThankYouNote(false);
           setShowConfirmation(false);
           return;
@@ -85,7 +86,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
             variant: "destructive"
           });
           setEnabled(false);
-          setShowConfetti(false);
+          setShowTreeAnimation(false);
           setShowThankYouNote(false);
           setShowConfirmation(false);
           return;
@@ -129,23 +130,6 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
       }
     }
   }, [enabled, user]);
-
-  // Force trigger confetti in development mode for testing
-  useEffect(() => {
-    if (isDevelopment && enabled && showConfetti) {
-      // Add a small delay to ensure the component is fully rendered
-      console.log('Development mode: Force showing confetti animation');
-      
-      // Give the browser a moment to render before triggering the animation
-      const timer = setTimeout(() => {
-        // Explicitly trigger confetti animation by toggling it off and on
-        setShowConfetti(false);
-        setTimeout(() => setShowConfetti(true), 50);
-      }, 200);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isDevelopment, enabled, showConfetti]);
 
   return (
     <AnimatePresence>
@@ -192,7 +176,10 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
             )}
           </div>
           
-          {/* Thank you note that appears and disappears */}
+          {/* Tree pop animation */}
+          <TreePop isActive={showTreeAnimation} prefersReducedMotion={prefersReducedMotion} />
+          
+          {/* Thank you note with updated styling */}
           <AnimatePresence>
             {showThankYouNote && (
               <motion.div 
@@ -205,15 +192,15 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
                 }}
                 className="absolute top-[-48px] left-1/2 transform -translate-x-1/2"
               >
-                <div className="bg-white/90 px-4 py-2 rounded-full shadow-sm">
-                  <p className="text-deep-charcoal text-sm font-medium">Thank you! 💫</p>
+                <div 
+                  className="bg-[#F5EFE0]/90 px-6 py-2 rounded-full"
+                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                >
+                  <p className="text-deep-charcoal text-sm font-medium">Thanks for letting me check in 💛</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-          
-          {/* Confetti animation overlay */}
-          <CheckInConfetti isActive={showConfetti} prefersReducedMotion={prefersReducedMotion} />
         </div>
       </motion.div>
     </AnimatePresence>
