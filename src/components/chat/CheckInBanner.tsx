@@ -15,7 +15,7 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
   const [enabled, setEnabled] = useState(initialEnabled);
   const [showTreeAnimation, setShowTreeAnimation] = useState(false);
   const [showThankYouNote, setShowThankYouNote] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(initialEnabled);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -35,6 +35,14 @@ export const CheckInBanner: React.FC<CheckInBannerProps> = ({ onToggle, initialE
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+
+  // Initialize state based on props
+  useEffect(() => {
+    if (initialEnabled !== enabled) {
+      setEnabled(initialEnabled);
+      setShowConfirmation(initialEnabled);
+    }
+  }, [initialEnabled, enabled]);
 
   // Log component mount for debugging
   useEffect(() => {

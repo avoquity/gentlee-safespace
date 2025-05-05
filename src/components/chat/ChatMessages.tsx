@@ -46,7 +46,14 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   
   // Handle scroll detection
   useEffect(() => {
-    if (!showCheckInBanner || checkInEnabled) return;
+    // Always set shouldShowBanner to true if already enabled
+    // This ensures the banner shows in confirmed state
+    if (checkInEnabled) {
+      setShouldShowBanner(true);
+      return;
+    }
+    
+    if (!showCheckInBanner) return;
     
     const handleScroll = () => {
       // Check if user has scrolled to bottom
@@ -73,7 +80,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   
   // Handle timer for showing banner
   useEffect(() => {
-    if (!showCheckInBanner || checkInEnabled || !timeAtBottom) return;
+    // Always show banner if check-ins are enabled
+    if (checkInEnabled) {
+      setShouldShowBanner(true);
+      return;
+    }
+    
+    if (!showCheckInBanner || !timeAtBottom) return;
     
     // Show banner after 10 seconds of being at bottom
     const timer = setTimeout(() => {
@@ -87,7 +100,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   
   // Force show banner if user has sent at least 3 messages
   useEffect(() => {
-    if (!showCheckInBanner || checkInEnabled) return;
+    // Always show banner if check-ins are enabled
+    if (checkInEnabled) {
+      setShouldShowBanner(true);
+      return;
+    }
+    
+    if (!showCheckInBanner) return;
     
     if (userMessageCount >= 3 && insertBannerAfter !== -1) {
       setShouldShowBanner(true);
@@ -96,8 +115,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   
   // Reset banner state when checkInEnabled changes
   useEffect(() => {
+    // If check-ins are now enabled, make sure banner is visible
     if (checkInEnabled) {
-      setShouldShowBanner(false);
+      setShouldShowBanner(true);
     }
   }, [checkInEnabled]);
   
@@ -109,8 +129,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     
     messages.forEach((message, index) => {
       // Insert CheckInBanner right after the last AI message
-      if ((shouldShowBanner || checkInEnabled) && 
-          showCheckInBanner && 
+      if (showCheckInBanner && 
+          (shouldShowBanner || checkInEnabled) && 
           index === insertBannerAfter &&
           !bannerInserted) {
         
@@ -140,8 +160,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     
     // If banner wasn't inserted yet but should be shown (fallback)
     // This ensures the banner is always shown when needed
-    if ((shouldShowBanner || checkInEnabled) && 
-        showCheckInBanner && 
+    if (showCheckInBanner && 
+        (shouldShowBanner || checkInEnabled) && 
         !bannerInserted && 
         insertBannerAfter !== -1) {
       result.push(

@@ -96,11 +96,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           setCheckInEnabled(enabled);
           console.log("Development mode: Found saved preference:", enabled);
           
-          // In dev mode, if check-in is not enabled, force show banner for testing
-          if (!enabled) {
-            setShowCheckInBanner(true);
-            console.log("Development mode: Forcing check-in banner visibility (not enabled)");
-          }
+          // Show banner regardless of enabled state in dev mode
+          setShowCheckInBanner(true);
+          console.log("Development mode: Forcing check-in banner visibility");
         } else {
           // No saved preference, show banner in dev mode
           setShowCheckInBanner(true);
@@ -135,14 +133,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           setCheckInEnabled(enabled);
           console.log("Found saved check-in preference:", enabled);
           
-          // Only show banner if check-in is not enabled yet
-          // This prevents showing the banner after refresh when already opted in
-          if (!enabled) {
-            setShowCheckInBanner(true);
-            console.log("Showing banner because check-in is not enabled");
-          } else {
-            console.log("Not showing banner because check-in is already enabled");
-          }
+          // Show banner regardless of whether check-in is enabled or not
+          // This ensures we show the confirmed state when enabled
+          setShowCheckInBanner(true);
+          console.log("Showing banner with state based on preference:", enabled);
         } else {
           // No preference saved yet, show the banner
           setShowCheckInBanner(true);

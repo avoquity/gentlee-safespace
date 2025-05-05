@@ -34,7 +34,8 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
       return () => {
         treeTimers.forEach(timer => clearTimeout(timer));
       };
-    } else {
+    } else if (!isActive) {
+      // Only reset the animation when isActive changes to false
       setShowTrees(false);
       setCurrentTreeIndex(-1);
     }
