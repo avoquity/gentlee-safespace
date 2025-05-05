@@ -68,6 +68,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [showPermissionAlert, setShowPermissionAlert] = useState(false);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [swActive, setSwActive] = useState(false);
+  const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
   
   // Environment detection
   const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
@@ -283,6 +284,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     
     // Save preference to localStorage
     localStorage.setItem('gentlee-checkin-enabled', JSON.stringify(enabled));
+    
+    // When enabling check-ins, show the greeting message temporarily
+    if (enabled) {
+      setShowCheckInGreeting(true);
+      // Hide greeting after 5 seconds
+      setTimeout(() => setShowCheckInGreeting(false), 5000);
+    }
     
     // Log to console for demonstration
     console.log(`Check-in ${enabled ? 'enabled' : 'disabled'}`);
