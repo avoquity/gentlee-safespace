@@ -65,7 +65,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const [journalText, setJournalText] = useState('');
   const [showCheckInBanner, setShowCheckInBanner] = useState(false);
   const [checkInEnabled, setCheckInEnabled] = useState(false);
-  const [showCheckInGreeting, setShowCheckInGreeting] = useState(false);
   const [showPermissionAlert, setShowPermissionAlert] = useState(false);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [swActive, setSwActive] = useState(false);
@@ -83,20 +82,32 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   // Initialize toast
   const { toast } = useToast();
   
-  // Always force banner to show in development mode
+  // Always force banner to show in development mode if not already enabled
   useEffect(() => {
     if (isDevelopment) {
-      console.log("Development mode: Forcing check-in banner visibility");
-      setShowCheckInBanner(true);
+      console.log("Development mode: Checking check-in state");
       
       // Check if user has previously set check-in preferences
       try {
         const savedEnabledState = localStorage.getItem('gentlee-checkin-enabled');
         if (savedEnabledState) {
-          setCheckInEnabled(JSON.parse(savedEnabledState));
+          const enabled = JSON.parse(savedEnabledState);
+          setCheckInEnabled(enabled);
+          console.log("Development mode: Found saved preference:", enabled);
+          
+          // In dev mode, if check-in is not enabled, force show banner for testing
+          if (!enabled) {
+            setShowCheckInBanner(true);
+            console.log("Development mode: Forcing check-in banner visibility (not enabled)");
+          }
+        } else {
+          // No saved preference, show banner in dev mode
+          setShowCheckInBanner(true);
+          console.log("Development mode: Forcing check-in banner visibility (no preference)");
         }
       } catch (error) {
         console.error("Error checking saved preferences:", error);
+        setShowCheckInBanner(true);
       }
     }
   }, [isDevelopment]);
@@ -117,14 +128,29 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       try {
         // Check if user has previously set check-in preferences
         const savedEnabledState = localStorage.getItem('gentlee-checkin-enabled');
-        if (savedEnabledState) {
-          setCheckInEnabled(JSON.parse(savedEnabledState));
-        }
         
-        // Always show the banner if user has at least 1 message
-        setShowCheckInBanner(true);
+        if (savedEnabledState) {
+          const enabled = JSON.parse(savedEnabledState);
+          setCheckInEnabled(enabled);
+          console.log("Found saved check-in preference:", enabled);
+          
+          // Only show banner if check-in is not enabled yet
+          // This prevents showing the banner after refresh when already opted in
+          if (!enabled) {
+            setShowCheckInBanner(true);
+            console.log("Showing banner because check-in is not enabled");
+          } else {
+            console.log("Not showing banner because check-in is already enabled");
+          }
+        } else {
+          // No preference saved yet, show the banner
+          setShowCheckInBanner(true);
+          console.log("No saved preference found, showing banner");
+        }
       } catch (error) {
         console.error("Error checking banner eligibility:", error);
+        // If there's an error, default to showing the banner
+        setShowCheckInBanner(true);
       }
     };
 
@@ -136,31 +162,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     return () => clearTimeout(timer);
   }, [user, messages]);
 
-  // Show greeting pill briefly when check-in banner is activated
-  useEffect(() => {
-    if (checkInEnabled && !showCheckInGreeting) {
-      // Show the greeting pill
-      setShowCheckInGreeting(true);
-      
-      // Hide greeting after 60 seconds
-      setTimeout(() => {
-        setShowCheckInGreeting(false);
-      }, 60000);
-    }
-  }, [checkInEnabled, showCheckInGreeting]);
-
   // Directly log the values to help with debugging
   useEffect(() => {
     console.log("Banner visibility conditions:", { showCheckInBanner, checkInEnabled });
     
     // For testing: Show a toast when banner conditions change
-    if (showCheckInBanner && isDevelopment) {
+    if (isDevelopment && showCheckInBanner) {
       toast({
         title: "Banner conditions met",
-        description: "The banner should be visible now",
+        description: `The banner should be visible now. Check-in enabled: ${checkInEnabled}`,
       });
     }
-  }, [showCheckInBanner, isDevelopment, toast]);
+  }, [showCheckInBanner, checkInEnabled, isDevelopment, toast]);
 
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     if (!text.trim()) return;
@@ -273,16 +286,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     
     // Log to console for demonstration
     console.log(`Check-in ${enabled ? 'enabled' : 'disabled'}`);
-    
-    // Show greeting pill briefly when enabled
-    if (enabled) {
-      setShowCheckInGreeting(true);
-      
-      // Hide after 60 seconds
-      setTimeout(() => {
-        setShowCheckInGreeting(false);
-      }, 60000);
-    }
   };
   
   // Reset banner visibility for testing
