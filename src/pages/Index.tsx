@@ -2,7 +2,6 @@
 import React from 'react';
 import Header from '../components/Header';
 import QuoteRotator from '../components/QuoteRotator';
-import MusicPlayer from '../components/MusicPlayer';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
@@ -15,24 +14,18 @@ const Index = () => {
       <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col min-h-screen">
         <div className="pt-40 max-w-7xl mx-auto w-full">
           <div className="space-y-16">
-            <div className="animate-fade-in">
+            <div className="flex flex-col items-center animate-fade-in">
               <QuoteRotator />
             </div>
             
-            <div className="grid lg:grid-cols-2 gap-12 items-end">
-              <div className="space-y-16 animate-fade-in">
+            <div className="flex flex-col items-center">
+              <div className="space-y-16 animate-fade-in max-w-2xl text-center">
                 <p className="text-xl text-deep-charcoal/80 font-poppins">
                   Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
                 </p>
                 
-                <div className="animate-fade-up">
+                <div className="animate-fade-up w-full">
                   <WritingInput />
-                </div>
-              </div>
-              
-              <div className="flex justify-end animate-fade-up">
-                <div className="max-w-md w-full">
-                  <MusicPlayer />
                 </div>
               </div>
             </div>
