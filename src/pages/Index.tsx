@@ -13,15 +13,15 @@ const Index = () => {
       
       <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col min-h-screen">
         <div className="pt-40 max-w-7xl mx-auto w-full">
-          <div className="space-y-16">
+          <div className="space-y-8">
             <div className="flex flex-col items-center animate-fade-in">
               <QuoteRotator />
             </div>
             
             <div className="flex flex-col items-center">
-              <div className="space-y-16 animate-fade-in max-w-2xl text-center">
+              <div className="space-y-10 animate-fade-in max-w-2xl text-center">
                 <p className="text-xl text-deep-charcoal/80 font-poppins">
-                  Your space to untangle your thoughts and find clarity through just chats. No rules, no pressure—just a space to let your thoughts breathe.
+                  Finally, a place to talk it out—no streaks, no fixes, just gentle clarity.
                 </p>
                 
                 <div className="animate-fade-up w-full">
@@ -30,7 +30,7 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="animate-fade-up">
+            <div className="animate-fade-up mt-8">
               <FAQSection />
             </div>
           </div>
