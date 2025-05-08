@@ -18,15 +18,15 @@ const Index = () => {
               <QuoteRotator />
             </div>
             
-            <div className="flex flex-col items-center">
-              <div className="space-y-10 animate-fade-in max-w-2xl text-center">
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="animate-fade-in max-w-2xl text-center mb-8">
                 <p className="text-xl text-deep-charcoal/80 font-poppins">
-                  Finally, a place to talk it out—no streaks, no fixes, just gentle clarity.
+                  Finally, a place to talk it out, no streaks, no fixes. An AI-powered emotional mirror that lets you vent, reveals hidden patterns, and helps you feel lighter in minutes.
                 </p>
-                
-                <div className="animate-fade-up w-full">
-                  <WritingInput />
-                </div>
+              </div>
+              
+              <div className="animate-fade-up w-full max-w-2xl">
+                <WritingInput />
               </div>
             </div>
             
