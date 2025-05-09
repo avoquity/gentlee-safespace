@@ -9,15 +9,14 @@ import QuoteRotator from '../components/QuoteRotator';
 import TopicTagsDisplay from '../components/home/TopicTagsDisplay';
 import { motion } from 'framer-motion';
 
-// Suggested topics as buttons below the input
+// Complete list of topics for the homepage
 const suggestedTopics = [
-  "Stress", 
-  "Relationships", 
-  "Career Change", 
-  "Motivation",
-  "Healing & Growth",
-  "Life Transitions",
-  "Inner clarity"
+  "Stress", "Anxiety & Overthinking", "Relationships", "Healing & Growth",
+  "Burnout & Fatigue", "Loneliness", "Parenthood", "Motivation",
+  "Money Worries", "Grief & Loss", "Friendships", "Purpose & Meaning",
+  "Time & Balance", "Body Image", "Break-ups", "Confidence Boost",
+  "Career Change", "Self-Compassion", "Identity & Belonging", "Building Habits",
+  "Life Transitions", "Inner Clarity", "Forgiveness"
 ];
 
 const Index = () => {
@@ -42,10 +41,10 @@ const Index = () => {
               </div>
             </div>
             
-            <TestimonialGrid />
-
-                  {/* Topic Tags */}
-            <TopicTagsDisplay topics={suggestedTopics} />
+            {/* Topic Tags - moved above FAQSection with increased margin */}
+            <div className="mt-16">
+              <TopicTagsDisplay topics={suggestedTopics} />
+            </div>
             
             <div className="animate-fade-up">
               <FAQSection />
