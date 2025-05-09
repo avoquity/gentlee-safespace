@@ -12,7 +12,7 @@ import {
 const faqData = [
   {
     question: "Is my conversation really private?",
-    answer: "Yes. We never sell or share your words with third parties—period. Your entries live on encrypted servers purely so Gentlee can gently "remember," spot patterns, and serve you better. You can export or delete your data any time in Settings."
+    answer: "Yes. We never sell or share your words with third parties—period. Your entries live on encrypted servers purely so Gentlee can gently 'remember,' spot patterns, and serve you better. You can export or delete your data any time in Settings."
   },
   {
     question: "What plans are available and how much do they cost?",
@@ -42,10 +42,10 @@ const faqData = [
   },
   {
     question: "What technology powers Gentlee?",
-    answer: "Gentlee runs on OpenAI's GPT-4.1 engine, fine-tuned with evidence-based psychology prompts and our proprietary "gentle mirror" guidance layer."
+    answer: "Gentlee runs on OpenAI's GPT-4.1 engine, fine-tuned with evidence-based psychology prompts and our proprietary 'gentle mirror' guidance layer."
   },
   {
-    question: "How does Gentlee "remember" me?",
+    question: "How does Gentlee \"remember\" me?",
     answer: "With your permission, it stores a history of past chats so it can recognise themes, track mood shifts, and offer deeper insights. We call this Personalised Memory (limited to your last 5 chats on the free plan, unlimited on Premium)."
   },
   {
