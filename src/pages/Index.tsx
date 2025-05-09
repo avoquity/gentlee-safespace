@@ -11,8 +11,8 @@ const Index = () => {
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <Header />
       
-      <main className="flex-1 w-full mx-auto px-0 sm:px-1 flex flex-col min-h-screen">
-        <div className="pt-40 max-w-[90rem] mx-auto w-full">
+      <main className="flex-1 w-full mx-auto flex flex-col min-h-screen">
+        <div className="pt-40 max-w-[95rem] mx-auto w-full px-1 sm:px-2">
           <div className="space-y-8">
             <div className="flex flex-col items-center animate-fade-in">
               <QuoteRotator />
