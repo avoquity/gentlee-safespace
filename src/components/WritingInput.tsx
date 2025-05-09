@@ -275,16 +275,16 @@ const WritingInput = () => {
         </div>
       )}
       
-      {/* Chat Suggestions (updated styling) */}
+      {/* Chat Suggestions (updated styling to match the pill design in the image) */}
       <div className="flex flex-col items-center justify-center space-y-3 mt-4 mb-8 w-full max-w-2xl mx-auto">
-        <div className="flex flex-col w-full gap-2">
+        <div className="flex flex-wrap justify-center gap-3 w-full">
           {randomSuggestions.map((suggestion, index) => (
             <motion.button
               key={index}
               onClick={() => handleSuggestionClick(suggestion)}
-              className="w-full py-3 px-4 text-left border border-[#A8A195] rounded-xl text-[#A8A195] hover:border-muted-sage hover:bg-muted-sage/5 hover:text-muted-sage transition-all duration-200 text-sm sm:text-base font-poppins"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              className="px-6 py-3 rounded-full border border-deep-charcoal bg-transparent text-deep-charcoal hover:bg-gray-50 transition-all duration-200 text-sm font-poppins"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               disabled={hasReachedLimit}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 10 }}
@@ -296,6 +296,7 @@ const WritingInput = () => {
         </div>
       </div>
       
+      {/* Topic Tags - Unchanged but matching the same pill styling as in image */}
       <div className="flex flex-wrap items-center gap-2 justify-center max-w-2xl mx-auto mt-3">
         {suggestedTopics.map((topic) => (
           <button
