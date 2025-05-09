@@ -47,7 +47,7 @@ const TestimonialGrid = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="w-full max-w-7xl mx-auto mt-6 mb-16"
+      className="w-full max-w-[90rem] mx-auto mt-6 mb-16"
     >
       <div className="text-center mb-8">
         <div className="bg-gray-100 inline-block px-4 py-1.5 rounded-full mb-4">
@@ -60,7 +60,7 @@ const TestimonialGrid = () => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2 sm:px-3">
         {testimonials.map((testimonial, index) => (
           <TestimonialCard
             key={index}

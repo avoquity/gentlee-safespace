@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const HeroTestimonial = () => {
   return (
-    <div className="w-full max-w-7xl mx-auto my-16 px-4">
+    <div className="w-full max-w-[90rem] mx-auto my-16 px-2 sm:px-3">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -17,7 +17,7 @@ const HeroTestimonial = () => {
           </p>
         </div>
         
-        <div className="flex flex-col items-center justify-center max-w-4xl mx-auto">
+        <div className="flex flex-col items-center justify-center max-w-5xl mx-auto">
           <p className="text-3xl sm:text-4xl md:text-5xl font-medium text-deep-charcoal leading-tight sm:leading-tight md:leading-tight mb-6 font-montserrat">
             <span className="relative inline-block">
               Therapy homework overwhelmed me.{' '}
