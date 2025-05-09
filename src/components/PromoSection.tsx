@@ -99,7 +99,7 @@ const FAQSection = () => {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <AccordionContent className="text-deep-charcoal/80 font-montserrat pt-2">
+                  <AccordionContent className="text-deep-charcoal/80 font-montserrat pt-2 text-lg">
                     {faq.answer}
                   </AccordionContent>
                 </motion.div>
