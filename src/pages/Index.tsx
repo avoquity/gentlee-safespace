@@ -30,7 +30,7 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="animate-fade-up mt-8">
+            <div className="animate-fade-up mt-16">
               <FAQSection />
             </div>
           </div>

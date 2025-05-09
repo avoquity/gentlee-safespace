@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -8,7 +7,7 @@ import { startOfDay, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Suggested topics as buttons below the input
+// Suggested topics as buttons below the input (existing feature)
 const suggestedTopics = [
   "Stress", 
   "Relationships", 
@@ -17,6 +16,18 @@ const suggestedTopics = [
   "Healing & Growth",
   "Life Transitions",
   "Inner clarity"
+];
+
+// Chat suggestions that appear as conversation starters
+const chatSuggestions = [
+  "My thoughts feel like a tangled ball of yarn right now.",
+  "I'm carrying a heavy feeling I can't quite name.",
+  "A conversation keeps replaying in my head and it's exhausting me.",
+  "Anxious energy followed me all day and I need a breather.",
+  "I just want a safe space to vent for a minute.",
+  "I'm overwhelmed by all the decisions in front of me.",
+  "I had a small win today, yet I still feel off balance.",
+  "Before I sleep, I'd love to set my worries down."
 ];
 
 // Weekly message limit for free users
@@ -31,10 +42,20 @@ const WritingInput = () => {
   const [messageCount, setMessageCount] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
+  const [randomSuggestions, setRandomSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  
+  // Generate random suggestions on component mount
+  useEffect(() => {
+    // Shuffle the array and take first 3-4 elements
+    const shuffled = [...chatSuggestions].sort(() => 0.5 - Math.random());
+    // Randomly decide between 3 or 4 suggestions
+    const count = Math.random() > 0.5 ? 3 : 4;
+    setRandomSuggestions(shuffled.slice(0, count));
+  }, []);
   
   // Check subscription status
   useEffect(() => {
@@ -140,6 +161,45 @@ const WritingInput = () => {
     }
   };
 
+  // Handle clicking on a chat suggestion
+  const handleSuggestionClick = async (suggestion: string) => {
+    if (hasReachedLimit) return;
+    
+    // If user is not authenticated, store message and redirect to auth
+    if (!user) {
+      sessionStorage.setItem('pendingMessage', suggestion);
+      navigate('/auth', {
+        state: { tab: 'signin', redirectTo: '/chat' }
+      });
+      return;
+    }
+
+    try {
+      // Check if there's a chat for today
+      const todayChat = await findTodayChat();
+
+      if (todayChat) {
+        // If chat exists, navigate to it with the suggestion as the message
+        navigate(`/chat/${todayChat.id}`, {
+          state: { 
+            initialMessage: suggestion,
+            entryDate: format(new Date(), 'd MMMM yyyy') // Add today's date for header
+          }
+        });
+      } else {
+        // If no chat exists for today, create a new one
+        navigate('/chat', {
+          state: { 
+            initialMessage: suggestion,
+            entryDate: format(new Date(), 'd MMMM yyyy') // Add today's date for header
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error handling suggestion click:', error);
+    }
+  };
+
   // Auto-resize the textarea when content changes
   useEffect(() => {
     if (textareaRef.current) {
@@ -214,6 +274,27 @@ const WritingInput = () => {
           </Link>
         </div>
       )}
+      
+      {/* Chat Suggestions (new feature) */}
+      <div className="flex flex-col items-center justify-center space-y-3 mt-4 mb-8 w-full max-w-2xl mx-auto">
+        <div className="flex flex-col w-full gap-2">
+          {randomSuggestions.map((suggestion, index) => (
+            <motion.button
+              key={index}
+              onClick={() => handleSuggestionClick(suggestion)}
+              className="w-full py-3 px-4 text-left border border-deep-charcoal/40 rounded-lg text-deep-charcoal hover:border-muted-sage hover:bg-muted-sage/5 transition-all duration-200 text-sm sm:text-base font-poppins"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              disabled={hasReachedLimit}
+              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              "{suggestion}"
+            </motion.button>
+          ))}
+        </div>
+      </div>
       
       <div className="flex flex-wrap items-center gap-2 justify-center max-w-2xl mx-auto mt-3">
         {suggestedTopics.map((topic) => (
