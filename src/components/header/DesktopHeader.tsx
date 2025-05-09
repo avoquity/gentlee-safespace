@@ -13,7 +13,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
 }) => {
   return (
     <>
-      <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
+      <Link to="/" className="text-deep-charcoal font-playfair font-bold text-2xl">
         Gentlee
       </Link>
       

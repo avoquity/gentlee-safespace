@@ -1,12 +1,9 @@
 
 import React from 'react';
 import Header from '../components/Header';
-import QuoteRotator from '../components/QuoteRotator';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
-import TestimonialGrid from '../components/home/TestimonialGrid';
-import HeroTestimonial from '../components/home/HeroTestimonial';
 import { motion } from 'framer-motion';
 
 const Index = () => {
@@ -22,11 +19,10 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="text-5xl sm:text-6xl md:text-7xl font-medium text-deep-charcoal mb-6 font-playfair text-center leading-tight sm:leading-tight md:leading-tight"
+                className="text-5xl sm:text-6xl md:text-7xl font-medium text-deep-charcoal mb-20 font-playfair text-center leading-tight sm:leading-tight md:leading-tight"
               >
-                Let's make sense of <br className="hidden sm:block" />your feelings, together
+                Imagine being understood <br className="hidden sm:block" />the way you understand
               </motion.h1>
-              <QuoteRotator />
             </div>
             
             <div className="flex flex-col items-center justify-center py-4">
@@ -39,12 +35,6 @@ const Index = () => {
               <div className="animate-fade-up w-full max-w-2xl px-2">
                 <WritingInput />
               </div>
-            </div>
-            
-            <HeroTestimonial />
-            
-            <div className="animate-fade-up">
-              <TestimonialGrid />
             </div>
             
             <div className="animate-fade-up">
