@@ -121,6 +121,10 @@ const WritingInput = () => {
       // Check if there's a chat for today
       const todayChat = await findTodayChat();
 
+      // Ensure the suggestion is properly stored for Chat page to process
+      sessionStorage.setItem('initialMessage', suggestion);
+      console.log('Setting suggestion to session storage:', suggestion);
+
       if (todayChat) {
         // If chat exists, navigate to it with the suggestion as the message
         navigate(`/chat/${todayChat.id}`, {

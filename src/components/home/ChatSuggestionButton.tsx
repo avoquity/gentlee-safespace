@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Pen } from 'lucide-react';
+import { PenLine } from 'lucide-react'; // Changed to PenLine for a more traditional ink pen look
 
 interface ChatSuggestionButtonProps {
   suggestion: string;
@@ -28,12 +28,8 @@ const ChatSuggestionButton = ({
       initial={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <div className="relative mr-2 flex-shrink-0">
-        <Pen size={16} className="text-deep-charcoal" />
-        {/* Magic dust particles - smaller and matching text color */}
-        <span className="absolute -top-1 -right-1 w-1 h-1 bg-deep-charcoal rounded-full animate-pulse opacity-70" />
-        <span className="absolute -bottom-1 -right-1 w-0.5 h-0.5 bg-deep-charcoal rounded-full animate-pulse animation-delay-2000 opacity-70" />
-        <span className="absolute -top-1 -left-1 w-0.5 h-0.5 bg-deep-charcoal rounded-full animate-pulse animation-delay-4000 opacity-70" />
+      <div className="mr-2 flex-shrink-0">
+        <PenLine size={16} className="text-deep-charcoal" />
       </div>
       <span className="line-clamp-1">{suggestion}</span>
     </motion.button>

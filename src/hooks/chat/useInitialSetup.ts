@@ -86,6 +86,8 @@ export const useInitialSetup = (
     const initialMessage = sessionStorage.getItem('initialMessage');
     const messageToProcess = pendingMessage || initialMessage;
     
+    console.log('Processing initial message:', messageToProcess);
+    
     if (messageToProcess && user && !initialMessageProcessed) {
       setInitialMessageProcessed(true);
       
@@ -143,7 +145,7 @@ export const useInitialSetup = (
           replace: true 
         });
         
-        // Only remove pendingMessage after successfully processing it
+        // Only remove storage items after successfully processing
         if (pendingMessage) {
           sessionStorage.removeItem('pendingMessage');
         }
@@ -151,6 +153,7 @@ export const useInitialSetup = (
           sessionStorage.removeItem('initialMessage');
         }
         
+        // Stream AI response to the user message
         await streamAIResponse(messageToProcess, chatId, updateMessage, addMessage);
       } catch (error: any) {
         console.error('Error processing initial message:', error);
