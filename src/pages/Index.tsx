@@ -11,7 +11,7 @@ const Index = () => {
     <div className="min-h-screen bg-soft-ivory flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto px-2 sm:px-3 lg:px-4 flex flex-col min-h-screen">
+      <main className="flex-1 w-full mx-auto px-0 sm:px-1 flex flex-col min-h-screen">
         <div className="pt-40 max-w-[90rem] mx-auto w-full">
           <div className="space-y-8">
             <div className="flex flex-col items-center animate-fade-in">
@@ -19,13 +19,13 @@ const Index = () => {
             </div>
             
             <div className="flex flex-col items-center justify-center py-4">
-              <div className="animate-fade-in max-w-2xl text-center mb-8">
+              <div className="animate-fade-in max-w-2xl text-center mb-8 px-2">
                 <p className="text-xl text-deep-charcoal/80 font-montserrat">
                   Finally, a place to talk it out, no streaks, no fixes. An AI-powered emotional mirror that lets you vent, reveals hidden patterns, and helps you feel lighter in minutes.
                 </p>
               </div>
               
-              <div className="animate-fade-up w-full max-w-2xl">
+              <div className="animate-fade-up w-full max-w-2xl px-2">
                 <WritingInput />
               </div>
             </div>
