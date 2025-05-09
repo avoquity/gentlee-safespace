@@ -21,9 +21,9 @@ const ChatSuggestionsDisplay = ({
   const secondRow = limitedSuggestions.slice(2, 4);
   
   return (
-    <div className="flex flex-col items-center justify-center space-y-3 mt-4 mb-8 w-full max-w-2xl mx-auto">
+    <div className="flex flex-col items-center justify-center space-y-3 mt-4 mb-8 w-full">
       {/* First row */}
-      <div className="flex justify-center gap-3 w-full">
+      <div className="flex justify-center gap-3 w-full max-w-3xl mx-auto">
         {firstRow.map((suggestion, index) => (
           <ChatSuggestionButton
             key={index}
@@ -36,7 +36,7 @@ const ChatSuggestionsDisplay = ({
       </div>
       
       {/* Second row */}
-      <div className="flex justify-center gap-3 w-full">
+      <div className="flex justify-center gap-3 w-full max-w-3xl mx-auto">
         {secondRow.map((suggestion, index) => (
           <ChatSuggestionButton
             key={index + 2}
