@@ -148,6 +148,13 @@ const WritingInput = () => {
       textareaRef.current.style.height = `${scrollHeight}px`;
     }
   }, [input]);
+  
+  // Auto-focus the textarea when the component mounts
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
 
   return (
     <div className="w-full mx-auto flex flex-col gap-4">
@@ -168,6 +175,7 @@ const WritingInput = () => {
                 maxHeight: '12rem'
               }}
               disabled={hasReachedLimit}
+              autoFocus
             />
           </div>
         </div>
@@ -180,7 +188,7 @@ const WritingInput = () => {
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
-            <span className="font-poppins text-sm">Send</span>
+            <span className="font-poppins text-sm">Start a free chat</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
         )}
@@ -193,7 +201,7 @@ const WritingInput = () => {
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
-            <span className="font-poppins text-sm">Send</span>
+            <span className="font-poppins text-sm">Start a free chat</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
         )}
