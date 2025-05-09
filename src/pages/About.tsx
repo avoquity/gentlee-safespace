@@ -25,13 +25,13 @@ const About = () => {
   };
 
   return (
-    <div className="min-h-screen bg-soft-ivory">
+    <div className="min-h-screen bg-warm-beige">
       <Header />
       
       <main className="pt-40 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-16">
           <div className="flex justify-between items-start">
-            <h1 className="text-5xl font-bold text-deep-charcoal leading-tight">
+            <h1 className="text-5xl font-bold text-deep-charcoal leading-tight font-playfair">
               In a world that often rushes past the quiet ache in our hearts, Gentlee exists as a reminder: even on the hardest days, there is tenderness waiting to meet us.
             </h1>
             <button

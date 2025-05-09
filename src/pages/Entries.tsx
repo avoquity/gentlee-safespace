@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { format, isToday } from 'date-fns';
@@ -132,13 +133,13 @@ const Entries = () => {
   }, {} as Record<string, ChatEntry[]>);
 
   return (
-    <div className="min-h-screen bg-soft-ivory">
+    <div className="min-h-screen bg-warm-beige">
       <div className={`fixed top-0 w-full transition-colors duration-200 z-50 ${
         isScrolled ? 'bg-white shadow-sm' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <Link to="/" className="text-deep-charcoal font-montserrat font-bold text-2xl">
+            <Link to="/" className="text-deep-charcoal font-playfair font-bold text-2xl">
               Gentlee
             </Link>
             <Button
@@ -153,7 +154,7 @@ const Entries = () => {
 
       <div className="max-w-4xl mx-auto pt-24 px-4 sm:px-6">
         <div className="mb-12">
-          <h1 className="text-5xl font-bold text-deep-charcoal mb-4">
+          <h1 className="text-5xl font-bold text-deep-charcoal mb-4 font-playfair">
             Looking back, to move forward.
           </h1>
           {selectedTheme && (
@@ -184,7 +185,7 @@ const Entries = () => {
                   }}
                 >
                   <div className="flex justify-between items-start gap-4">
-                    <h2 className="text-2xl font-semibold text-deep-charcoal">
+                    <h2 className="text-2xl font-semibold text-deep-charcoal font-playfair">
                       {date}
                     </h2>
                     {entry.theme && (

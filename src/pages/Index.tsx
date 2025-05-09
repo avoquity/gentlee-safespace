@@ -4,6 +4,8 @@ import Header from '../components/Header';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
+import TestimonialGrid from '../components/home/TestimonialGrid';
+import QuoteRotator from '../components/QuoteRotator';
 import { motion } from 'framer-motion';
 
 const Index = () => {
@@ -14,16 +16,7 @@ const Index = () => {
       <main className="flex-1 w-full mx-auto flex flex-col min-h-screen">
         <div className="pt-40 max-w-[95rem] mx-auto w-full px-1 sm:px-2">
           <div className="space-y-8">
-            <div className="flex flex-col items-center animate-fade-in">
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-5xl sm:text-6xl md:text-7xl font-medium text-deep-charcoal mb-20 font-playfair text-center leading-tight sm:leading-tight md:leading-tight"
-              >
-                Imagine being understood <br className="hidden sm:block" />the way you understand
-              </motion.h1>
-            </div>
+            <QuoteRotator />
             
             <div className="flex flex-col items-center justify-center py-4">
               <div className="animate-fade-in max-w-2xl text-center mb-8 px-2">
@@ -36,6 +29,8 @@ const Index = () => {
                 <WritingInput />
               </div>
             </div>
+            
+            <TestimonialGrid />
             
             <div className="animate-fade-up">
               <FAQSection />
