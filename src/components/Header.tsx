@@ -51,10 +51,9 @@ const Header = () => {
 
   return (
     <header 
-      className={`fixed top-0 w-full z-50 ${
-        isScrollingUp ? 'bg-white shadow-sm' : 'bg-transparent'
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrollingUp ? 'bg-warm-beige bg-opacity-90 backdrop-blur-sm' : 'bg-transparent'
       }`}
-      style={{ transition: 'transform 300ms, box-shadow 300ms' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">

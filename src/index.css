@@ -32,11 +32,11 @@
   }
 
   body {
-    @apply bg-soft-ivory text-deep-charcoal antialiased;
+    @apply bg-warm-beige text-deep-charcoal antialiased;
     background-image: radial-gradient(
       circle at center,
       rgba(216, 140, 140, 0.05) 0%,
-      rgba(253, 251, 248, 0) 70%
+      rgba(242, 233, 225, 0) 70%
     );
   }
 }

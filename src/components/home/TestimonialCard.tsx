@@ -24,12 +24,12 @@ const TestimonialCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
       className={cn(
-        "bg-white p-6 rounded-lg shadow-sm border border-deep-charcoal/5 flex flex-col h-full", 
+        "bg-white bg-opacity-70 p-6 rounded-lg shadow-sm border border-dark-accent/5 flex flex-col h-full hover:shadow-md transition-shadow duration-300", 
         className
       )}
     >
-      <p className="text-lg font-normal text-deep-charcoal/80 mb-6 flex-grow">
-        {quote}
+      <p className="text-lg font-normal text-deep-charcoal/80 mb-6 flex-grow font-montserrat">
+        "{quote}"
       </p>
       <div className="mt-auto">
         <p className="text-deep-charcoal/90 font-medium">

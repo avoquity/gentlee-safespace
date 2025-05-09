@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,11 +20,13 @@ export default {
     },
     extend: {
       colors: {
-        "soft-ivory": "#FDFBF8",
+        "soft-ivory": "#F8F5F1",
         "dusty-rose": "#D98C8C",
         "muted-sage": "#A8BFA5",
         "soft-yellow": "#F5D76E",
         "deep-charcoal": "#2E2E2E",
+        "warm-beige": "#F2E9E1",
+        "dark-accent": "#463F3A",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -61,6 +64,7 @@ export default {
       fontFamily: {
         montserrat: ["Montserrat", "sans-serif"],
         poppins: ["Poppins", "sans-serif"],
+        playfair: ["Playfair Display", "serif"],
       },
       keyframes: {
         "fade-in": {
