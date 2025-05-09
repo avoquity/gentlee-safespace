@@ -14,35 +14,55 @@ import Privacy from '@/pages/Privacy';
 import Upgrade from './pages/Upgrade';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Profile from './pages/Profile';
+import { Suspense, lazy, useEffect } from 'react';
 
-// Create a new QueryClient instance
+// Create a new QueryClient instance with robust error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: 2,
       refetchOnWindowFocus: false,
+      staleTime: 30000,
+      onError: (error) => {
+        console.error('Query error:', error);
+      }
     },
   },
 });
 
+// Simple loading fallback
+const LoadingFallback = () => (
+  <div className="flex h-screen w-full items-center justify-center">
+    <div className="opacity-50">Loading...</div>
+  </div>
+);
+
 function App() {
+  // Log when App component mounts
+  useEffect(() => {
+    console.log('App component mounted');
+    return () => console.log('App component unmounted');
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter basename="/">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/chat/:chatId?" element={<Chat />} />
-            <Route path="/entries" element={<Entries />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/upgrade" element={<Upgrade />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/chat/:chatId?" element={<Chat />} />
+              <Route path="/entries" element={<Entries />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/upgrade" element={<Upgrade />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
         <Toaster />
       </AuthProvider>

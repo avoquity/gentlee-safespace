@@ -9,6 +9,8 @@
     <meta name="description" content="Gentlee provides a calm space for your daily reflections and emotional well-being." />
     <!-- Support for client-side routing -->
     <base href="/" />
+    <!-- Preload critical assets -->
+    <link rel="preconnect" href="https://zmcmrivswbszhqqragli.supabase.co" />
     
     <!-- Hotjar Tracking Code -->
     <script>
@@ -23,7 +25,12 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading placeholder -->
+      <div style="display: flex; height: 100vh; width: 100%; align-items: center; justify-content: center;">
+        <div style="opacity: 0.5;">Loading Gentlee...</div>
+      </div>
+    </div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
