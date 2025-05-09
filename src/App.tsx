@@ -23,8 +23,11 @@ const queryClient = new QueryClient({
       retry: 2,
       refetchOnWindowFocus: false,
       staleTime: 30000,
-      onError: (error) => {
-        console.error('Query error:', error);
+      // The onError callback has been moved to the meta object as per latest React Query v5
+      meta: {
+        onError: (error: Error) => {
+          console.error('Query error:', error);
+        }
       }
     },
   },
