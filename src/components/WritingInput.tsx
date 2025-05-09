@@ -170,9 +170,6 @@ const WritingInput = () => {
       {/* Hero Testimonial */}
       <HeroTestimonial />
       
-      {/* Testimonial Grid */}
-      <TestimonialGrid />
-      
       {/* Topic Tags */}
       <TopicTagsDisplay topics={suggestedTopics} />
     </div>
