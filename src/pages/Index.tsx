@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
+import TestimonialGrid from '../components/home/TestimonialGrid';
 import QuoteRotator from '../components/QuoteRotator';
 import { motion } from 'framer-motion';
 
@@ -28,6 +29,8 @@ const Index = () => {
                 <WritingInput />
               </div>
             </div>
+            
+            <TestimonialGrid />
             
             <div className="animate-fade-up">
               <FAQSection />
