@@ -3,15 +3,20 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Use hydrate or render based on whether we're in SSR mode
+// Get the root element
 const rootElement = document.getElementById("root");
-if (rootElement) {
-  // Detect if the app was server-rendered
-  const hasSSRContent = rootElement.hasChildNodes();
 
-  if (hasSSRContent) {
-    createRoot(rootElement).render(<App />);
+// Ensure the root element exists before rendering
+if (rootElement) {
+  const root = createRoot(rootElement);
+  
+  // Add event listener for DOMContentLoaded to ensure DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      root.render(<App />);
+    });
   } else {
-    createRoot(rootElement).render(<App />);
+    // DOM already loaded, render immediately
+    root.render(<App />);
   }
 }
