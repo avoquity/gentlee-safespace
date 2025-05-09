@@ -6,7 +6,18 @@ import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
 import TestimonialGrid from '../components/home/TestimonialGrid';
 import QuoteRotator from '../components/QuoteRotator';
+import TopicTagsDisplay from '../components/home/TopicTagsDisplay';
 import { motion } from 'framer-motion';
+
+const suggestedTopics = [
+  "Stress", 
+  "Relationships", 
+  "Career Change", 
+  "Motivation",
+  "Healing & Growth",
+  "Life Transitions",
+  "Inner clarity"
+];
 
 const Index = () => {
   return (
@@ -30,7 +41,10 @@ const Index = () => {
               </div>
             </div>
             
-            <TestimonialGrid />
+            {/* Topic Tags moved above the FAQ section */}
+            <div className="animate-fade-up py-4">
+              <TopicTagsDisplay topics={suggestedTopics} />
+            </div>
             
             <div className="animate-fade-up">
               <FAQSection />
