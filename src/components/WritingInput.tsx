@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ChatSuggestions } from '@/components/chat/ChatSuggestions';
 
 // Suggested topics as buttons below the input
 const suggestedTopics = [
@@ -20,20 +19,8 @@ const suggestedTopics = [
   "Inner clarity"
 ];
 
-// Suggestion prompts similar to chat page
-const suggestionPrompts = [
-  "What's one thing I know deep down, but forget too often?",
-  "Tell me a small truth wrapped in kindness.",
-  "If my heart could speak, what would it say?",
-  "What would I say to my younger self right now?",
-  "What would this look like from a different lens?"
-];
-
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
-
-// Storage key for the first visit timestamp
-const FIRST_VISIT_KEY = 'gentlee_first_visit';
 
 interface TodayChat {
   id: number;
@@ -44,33 +31,10 @@ const WritingInput = () => {
   const [messageCount, setMessageCount] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
-  
-  // Check first visit status and show suggestions
-  useEffect(() => {
-    const firstVisitTimestamp = localStorage.getItem(FIRST_VISIT_KEY);
-    const currentTime = new Date().getTime();
-    
-    // If no timestamp or it's been more than 30 days
-    if (!firstVisitTimestamp || (currentTime - parseInt(firstVisitTimestamp)) > 30 * 24 * 60 * 60 * 1000) {
-      localStorage.setItem(FIRST_VISIT_KEY, currentTime.toString());
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  }, []);
-  
-  // Auto-focus the textarea when component mounts
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, []);
   
   // Check subscription status
   useEffect(() => {
@@ -176,14 +140,6 @@ const WritingInput = () => {
     }
   };
 
-  // Handle suggestion click
-  const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  };
-
   // Auto-resize the textarea when content changes
   useEffect(() => {
     if (textareaRef.current) {
@@ -202,8 +158,6 @@ const WritingInput = () => {
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder={hasReachedLimit 
                 ? "You've reached your weekly chat limit. Please upgrade to Reflection plan to continue." 
                 : "What's on your mind lately?"}
@@ -214,18 +168,7 @@ const WritingInput = () => {
                 maxHeight: '12rem'
               }}
               disabled={hasReachedLimit}
-              autoFocus
             />
-            
-            {/* Suggestion prompts - show when focused and suggestions are enabled */}
-            {showSuggestions && (
-              <ChatSuggestions 
-                suggestions={suggestionPrompts}
-                inputValue={input}
-                onSuggestionClick={handleSuggestionClick}
-                isFocused={isInputFocused}
-              />
-            )}
           </div>
         </div>
         
@@ -237,7 +180,7 @@ const WritingInput = () => {
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
-            <span className="font-poppins text-sm">Start a free chat</span>
+            <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
         )}
@@ -250,7 +193,7 @@ const WritingInput = () => {
             whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
             disabled={hasReachedLimit}
           >
-            <span className="font-poppins text-sm">Start a free chat</span>
+            <span className="font-poppins text-sm">Send</span>
             <ArrowRight className="w-4 h-4" />
           </motion.button>
         )}
