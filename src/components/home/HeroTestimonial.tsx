@@ -18,7 +18,7 @@ const HeroTestimonial = () => {
         </div>
         
         <div className="flex flex-col items-center justify-center max-w-4xl mx-auto">
-          <p className="text-3xl sm:text-4xl md:text-5xl font-medium text-deep-charcoal leading-tight sm:leading-tight md:leading-tight mb-6">
+          <p className="text-3xl sm:text-4xl md:text-5xl font-medium text-deep-charcoal leading-tight sm:leading-tight md:leading-tight mb-6 font-montserrat">
             <span className="relative inline-block">
               Therapy homework overwhelmed me.{' '}
               <span className="relative inline-block">

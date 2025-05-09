@@ -9,6 +9,7 @@ import ChatSuggestionsDisplay from './home/ChatSuggestionsDisplay';
 import TopicTagsDisplay from './home/TopicTagsDisplay';
 import UpgradeLink from './home/UpgradeLink';
 import HeroTestimonial from './home/HeroTestimonial';
+import TestimonialGrid from './home/TestimonialGrid';
 
 // Suggested topics as buttons below the input
 const suggestedTopics = [
@@ -168,6 +169,9 @@ const WritingInput = () => {
       
       {/* Hero Testimonial */}
       <HeroTestimonial />
+      
+      {/* Testimonial Grid */}
+      <TestimonialGrid />
       
       {/* Topic Tags */}
       <TopicTagsDisplay topics={suggestedTopics} />
