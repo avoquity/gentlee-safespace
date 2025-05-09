@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +8,7 @@ import ChatInputForm from './home/ChatInputForm';
 import ChatSuggestionsDisplay from './home/ChatSuggestionsDisplay';
 import TopicTagsDisplay from './home/TopicTagsDisplay';
 import UpgradeLink from './home/UpgradeLink';
+import HeroTestimonial from './home/HeroTestimonial';
 
 // Suggested topics as buttons below the input
 const suggestedTopics = [
@@ -165,6 +165,9 @@ const WritingInput = () => {
         onSuggestionClick={handleSuggestionClick}
         hasReachedLimit={hasReachedLimit}
       />
+      
+      {/* Hero Testimonial */}
+      <HeroTestimonial />
       
       {/* Topic Tags */}
       <TopicTagsDisplay topics={suggestedTopics} />

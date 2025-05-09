@@ -5,7 +5,6 @@ import QuoteRotator from '../components/QuoteRotator';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
-import HeroTestimonial from '../components/home/HeroTestimonial';
 
 const Index = () => {
   return (
@@ -30,9 +29,6 @@ const Index = () => {
                 <WritingInput />
               </div>
             </div>
-            
-            {/* Add Hero Testimonial after chat suggestions */}
-            <HeroTestimonial />
             
             <div className="animate-fade-up mt-8">
               <FAQSection />
