@@ -98,7 +98,7 @@ const WritingInput = () => {
   // Only apply limit if user is not subscribed
   const hasReachedLimit = !isSubscribed && messageCount >= WEEKLY_MESSAGE_LIMIT;
   
-  // Fixed version that explicitly returns the properly typed object
+  // Find today's chat
   const findTodayChat = async (): Promise<TodayChat | null> => {
     if (!user) return null;
     
@@ -275,14 +275,14 @@ const WritingInput = () => {
         </div>
       )}
       
-      {/* Chat Suggestions (new feature) */}
+      {/* Chat Suggestions (updated styling) */}
       <div className="flex flex-col items-center justify-center space-y-3 mt-4 mb-8 w-full max-w-2xl mx-auto">
         <div className="flex flex-col w-full gap-2">
           {randomSuggestions.map((suggestion, index) => (
             <motion.button
               key={index}
               onClick={() => handleSuggestionClick(suggestion)}
-              className="w-full py-3 px-4 text-left border border-deep-charcoal/40 rounded-lg text-deep-charcoal hover:border-muted-sage hover:bg-muted-sage/5 transition-all duration-200 text-sm sm:text-base font-poppins"
+              className="w-full py-3 px-4 text-left border border-[#A8A195] rounded-xl text-[#A8A195] hover:border-muted-sage hover:bg-muted-sage/5 hover:text-muted-sage transition-all duration-200 text-sm sm:text-base font-poppins"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               disabled={hasReachedLimit}
@@ -290,7 +290,7 @@ const WritingInput = () => {
               initial={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              "{suggestion}"
+              {suggestion}
             </motion.button>
           ))}
         </div>
