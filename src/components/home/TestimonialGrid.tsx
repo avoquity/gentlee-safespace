@@ -50,11 +50,6 @@ const TestimonialGrid = () => {
       className="w-full max-w-[95rem] mx-auto mt-6 mb-16 px-1 sm:px-2"
     >
       <div className="text-center mb-8">
-        <div className="bg-gray-100 inline-block px-4 py-1.5 rounded-full mb-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-deep-charcoal/70">
-            From Our Community
-          </p>
-        </div>
         <h2 className="text-3xl font-playfair font-semibold text-deep-charcoal">
           What people are saying
         </h2>

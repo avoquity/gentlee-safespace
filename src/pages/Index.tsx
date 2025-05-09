@@ -6,7 +6,19 @@ import Footer from '../components/Footer';
 import FAQSection from '../components/PromoSection';
 import TestimonialGrid from '../components/home/TestimonialGrid';
 import QuoteRotator from '../components/QuoteRotator';
+import TopicTagsDisplay from '../components/home/TopicTagsDisplay';
 import { motion } from 'framer-motion';
+
+// Suggested topics as buttons below the input
+const suggestedTopics = [
+  "Stress", 
+  "Relationships", 
+  "Career Change", 
+  "Motivation",
+  "Healing & Growth",
+  "Life Transitions",
+  "Inner clarity"
+];
 
 const Index = () => {
   return (
@@ -31,6 +43,9 @@ const Index = () => {
             </div>
             
             <TestimonialGrid />
+
+                  {/* Topic Tags */}
+            <TopicTagsDisplay topics={suggestedTopics} />
             
             <div className="animate-fade-up">
               <FAQSection />

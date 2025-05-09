@@ -6,21 +6,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useTodayChat } from '@/hooks/useTodayChat';
 import ChatInputForm from './home/ChatInputForm';
 import ChatSuggestionsDisplay from './home/ChatSuggestionsDisplay';
-import TopicTagsDisplay from './home/TopicTagsDisplay';
 import UpgradeLink from './home/UpgradeLink';
 import HeroTestimonial from './home/HeroTestimonial';
-import TestimonialGrid from './home/TestimonialGrid';
 
-// Suggested topics as buttons below the input
-const suggestedTopics = [
-  "Stress", 
-  "Relationships", 
-  "Career Change", 
-  "Motivation",
-  "Healing & Growth",
-  "Life Transitions",
-  "Inner clarity"
-];
 
 // Chat suggestions that appear as conversation starters
 const chatSuggestions = [
@@ -170,8 +158,6 @@ const WritingInput = () => {
       {/* Hero Testimonial */}
       <HeroTestimonial />
       
-      {/* Topic Tags */}
-      <TopicTagsDisplay topics={suggestedTopics} />
     </div>
   );
 };
