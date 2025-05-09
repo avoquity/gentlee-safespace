@@ -24,7 +24,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
             <Button
               onClick={() => navigate('/entries')}
               variant="outline"
-              className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white text-base"
+              className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white text-base font-montserrat"
             >
               My thoughts
             </Button>
@@ -34,14 +34,14 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ className = '' }) => {
         <>
           <Button
             onClick={() => navigate('/auth', { state: { tab: 'signup' } })}
-            className="px-6 py-2 rounded-full bg-deep-charcoal border-2 border-deep-charcoal text-white hover:bg-muted-sage hover:border-muted-sage"
+            className="px-6 py-2 rounded-full bg-deep-charcoal border-2 border-deep-charcoal text-white hover:bg-muted-sage hover:border-muted-sage font-montserrat"
           >
             Sign Up
           </Button>
           <Button
             onClick={() => navigate('/auth', { state: { tab: 'signin' } })}
             variant="outline"
-            className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white"
+            className="px-6 py-2 rounded-full border-2 border-deep-charcoal text-deep-charcoal hover:bg-muted-sage hover:border-muted-sage hover:text-white font-montserrat"
           >
             Sign In
           </Button>

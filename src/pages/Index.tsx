@@ -20,7 +20,7 @@ const Index = () => {
             
             <div className="flex flex-col items-center justify-center py-4">
               <div className="animate-fade-in max-w-2xl text-center mb-8">
-                <p className="text-xl text-deep-charcoal/80 font-poppins">
+                <p className="text-xl text-deep-charcoal/80 font-montserrat">
                   Finally, a place to talk it out, no streaks, no fixes. An AI-powered emotional mirror that lets you vent, reveals hidden patterns, and helps you feel lighter in minutes.
                 </p>
               </div>

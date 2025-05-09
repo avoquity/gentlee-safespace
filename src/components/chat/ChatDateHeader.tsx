@@ -13,7 +13,7 @@ interface ChatDateHeaderProps {
 export const ChatDateHeader = ({ createdAt, messages }: ChatDateHeaderProps) => {
   return (
     <div className="mb-10">
-      <h1 className="text-[68px] font-bold text-deep-charcoal leading-none">
+      <h1 className="text-[68px] font-montserrat font-bold text-deep-charcoal leading-none">
         {format(new Date(createdAt), 'd MMMM yyyy')}
       </h1>
       <div className="mt-3 flex flex-wrap gap-2">
