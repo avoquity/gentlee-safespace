@@ -215,10 +215,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 newWorker.addEventListener('statechange', () => {
                   if (newWorker.state === 'activated') {
                     setSwActive(true);
-                    toast({
-                      title: "Service worker activated",
-                      description: "Notification features are now available"
-                    });
                   }
                 });
               }
