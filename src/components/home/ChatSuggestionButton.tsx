@@ -29,11 +29,11 @@ const ChatSuggestionButton = ({
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
       <div className="relative mr-2 flex-shrink-0">
-        <Pen size={16} className="text-muted-sage" />
-        {/* Magic dust particles */}
-        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-soft-yellow rounded-full animate-pulse" />
-        <span className="absolute -bottom-1 -right-1 w-1 h-1 bg-dusty-rose rounded-full animate-pulse animation-delay-2000" />
-        <span className="absolute -top-1 -left-1 w-1 h-1 bg-muted-sage rounded-full animate-pulse animation-delay-4000" />
+        <Pen size={16} className="text-deep-charcoal" />
+        {/* Magic dust particles - smaller and matching text color */}
+        <span className="absolute -top-1 -right-1 w-1 h-1 bg-deep-charcoal rounded-full animate-pulse opacity-70" />
+        <span className="absolute -bottom-1 -right-1 w-0.5 h-0.5 bg-deep-charcoal rounded-full animate-pulse animation-delay-2000 opacity-70" />
+        <span className="absolute -top-1 -left-1 w-0.5 h-0.5 bg-deep-charcoal rounded-full animate-pulse animation-delay-4000 opacity-70" />
       </div>
       <span className="line-clamp-1">{suggestion}</span>
     </motion.button>
