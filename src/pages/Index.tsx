@@ -42,9 +42,10 @@ const Index = () => {
               </div>
             </div>
             
+            {/* Hero Testimonial */}
             <HeroTestimonial />
             
-            {/* Testimonial Grid - moved to right below HeroTestimonial */}
+            {/* Testimonial Grid - positioned directly below HeroTestimonial */}
             <div className="animate-fade-up">
               <TestimonialGrid />
             </div>
