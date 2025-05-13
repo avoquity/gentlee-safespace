@@ -8,61 +8,57 @@ import {
   AccordionTrigger
 } from '@/components/ui/accordion';
 
-// FAQ data array
+// Updated FAQ data array with new copy
 const faqData = [
   {
-    question: "Is my conversation really private?",
-    answer: "Yes. We never sell or share your words with third parties—period. Your entries live on encrypted servers purely so Gentlee can gently 'remember,' spot patterns, and serve you better. You can export or delete your data any time in Settings."
+    question: "🌿 Is my conversation really private?",
+    answer: "Absolutely. Every word you share is wrapped in end-to-end encryption and stays only between you and Gentlee. We'll never sell, trade, or peek at your thoughts for marketing—pinkie promise. Your chat history lives on our secure servers solely so Gentlee can remember the little things that matter to you."
   },
   {
-    question: "What plans are available and how much do they cost?",
+    question: "🌿 Can I chat in my native language?",
+    answer: "Yes, please do! Whether you think in English, Vietnamese, Spanish, or emoji­-sprinkled Hinglish, just start typing and Gentlee will meet you there. No toggles, no setup—your language, your pace, your voice."
+  },
+  {
+    question: "🌿 Is Gentlee a replacement for therapy?",
+    answer: "Gentlee is like a caring friend steeped in gentle psychology—not a licensed therapist. It's perfect for everyday reflection, pattern-spotting, and those \"just need to breathe\" moments. But deep trauma, crisis, or clinical diagnoses deserve professional help. Think of Gentlee as an extra layer of support you can reach for between therapy sessions—or when therapy isn't an option right now."
+  },
+  {
+    question: "🌿 Can I try Gentlee for free?",
+    answer: "Yes! Gentlee is free forever with the Gentle Start plan, which gives you 3 messages per week and memory retention for 14 days. Your message count resets every Sunday at 12 AM so you can start fresh."
+  },
+  {
+    question: "🌿 What's included in the Reflection plan?",
     answer: <>
-      <p className="mb-2">Free Plan — "A Gentle Start" (forever free)</p>
+      <p className="mb-2">Reflection is for those who want deeper, uninterrupted conversations. It includes:</p>
       <ul className="list-disc pl-5 mb-3">
-        <li>Up to 3 chats a week</li>
-        <li>Basic theme recognition & daily reflection prompts</li>
+        <li>✅ 200 messages per month</li>
+        <li>✅ Memory retention for 12 months</li>
+        <li>✅ Future features such as Voice activation (coming soon)</li>
+        <li>💰 Pricing: $18.88/month OR $188.88/year (2 months free).</li>
       </ul>
-      
-      <p className="mb-2">Premium Plan — "Deeper Reflections" ($7.99 / month or $69 / year)</p>
-      <ul className="list-disc pl-5 mb-3">
-        <li>Unlimited chats</li>
-        <li>Advanced pattern detection, voice notes, private journal insights, dark-mode UI, priority support, and more.</li>
-      </ul>
-      
-      <p className="mb-1">🔖 Alpha-only promise: These prices are our Alpha launch rates. Join now and they're yours for life, even if we raise prices later.</p>
     </>
   },
   {
-    question: "Is Gentlee a replacement for therapy?",
-    answer: "No. Gentlee is a compassionate companion for everyday reflection, not a substitute for professional care. Use it for gentle check-ins, perspective shifts, and habit-forming prompts—but see a licensed therapist for trauma, crisis, or clinical diagnosis."
+    question: "🌿 What is the early adopter's price lock?",
+    answer: <>
+      <p className="mb-2">We're offering exclusive discounts for our first supporters!</p>
+      <ul className="list-disc pl-5 mb-3">
+        <li>The first 20 users get Gentlee free for life.</li>
+        <li>The next 50 users get 50% off for life—this means you'll always pay $9.44/month or $94/year, even if the price increases later.</li>
+      </ul>
+    </>
   },
   {
-    question: "Can I chat in my native language?",
-    answer: "Absolutely. Gentlee understands and replies in almost any language—just start typing and it will follow your lead."
+    question: "🌿 How is payment handled?",
+    answer: "All payments are securely processed through Stripe, a trusted global payment provider. You can pay with credit or debit card, and your plan renews automatically each month or year based on your selection."
   },
   {
-    question: "What technology powers Gentlee?",
-    answer: "Gentlee runs on OpenAI's GPT-4.1 engine, fine-tuned with evidence-based psychology prompts and our proprietary 'gentle mirror' guidance layer."
+    question: "🌿 Can I cancel anytime?",
+    answer: "Yes! You can cancel your plan anytime in your account settings, and your subscription will not renew at the next billing cycle. There are no hidden fees or lock-ins."
   },
   {
-    question: "How does Gentlee \"remember\" me?",
-    answer: "With your permission, it stores a history of past chats so it can recognise themes, track mood shifts, and offer deeper insights. We call this Personalised Memory (limited to your last 5 chats on the free plan, unlimited on Premium)."
-  },
-  {
-    question: "What if I need immediate help?",
-    answer: "If you ever feel unsafe or in crisis, please contact local emergency services or a qualified mental-health professional right away. Gentlee isn't equipped to handle emergencies."
-  },
-  {
-    question: "What's on the roadmap?",
-    answer: "Coming soon: Smart Check-Ins (AI-timed nudges when your mood drifts) and Self-Assurance on-the-go (bite-size grounding exercises for busy days). Have ideas? Add them—or vote—at lumi-studios.canny.io/feature-requests."
-  },
-  {
-    question: "How do I give feedback or report a bug?",
-    answer: "We're all ears. Email hellolumistudios@gmail.com and we'll reply within 24 hours on weekdays."
-  },
-  {
-    question: "Will Gentlee judge me?",
-    answer: "Never. Our goal is compassionate reflection, not advice-splaining or productivity guilt. You set the pace; Gentlee simply listens, connects dots, and hands the insight back to you."
+    question: "🌿 How do I contact you?",
+    answer: "We'd love to hear from you—questions, hugs, bug reports, all of it. Drop us a note at hellolumistudios@gmail.com and we'll get back to you within a day (usually faster). Got feature ideas? Add them—or vote on others—at lumi-studios.canny.io/feature-requests. Your voice shapes Gentlee's future. 💛"
   }
 ];
 
