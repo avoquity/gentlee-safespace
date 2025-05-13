@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { CloudRain, Cloud, CloudSun, Sun } from 'lucide-react';
+import { CloudRain, CloudDrizzle, Cloud, CloudSun, Sun } from 'lucide-react';
 import { CheckInState, MoodValue, MoodOption } from '@/types/checkIn';
 
 interface CheckInModalProps {
@@ -26,11 +26,11 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
   const [selectedMood, setSelectedMood] = useState<MoodValue>(0);
   
   const moodOptions: MoodOption[] = [
-    { value: -2, icon: <CloudRain className="w-6 h-6 text-gray-500" />, label: "Much heavier" },
-    { value: -1, icon: <CloudRain className="w-6 h-6 text-gray-400" strokeWidth={1.5} />, label: "Heavier" },
-    { value: 0, icon: <Cloud className="w-6 h-6 text-gray-400" />, label: "Same" },
-    { value: 1, icon: <CloudSun className="w-6 h-6 text-amber-300" />, label: "Lighter" },
-    { value: 2, icon: <Sun className="w-6 h-6 text-amber-400" />, label: "Much lighter" },
+    { value: -2, icon: <CloudRain className="w-7 h-7 text-gray-500" strokeWidth={1.5} />, label: "Still stormy" },
+    { value: -1, icon: <CloudDrizzle className="w-7 h-7 text-gray-400" strokeWidth={1.5} />, label: "A bit heavy" },
+    { value: 0, icon: <Cloud className="w-7 h-7 text-gray-400" strokeWidth={1.5} />, label: "About the same" },
+    { value: 1, icon: <CloudSun className="w-7 h-7 text-amber-300" strokeWidth={1.5} />, label: "A touch lighter" },
+    { value: 2, icon: <Sun className="w-7 h-7 text-amber-300" strokeWidth={1.5} />, label: "Bright & light" },
   ];
 
   const handleSliderChange = (value: number[]) => {
@@ -40,8 +40,8 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
   const renderMoodStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-xl font-playfair mb-2">Just wondering—has this little chat lightened things a bit?</h3>
-        <p className="text-sm text-muted-foreground">How are you feeling comparing to moments ago?</p>
+        <h3 className="text-xl font-playfair mb-2 font-bold">Just wondering—has this little chat lightened things a bit?</h3>
+        <p className="text-sm text-muted-foreground text-base">How are you feeling comparing to moments ago?</p>
       </div>
       
       <div className="py-4">
@@ -54,20 +54,15 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
           className="my-8"
         />
         
-        <div className="flex justify-between px-1 mt-1">
+        <div className="grid grid-cols-5 gap-1 mt-3">
           {moodOptions.map((option) => (
             <div key={option.value} className="flex flex-col items-center">
               <div className={`p-1 rounded-full ${selectedMood === option.value ? 'bg-muted' : ''}`}>
                 {option.icon}
               </div>
-              <span className="text-xs mt-1 text-muted-foreground">{option.value === -2 || option.value === 2 ? option.label : ''}</span>
+              <span className="text-xs mt-2 text-gray-500 text-center px-1">{option.label}</span>
             </div>
           ))}
-        </div>
-        
-        <div className="flex justify-between text-xs text-muted-foreground mt-6">
-          <span>Heavier</span>
-          <span>Lighter</span>
         </div>
       </div>
       
@@ -92,7 +87,7 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
       </div>
       
       <div>
-        <h3 className="text-xl font-playfair mb-4">Thank you for sharing. Would an occasional gentle note feel nice?</h3>
+        <h3 className="text-xl font-playfair mb-4 font-bold">Thank you for sharing. Would an occasional gentle note feel nice?</h3>
       </div>
       
       <div className="flex flex-col gap-3">
@@ -116,7 +111,7 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
       </div>
       
       <div>
-        <h3 className="text-xl font-playfair mb-2">You're all set.</h3>
+        <h3 className="text-xl font-playfair mb-2 font-bold">You're all set.</h3>
         <p className="text-muted-foreground">We'll check in soon!</p>
       </div>
       
@@ -128,7 +123,7 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onDismiss()}>
-      <DialogContent className="max-w-[340px] p-6 rounded-2xl shadow-md bg-warm-beige border-none">
+      <DialogContent className="max-w-[340px] p-6 rounded-2xl shadow-md bg-soft-ivory border-none backdrop-blur-lg">
         {currentStep === 'mood' && renderMoodStep()}
         {currentStep === 'optin' && renderOptInStep()}
         {currentStep === 'success' && renderSuccessStep()}

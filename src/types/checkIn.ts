@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 export interface CheckInState {
   shown: boolean;
   lastDismissed: number | null;
