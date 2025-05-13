@@ -133,7 +133,7 @@ const Chat = () => {
   }, []);
 
   return (
-    <div className="relative bg-warm-beige">
+    <div className="relative bg-soft-ivory">
       <ChatContainer
         messages={messages}
         input={input}
