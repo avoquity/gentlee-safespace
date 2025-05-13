@@ -26,7 +26,6 @@ const Chat = () => {
     input,
     setInput,
     isTyping,
-    isMuted,
     highlights,
     displayDate,
     messageCount,
@@ -34,7 +33,6 @@ const Chat = () => {
     handleCloseConversation,
     handleHighlightChange,
     handleHighlightRemove,
-    handleMuteToggle,
     processInitialMessage,
     loadTodaysChat
   } = useChat(chatIdFromParams, location.state);
@@ -151,14 +149,12 @@ const Chat = () => {
         input={input}
         setInput={setInput}
         isTyping={isTyping}
-        isMuted={isMuted}
         highlights={highlights}
         displayDate={displayDate}
         messageCount={messageCount}
         weeklyLimit={WEEKLY_MESSAGE_LIMIT}
         onSubmit={handleSubmit}
         onClose={handleCloseConversation}
-        onMuteToggle={handleMuteToggle}
         onHighlightChange={handleHighlightChange}
         onHighlightRemove={handleHighlightRemove}
         messagesEndRef={messagesEndRef}

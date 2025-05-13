@@ -17,14 +17,12 @@ interface ChatContainerProps {
   input: string;
   setInput: (input: string) => void;
   isTyping: boolean;
-  isMuted: boolean;
   highlights: Highlight[];
   displayDate?: string;
   messageCount?: number;
   weeklyLimit?: number;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
-  onMuteToggle: () => void;
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
@@ -35,14 +33,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   input,
   setInput,
   isTyping,
-  isMuted,
   highlights,
   displayDate,
   messageCount = 0,
   weeklyLimit = 10,
   onSubmit,
   onClose,
-  onMuteToggle,
   onHighlightChange,
   onHighlightRemove,
   messagesEndRef
@@ -89,8 +85,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto pt-24 pb-32 px-4 sm:px-6 relative">
           <ChatHeader 
-            isMuted={isMuted}
-            onMuteToggle={onMuteToggle}
             onClose={onClose}
             entryDate={displayDate}
           />
@@ -132,13 +126,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       />
       
       <ScrollToTop scrollContainer={containerRef} endRef={messagesEndWrapperRef} isTyping={isTyping} />
-      
-      <audio
-        src="/path-to-your-music.mp3"
-        autoPlay
-        loop
-        muted={isMuted}
-      />
     </div>
   );
 };

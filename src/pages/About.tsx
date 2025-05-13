@@ -1,45 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, VolumeX } from 'lucide-react';
 import Header from '@/components/Header';
 
 const About = () => {
-  const [isMuted, setIsMuted] = useState(false);
-  const audioRef = React.useRef<HTMLAudioElement>(null);
-
-  React.useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.3;
-      audioRef.current.play().catch(error => {
-        console.log('Audio autoplay was prevented:', error);
-      });
-    }
-  }, []);
-
-  const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-warm-beige">
       <Header />
       
       <main className="pt-40 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-16">
-          <div className="flex justify-between items-start">
+          <div>
             <h1 className="text-5xl font-bold text-deep-charcoal leading-tight font-playfair">
               In a world that often rushes past the quiet ache in our hearts, Gentlee exists as a reminder: even on the hardest days, there is tenderness waiting to meet us.
             </h1>
-            <button
-              onClick={toggleMute}
-              className="text-deep-charcoal hover:text-dusty-rose transition-colors p-2"
-            >
-              {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-            </button>
           </div>
 
           <div className="prose prose-lg text-deep-charcoal/80 space-y-8">
@@ -58,10 +32,6 @@ const About = () => {
           </div>
         </div>
       </main>
-
-      <audio ref={audioRef} loop>
-        <source src="https://www.dropbox.com/scl/fi/zhhsziofxc7krcpoil1by/By-Clavier-Music.mp3?rlkey=ryi1nvnw6ojv3gwzcs9sdsm8u&dl=1.mp3" type="audio/mpeg" />
-      </audio>
     </div>
   );
 };
