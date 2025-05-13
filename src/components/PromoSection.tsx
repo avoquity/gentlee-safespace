@@ -58,7 +58,9 @@ const faqData = [
   },
   {
     question: "🌿 How do I contact you?",
-    answer: "We'd love to hear from you—questions, hugs, bug reports, all of it. Drop us a note at hellolumistudios@gmail.com and we'll get back to you within a day (usually faster). Got feature ideas? Add them—or vote on others—at lumi-studios.canny.io/feature-requests. Your voice shapes Gentlee's future. 💛"
+    answer: <>
+      We'd love to hear from you—questions, hugs, bug reports, all of it. Drop us a note at <a href="mailto:hellolumistudios@gmail.com" className="text-dark-accent hover:underline">hellolumistudios@gmail.com</a> and we'll get back to you within a day (usually faster). Got feature ideas? Add them—or vote on others—at <a href="https://lumi-studios.canny.io/feature-requests" target="_blank" rel="noopener noreferrer" className="text-dark-accent hover:underline">Gentlee feature request page</a>. Your voice shapes Gentlee's future. 💛
+    </>
   }
 ];
 
