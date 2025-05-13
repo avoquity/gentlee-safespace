@@ -20,13 +20,13 @@ const HeroTestimonial = () => {
         <div className="flex flex-col items-center justify-center max-w-4xl mx-auto">
           <p className="text-3xl sm:text-4xl md:text-5xl font-medium text-deep-charcoal leading-tight sm:leading-tight md:leading-tight mb-6 font-playfair">
             <span className="relative inline-block">
-              "Therapy homework overwhelmed me.{' '}
+              "I just started crying.{' '}
               <span className="relative inline-block">
                 <span className="bg-soft-yellow bg-opacity-30 absolute inset-0 rounded-lg transform -rotate-1"></span>
-                <span className="relative">Gentlee helped me untangle</span>
+                <span className="relative">I didn't know I had so much emotions buried inside.</span>
               </span>
             </span>
-            {' '}the knots in my heart in minutes."
+            "
           </p>
           
           <div className="flex items-center justify-center mt-4">
