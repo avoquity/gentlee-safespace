@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
@@ -46,8 +45,19 @@ const Chat = () => {
     handleMoodSubmit,
     handleOptIn,
     handleDismiss,
-    handleComplete
+    handleComplete,
+    setIsOpen
   } = useCheckInModal(user?.id, messages.length);
+
+  // TEMPORARY: Force modal to open for testing
+  useEffect(() => {
+    // Short delay to ensure everything is loaded
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [setIsOpen]);
 
   // Redirect to /auth if user is not logged in, but only after loading is complete
   useEffect(() => {
