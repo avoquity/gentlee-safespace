@@ -4,7 +4,19 @@ import { motion } from 'framer-motion';
 
 const QuoteRotator = () => {
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex flex-col items-center justify-center">
+      {/* New badge added above headline */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mb-8 mt-4"
+      >
+        <a href="https://www.uneed.best/tool/gentlee" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.uneed.best/POTD1.png" style={{width: "250px"}} alt="Uneed POTD1 Badge" />
+        </a>
+      </motion.div>
+      
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
