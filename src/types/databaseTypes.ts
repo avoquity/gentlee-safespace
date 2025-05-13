@@ -28,4 +28,8 @@ export interface ProfileWithCheckIn {
   subscription_plan?: string | null;
   subscription_start_date?: string | null;
   subscription_status?: string | null;
+  checkin_opted_in?: boolean | null;
+  last_mood_value?: number | null;
+  last_checkin_at?: string | null;
 }
+

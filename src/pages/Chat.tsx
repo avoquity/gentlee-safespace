@@ -6,6 +6,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
+import { CheckInModal } from '@/components/chat/CheckInModal';
+import { useCheckInModal } from '@/hooks/useCheckInModal';
 
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
@@ -36,6 +38,16 @@ const Chat = () => {
     processInitialMessage,
     loadTodaysChat
   } = useChat(chatIdFromParams, location.state);
+
+  // Check-in modal integration
+  const {
+    isOpen: isCheckInOpen,
+    currentStep,
+    handleMoodSubmit,
+    handleOptIn,
+    handleDismiss,
+    handleComplete
+  } = useCheckInModal(user?.id, messages.length);
 
   // Redirect to /auth if user is not logged in, but only after loading is complete
   useEffect(() => {
@@ -150,6 +162,15 @@ const Chat = () => {
         onHighlightChange={handleHighlightChange}
         onHighlightRemove={handleHighlightRemove}
         messagesEndRef={messagesEndRef}
+      />
+
+      <CheckInModal
+        isOpen={isCheckInOpen}
+        currentStep={currentStep}
+        onMoodSubmit={handleMoodSubmit}
+        onOptIn={handleOptIn}
+        onDismiss={handleDismiss}
+        onComplete={handleComplete}
       />
     </div>
   );
