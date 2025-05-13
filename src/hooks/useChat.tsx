@@ -151,7 +151,7 @@ export const useChat = (
     isMuted,
     highlights,
     displayDate,
-    messageCount, // Add message count to the return
+    messageCount,
     handleSubmit,
     handleCloseConversation,
     handleHighlightChange,
