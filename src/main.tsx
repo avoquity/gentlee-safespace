@@ -1,7 +1,8 @@
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
 
 // Ensure smooth rendering process with proper error handling
 const renderApp = () => {
@@ -19,7 +20,11 @@ const renderApp = () => {
     rootElement.innerHTML = '';
     
     // Render the app with error boundary
-    root.render(<App />);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
     
     console.log("App successfully rendered");
   } catch (error) {
