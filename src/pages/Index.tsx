@@ -8,6 +8,7 @@ import TestimonialGrid from '../components/home/TestimonialGrid';
 import QuoteRotator from '../components/QuoteRotator';
 import TopicTagsDisplay from '../components/home/TopicTagsDisplay';
 import { motion } from 'framer-motion';
+import HeroTestimonial from '../components/home/HeroTestimonial';
 
 // Complete list of topics for the homepage
 const suggestedTopics = [
@@ -41,14 +42,16 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Topic Tags - moved above FAQSection with increased margin */}
-            <div className="mt-16">
-              <TopicTagsDisplay topics={suggestedTopics} />
-            </div>
+            <HeroTestimonial />
             
-            {/* Testimonial Grid - added between topics and FAQ section */}
+            {/* Testimonial Grid - moved to right below HeroTestimonial */}
             <div className="animate-fade-up">
               <TestimonialGrid />
+            </div>
+            
+            {/* Topic Tags */}
+            <div className="mt-16">
+              <TopicTagsDisplay topics={suggestedTopics} />
             </div>
             
             <div className="animate-fade-up">
