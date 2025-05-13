@@ -1,4 +1,3 @@
-
 import React from 'react';
 import TestimonialCard from './TestimonialCard';
 import { motion } from 'framer-motion';
@@ -49,12 +48,6 @@ const TestimonialGrid = () => {
       transition={{ duration: 0.6, delay: 0.2 }}
       className="w-full max-w-[95rem] mx-auto mt-6 mb-16 px-1 sm:px-2"
     >
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-playfair font-semibold text-deep-charcoal">
-          What people are saying
-        </h2>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 lg:gap-8">
         {testimonials.map((testimonial, index) => (
           <TestimonialCard
