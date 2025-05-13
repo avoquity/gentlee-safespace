@@ -11,13 +11,6 @@ const HeroTestimonial = () => {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center"
       >
-        {/* Badge added above hero banner */}
-        <div className="flex justify-center mb-8">
-          <a href="https://www.uneed.best/tool/gentlee" target="_blank" rel="noopener noreferrer">
-            <img src="https://www.uneed.best/POTW2.png" style={{width: "250px"}} alt="Uneed POTW2 Badge" />
-          </a>
-        </div>
-        
         <div className="bg-white bg-opacity-50 inline-block px-4 py-1.5 rounded-full mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-dark-accent/70">
             From Our Community
