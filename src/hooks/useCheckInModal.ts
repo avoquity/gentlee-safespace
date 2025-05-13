@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { CheckInState } from '@/types/checkIn';
@@ -185,6 +186,6 @@ export function useCheckInModal(userId?: string | null, messageCount = 0) {
     handleOptIn,
     handleDismiss,
     handleComplete,
-    setIsOpen // Exposing setIsOpen function for testing
+    setIsOpen
   };
 }
