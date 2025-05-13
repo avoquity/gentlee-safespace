@@ -46,6 +46,11 @@ const Index = () => {
               <TopicTagsDisplay topics={suggestedTopics} />
             </div>
             
+            {/* Testimonial Grid - added between topics and FAQ section */}
+            <div className="animate-fade-up">
+              <TestimonialGrid />
+            </div>
+            
             <div className="animate-fade-up">
               <FAQSection />
             </div>
