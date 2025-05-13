@@ -69,7 +69,7 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
       <div className="text-center">
         <Button 
           onClick={() => onMoodSubmit(selectedMood)}
-          className="px-8"
+          className="px-8 rounded-full"
         >
           Share
         </Button>
@@ -87,11 +87,12 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
       </div>
       
       <div>
-        <h3 className="text-xl font-playfair mb-4 font-bold">Thank you for sharing. Would an occasional gentle note feel nice?</h3>
+        <h3 className="text-xl font-playfair mb-4 font-bold">Thank you for sharing.</h3>
+        <p className="text-muted-foreground">Would an occasional gentle note feel nice?</p>
       </div>
       
       <div className="flex flex-col gap-3">
-        <Button onClick={() => onOptIn(true)} className="w-full">
+        <Button onClick={() => onOptIn(true)} className="w-full rounded-full">
           Yes, little notes are welcome
         </Button>
         <button 
@@ -115,7 +116,7 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
         <p className="text-muted-foreground">We'll check in soon!</p>
       </div>
       
-      <Button onClick={onComplete} className="px-8">
+      <Button onClick={onComplete} className="px-8 rounded-full">
         Close
       </Button>
     </div>
