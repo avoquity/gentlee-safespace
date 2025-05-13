@@ -26,7 +26,7 @@ const Index = () => {
       <Header />
       
       <main className="flex-1 w-full mx-auto flex flex-col min-h-screen">
-        <div className="pt-40 max-w-[95rem] mx-auto w-full px-1 sm:px-2">
+        <div className="pt-20 max-w-[95rem] mx-auto w-full px-1 sm:px-2">
           <div className="space-y-8">
             <QuoteRotator />
             

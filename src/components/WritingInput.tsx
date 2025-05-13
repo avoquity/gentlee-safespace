@@ -155,9 +155,6 @@ const WritingInput = () => {
         hasReachedLimit={hasReachedLimit}
       />
       
-      {/* Hero Testimonial */}
-      <HeroTestimonial />
-      
     </div>
   );
 };
