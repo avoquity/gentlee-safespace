@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
@@ -88,12 +87,12 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
       
       <div>
         <h3 className="text-xl font-playfair mb-4 font-bold">Thank you for sharing.</h3>
-        <p className="text-muted-foreground">Would an occasional gentle note feel nice?</p>
+        <p className="text-muted-foreground">Can I check in with you now and then?</p>
       </div>
       
       <div className="flex flex-col gap-3">
         <Button onClick={() => onOptIn(true)} className="w-full rounded-full">
-          Yes, little notes are welcome
+          Yes, I'd like that please
         </Button>
         <button 
           onClick={() => onOptIn(false)} 
