@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { NotebookPen, Bell, RefreshCw, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -527,7 +528,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-soft-ivory flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
+    <div className="min-h-screen bg-warm-beige flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
       {isDevelopment && (
         <div className="absolute top-2 left-2 z-50">
           <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
@@ -633,7 +634,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <ScrollToTopFloating scrollContainer={containerRef} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-soft-ivory via-soft-ivory to-transparent py-6">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-warm-beige via-warm-beige to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
           <form ref={formRef} onSubmit={onSubmit}>
             <ChatInput 
@@ -694,3 +695,4 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     </div>
   );
 };
+
