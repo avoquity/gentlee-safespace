@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Header from '../components/Header';
 import WritingInput from '../components/WritingInput';
 import Footer from '../components/Footer';
@@ -9,6 +9,7 @@ import QuoteRotator from '../components/QuoteRotator';
 import TopicTagsDisplay from '../components/home/TopicTagsDisplay';
 import { motion } from 'framer-motion';
 import HeroTestimonial from '../components/home/HeroTestimonial';
+import GentleeExamples from '../components/home/GentleeExamples';
 
 // Complete list of topics for the homepage
 const suggestedTopics = [
@@ -21,6 +22,19 @@ const suggestedTopics = [
 ];
 
 const Index = () => {
+  const inputRef = useRef<HTMLDivElement>(null);
+  
+  const scrollToInput = () => {
+    if (inputRef.current) {
+      inputRef.current.scrollIntoView({ behavior: 'smooth' });
+      // Focus the textarea in the WritingInput component
+      const textarea = inputRef.current.querySelector('textarea');
+      if (textarea) {
+        textarea.focus();
+      }
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-warm-beige flex flex-col">
       <Header />
@@ -37,7 +51,7 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="animate-fade-up w-full max-w-2xl px-2">
+              <div ref={inputRef} className="animate-fade-up w-full max-w-2xl px-2">
                 <WritingInput />
               </div>
             </div>
@@ -48,6 +62,9 @@ const Index = () => {
             <div className="animate-fade-up">
               <TestimonialGrid />
             </div>
+            
+            {/* NEW: Gentlee Examples Section */}
+            <GentleeExamples scrollToInput={scrollToInput} />
             
             {/* Topic Tags */}
             <div className="mt-16">
