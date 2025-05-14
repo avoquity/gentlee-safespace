@@ -2,6 +2,7 @@
 import React from 'react';
 import TestimonialCard from './TestimonialCard';
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const testimonials = [
   {
@@ -42,14 +43,16 @@ const testimonials = [
 ];
 
 const TestimonialGrid = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="w-full max-w-[95rem] mx-auto mt-6 mb-16 px-[60px]"
+      className="w-full max-w-[95rem] mx-auto mt-6 mb-16 px-6 sm:px-12 md:px-[120px]"
     >
-      <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-5 lg:gap-8">
+      <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-6 md:gap-8 lg:gap-10`}>
         {testimonials.map((testimonial, index) => (
           <TestimonialCard
             key={index}
