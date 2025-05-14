@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const HeroTestimonial = () => {
   return (
-    <div className="w-full max-w-[95rem] mx-auto my-16 px-1 sm:px-2">
+    <div className="w-full max-w-[95rem] mx-auto my-16 px-1 sm:px-2 pt-20">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

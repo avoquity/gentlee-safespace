@@ -66,8 +66,8 @@ const faqData = [
 
 const FAQSection = () => {
   return (
-    <div className="w-full max-w-[95rem] mx-auto py-16 px-1 sm:px-2">
-      <div className="text-center bg-white rounded-2xl p-8 sm:p-12">
+    <div className="w-full max-w-[95rem] mx-auto py-16 px-1 sm:px-2 pt-20">
+      <div className="text-center bg-warm-beige rounded-2xl p-8 sm:p-12">
         <div className="bg-white bg-opacity-50 inline-block px-4 py-1.5 rounded-full mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-dark-accent/70">
             Clear answers
