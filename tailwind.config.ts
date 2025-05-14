@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -26,6 +25,7 @@ export default {
         "soft-yellow": "#F5D76E",
         "deep-charcoal": "#2E2E2E",
         "warm-beige": "#F2E9E1",
+        "soft-beige": "#F2E9E1", /* Added to ensure consistency */
         "dark-accent": "#463F3A",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

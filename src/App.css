@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -39,4 +40,19 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Clear answers tag styling */
+.clear-answers-tag {
+  background-color: #F2E9E1; /* Updated to a soft-beige color matching warm-beige */
+  color: #2E2E2E; /* Deep-charcoal color for text */
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px; /* Fully rounded */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.clear-answers-tag:hover {
+  background-color: #E8DFD7; /* Slightly darker on hover for interactive feel */
 }
