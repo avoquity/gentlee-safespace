@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -18,13 +18,21 @@ const TestimonialCard = ({
   delay = 0,
   className 
 }: TestimonialCardProps) => {
+  // Randomly choose between dusty-rose and soft-yellow for hover state
+  // The randomization happens on component mount, not on every hover
+  const hoverColor = React.useMemo(() => {
+    return Math.random() > 0.5 ? 'hover:bg-dusty-rose/40' : 'hover:bg-soft-yellow/40';
+  }, []);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
       className={cn(
-        "bg-white bg-opacity-70 p-6 rounded-lg shadow-sm border border-dark-accent/5 flex flex-col h-full hover:shadow-md transition-shadow duration-300", 
+        "bg-soft-ivory p-6 rounded-lg shadow-sm border border-dark-accent/5 flex flex-col h-full transition-all duration-300",
+        hoverColor,
+        "hover:shadow-md", 
         className
       )}
     >
