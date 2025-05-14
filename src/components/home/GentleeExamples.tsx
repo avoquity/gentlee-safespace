@@ -26,14 +26,14 @@ const GentleeExamples = ({ scrollToInput }: GentleeExamplesProps) => {
   return (
     <div className="w-full max-w-[95rem] mx-auto py-16 px-1 sm:px-2">
       <div className="text-center">
-        {/* New "Gentlee moments" badge above title */}
+        {/* "Gentlee moments" badge above title */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-6"
         >
-          <div className="bg-white bg-opacity-50 inline-block px-4 py-1.5 rounded-full">
+          <div className="inline-block px-4 py-1.5 rounded-full">
             <p className="text-xs font-medium uppercase tracking-wider text-dark-accent/70">
               Gentlee moments
             </p>
@@ -58,18 +58,18 @@ const GentleeExamples = ({ scrollToInput }: GentleeExamplesProps) => {
           A glimpse of the small, heart-level chats people have with Gentlee every day.
         </motion.p>
         
-        {/* Carousel with reduced size (75%) and border/shadow */}
-        <div className="max-w-3xl mx-auto mb-12">
-          <Carousel opts={{ loop: true, align: "center", duration: 50 }} autoplay={true} interval={6000}>
+        {/* Carousel with enlarged and centered screenshots - 70% width on desktop, full width minus padding on mobile */}
+        <div className="max-w-3xl mx-auto mb-12 px-6">
+          <Carousel opts={{ loop: true, align: "center", duration: 50 }} autoplay={true} interval={15000}>
             <CarouselContent>
               {exampleImages.map((src, index) => (
-                <CarouselItem key={index} className="md:basis-3/4">
-                  <AspectRatio ratio={16/9} className="bg-white bg-opacity-80 rounded-lg overflow-hidden border-2 border-muted-sage shadow-md">
-                    <div className="w-[75%] h-[75%] mx-auto flex items-center justify-center">
+                <CarouselItem key={index} className="md:basis-full">
+                  <AspectRatio ratio={16/9} className="rounded-lg overflow-hidden border-2 border-muted-sage shadow-md">
+                    <div className="w-full h-full flex items-center justify-center py-4">
                       <img 
                         src={src} 
                         alt={`Gentlee conversation example ${index + 1}`} 
-                        className="w-full h-full object-contain"
+                        className="w-[70%] md:w-[70%] h-auto object-contain max-h-full"
                       />
                     </div>
                   </AspectRatio>
@@ -81,7 +81,7 @@ const GentleeExamples = ({ scrollToInput }: GentleeExamplesProps) => {
           </Carousel>
         </div>
         
-        {/* Button with primary style and rounded corners */}
+        {/* Button with flatter height */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -89,7 +89,7 @@ const GentleeExamples = ({ scrollToInput }: GentleeExamplesProps) => {
         >
           <Button 
             onClick={scrollToInput}
-            className="bg-dark-accent hover:bg-dark-accent/90 text-white px-8 py-6 h-auto text-lg rounded-full transition-colors shadow-sm"
+            className="bg-dark-accent hover:bg-dark-accent/90 text-white px-8 py-4 h-auto text-lg rounded-full transition-colors shadow-sm"
           >
             Start your free chat
           </Button>
