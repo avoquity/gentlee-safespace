@@ -143,6 +143,7 @@ const WritingInput = () => {
         handleSubmit={handleSubmit}
         hasReachedLimit={hasReachedLimit}
         textareaRef={textareaRef}
+        isHomepage={true}
       />
       
       {hasReachedLimit && <UpgradeLink />}

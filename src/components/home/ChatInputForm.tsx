@@ -10,6 +10,7 @@ interface ChatInputFormProps {
   handleSubmit: (e: React.FormEvent) => void;
   hasReachedLimit: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
+  isHomepage?: boolean;
 }
 
 const ChatInputForm = ({ 
@@ -17,10 +18,19 @@ const ChatInputForm = ({
   setInput, 
   handleSubmit, 
   hasReachedLimit, 
-  textareaRef 
+  textareaRef,
+  isHomepage = false
 }: ChatInputFormProps) => {
   const isMobile = useIsMobile();
   const [lineCount, setLineCount] = useState(1);
+
+  // Handle keyboard submission on homepage
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (isHomepage && e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
+      e.preventDefault(); // Prevent new line
+      handleSubmit(e); // Submit the form
+    }
+  };
 
   // Auto-resize the textarea when content changes
   useEffect(() => {
@@ -45,6 +55,7 @@ const ChatInputForm = ({
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder={hasReachedLimit 
               ? "You've reached your weekly chat limit. Please upgrade to Reflection plan to continue." 
               : "What's on your mind lately?"}
