@@ -86,9 +86,7 @@ const GentleeExamples = ({
         duration: 0.6,
         delay: 0.2
       }}>
-          <Button onClick={scrollToInput} className="bg-dark-accent hover:bg-dark-accent/90 text-white px-8 py-4 h-auto text-lg rounded-full transition-colors shadow-sm">
-            Start your free chat
-          </Button>
+          <Button onClick={scrollToInput} className="bg-dark-accent hover:bg-dark-accent/90 text-white px-8 py-4 h-auto text-lg rounded-full transition-colors shadow-sm">Start your free chat</Button>
         </motion.div>
       </div>
     </div>;
