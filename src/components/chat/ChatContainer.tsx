@@ -1,9 +1,8 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { JournalModal } from './JournalModal';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
@@ -43,9 +42,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onHighlightRemove,
   messagesEndRef
 }) => {
-  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
-  const [journalText, setJournalText] = useState('');
-  
   // Environment detection
   const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
   
@@ -53,24 +49,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
-    if (!text.trim()) return;
-    setInput(text);
-    if (formRef.current) {
-      setTimeout(() => {
-        formRef.current?.dispatchEvent(
-          new Event('submit', { cancelable: true, bubbles: true })
-        );
-        setIsJournalModalOpen(false);
-        setJournalText('');
-      }, 0);
-    }
-  };
-
-  const handleModalCancel = (text: string) => {
-    setInput(text);
-  };
 
   return (
     <div className="min-h-screen bg-warm-beige flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
@@ -111,19 +89,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               handleSubmit={onSubmit}
               messageCount={messageCount}
               weeklyLimit={weeklyLimit}
-              onJournalClick={() => setIsJournalModalOpen(true)}
+              onJournalClick={() => {}} // This is no longer needed as ChatInput handles the journal modal
             />
           </form>
         </div>
       </div>
-      
-      <JournalModal
-        isOpen={isJournalModalOpen}
-        onClose={() => setIsJournalModalOpen(false)}
-        onSend={handleModalSend}
-        onCancel={handleModalCancel}
-        initialText={journalText}
-      />
       
       <ScrollToTop scrollContainer={containerRef} endRef={messagesEndWrapperRef} isTyping={isTyping} />
     </div>

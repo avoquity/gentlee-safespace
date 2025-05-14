@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { JournalButton } from './JournalButton';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { JournalModal } from './JournalModal';
 
 interface ChatInputProps {
   input: string;
@@ -46,6 +47,8 @@ export const ChatInput = ({
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
   const { user } = useAuth();
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [lineCount, setLineCount] = useState(1);
 
   useEffect(() => {
     const checkSubscriptionStatus = async () => {
@@ -82,8 +85,19 @@ export const ChatInput = ({
       textareaRef.current.style.height = '3rem';
       const scrollHeight = Math.min(textareaRef.current.scrollHeight, 192);
       textareaRef.current.style.height = `${scrollHeight}px`;
+      
+      // Calculate line count by measuring content height against line height
+      const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight) || 24; // Default line height if can't get it
+      const contentHeight = textareaRef.current.scrollHeight;
+      const calculatedLineCount = Math.ceil(contentHeight / lineHeight);
+      setLineCount(calculatedLineCount);
+      
+      // If line count exceeds 2 and the journal modal isn't already open, open it
+      if (calculatedLineCount > 2 && !isJournalModalOpen && input.trim().length > 0) {
+        setIsJournalModalOpen(true);
+      }
     }
-  }, [input]);
+  }, [input, isJournalModalOpen]);
 
   useEffect(() => {
     if (isFocused) {
@@ -91,6 +105,7 @@ export const ChatInput = ({
       setRandomizedSuggestions(shuffled);
     }
   }, [isFocused]);
+  
   useEffect(() => {
     setShowUpgradePrompt(true);
   }, [messageCount]);
@@ -113,6 +128,21 @@ export const ChatInput = ({
 
   const shouldShowUpgradePrompt = !isSubscribed && user && showUpgradePrompt &&
     (messageCount === weeklyLimit - 1 || messageCount >= weeklyLimit);
+
+  // Handle journal modal interactions
+  const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
+    setInput(text);
+    setIsJournalModalOpen(false);
+    // Auto-submit if needed
+    // Leaving this commented out as we want users to hit send themselves
+    // if (text.trim()) {
+    //   handleSubmit(new Event('submit') as unknown as React.FormEvent);
+    // }
+  };
+
+  const handleModalCancel = (text: string) => {
+    setInput(text);
+  };
 
   // --- Render ---
 
@@ -153,7 +183,7 @@ export const ChatInput = ({
               title="Journal mode"
             >
               <JournalButton
-                onClick={onJournalClick}
+                onClick={() => setIsJournalModalOpen(true)}
                 isMobile={true}
               />
             </div>
@@ -188,6 +218,14 @@ export const ChatInput = ({
           onSuggestionClick={handleSuggestionClick}
           isFocused={isFocused && !hasReachedLimit}
           messageCount={messageCount}
+        />
+        
+        <JournalModal
+          isOpen={isJournalModalOpen}
+          onClose={() => setIsJournalModalOpen(false)}
+          onSend={handleModalSend}
+          onCancel={handleModalCancel}
+          initialText={input}
         />
       </div>
     );
@@ -241,7 +279,7 @@ export const ChatInput = ({
             <TooltipTrigger asChild>
               <span>
                 <JournalButton
-                  onClick={onJournalClick}
+                  onClick={() => setIsJournalModalOpen(true)}
                   isMobile={false}
                   className="ml-2"
                 />
@@ -266,7 +304,14 @@ export const ChatInput = ({
           <ArrowRight className="w-4 h-4" />
         </motion.button>
       </form>
+      
+      <JournalModal
+        isOpen={isJournalModalOpen}
+        onClose={() => setIsJournalModalOpen(false)}
+        onSend={handleModalSend}
+        onCancel={handleModalCancel}
+        initialText={input}
+      />
     </div>
   );
 };
-
