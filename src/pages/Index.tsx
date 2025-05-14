@@ -10,6 +10,7 @@ import TopicTagsDisplay from '../components/home/TopicTagsDisplay';
 import { motion } from 'framer-motion';
 import HeroTestimonial from '../components/home/HeroTestimonial';
 import GentleeExamples from '../components/home/GentleeExamples';
+import InviteSection from '../components/home/InviteSection';
 
 // Complete list of topics for the homepage
 const suggestedTopics = [
@@ -74,6 +75,9 @@ const Index = () => {
             <div className="animate-fade-up">
               <FAQSection />
             </div>
+            
+            {/* NEW: Final Invite Section */}
+            <InviteSection scrollToInput={scrollToInput} />
           </div>
         </div>
           
