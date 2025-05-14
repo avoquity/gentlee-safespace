@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { JournalButton } from './JournalButton';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
-import { JournalModal } from './journal/JournalModal';
+import { JournalModal } from './JournalModal';
 
 interface ChatInputProps {
   input: string;
@@ -98,7 +98,7 @@ export const ChatInput = ({
       }
     }
   }, [input, isJournalModalOpen]);
-  
+
   useEffect(() => {
     if (isFocused) {
       const shuffled = [...chatSuggestions].sort(() => 0.5 - Math.random());
