@@ -104,7 +104,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     onClose();
   };
 
-  // X button click handler
+  // X button click handler - fixed to ONLY transfer text and close modal
   const handleCloseClick = () => {
     onCancel(journalText); // Pass the current text back to the parent component
     setJournalText('');
