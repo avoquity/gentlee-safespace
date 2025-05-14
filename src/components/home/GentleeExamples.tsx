@@ -1,14 +1,18 @@
+
 import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+
 const exampleImages = ["/lovable-uploads/fe61adc7-6bea-4ca0-95fa-bb4b9e80d466.png", "/lovable-uploads/875b1f8f-71f0-4eee-8ee8-2bdcde64987f.png", "/lovable-uploads/4bbc778e-4475-4fb3-a835-a4acad652ccc.png"
 // You can add a fourth image here when available
 ];
+
 interface GentleeExamplesProps {
   scrollToInput: () => void;
 }
+
 const GentleeExamples = ({
   scrollToInput
 }: GentleeExamplesProps) => {
@@ -24,7 +28,7 @@ const GentleeExamples = ({
       }} transition={{
         duration: 0.6
       }} className="mb-6">
-          <div className="inline-block px-4 py-1.5 rounded-full">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-soft-ivory">
             <p className="text-xs font-medium uppercase tracking-wider text-dark-accent/70">
               Gentlee moments
             </p>
@@ -39,7 +43,7 @@ const GentleeExamples = ({
         y: 0
       }} transition={{
         duration: 0.6
-      }} className="text-4xl sm:text-5xl mb-6 text-deep-charcoal font-playfair font-medium">
+      }} className="text-4xl sm:text-5xl mb-6 text-deep-charcoal font-playfair font-medium px-4 md:px-8 lg:px-16 mx-auto">
           I just want to talk, not seek the answers of the universe.
         </motion.h2>
         
@@ -91,4 +95,5 @@ const GentleeExamples = ({
       </div>
     </div>;
 };
+
 export default GentleeExamples;
