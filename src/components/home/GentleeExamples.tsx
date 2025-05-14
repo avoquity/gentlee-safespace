@@ -58,18 +58,18 @@ const GentleeExamples = ({ scrollToInput }: GentleeExamplesProps) => {
           A glimpse of the small, heart-level chats people have with Gentlee every day.
         </motion.p>
         
-        {/* Carousel with enlarged and centered screenshots - 70% width on desktop, full width minus padding on mobile */}
-        <div className="max-w-3xl mx-auto mb-12 px-6">
+        {/* Carousel with enlarged screenshots - larger size for better readability */}
+        <div className="max-w-4xl mx-auto mb-12 px-4">
           <Carousel opts={{ loop: true, align: "center", duration: 50 }} autoplay={true} interval={15000}>
             <CarouselContent>
               {exampleImages.map((src, index) => (
                 <CarouselItem key={index} className="md:basis-full">
                   <AspectRatio ratio={16/9} className="rounded-lg overflow-hidden border-2 border-muted-sage shadow-md">
-                    <div className="w-full h-full flex items-center justify-center py-4">
+                    <div className="w-full h-full flex items-center justify-center py-2">
                       <img 
                         src={src} 
                         alt={`Gentlee conversation example ${index + 1}`} 
-                        className="w-[70%] md:w-[70%] h-auto object-contain max-h-full"
+                        className="w-[85%] md:w-[85%] h-auto object-contain max-h-full"
                       />
                     </div>
                   </AspectRatio>
