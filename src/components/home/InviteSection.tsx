@@ -14,7 +14,7 @@ const InviteSection = ({ scrollToInput }: InviteSectionProps) => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="bg-soft-ivory rounded-xl p-8 sm:p-12 md:p-16 text-center flex flex-col items-center"
+        className="rounded-xl p-8 sm:p-12 md:p-16 text-center flex flex-col items-center"
       >
         <h2 className="text-3xl sm:text-4xl md:text-5xl mb-4 text-deep-charcoal font-playfair font-medium px-4 sm:px-8 md:px-16 mx-auto">
           When the world isn't gentle, let us be.
