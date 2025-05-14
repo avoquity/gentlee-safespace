@@ -9,7 +9,7 @@ const HeroTestimonial = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-center"
+        className="text-center pt-8 md:pt-12"
       >
         <div className="bg-white bg-opacity-50 inline-block px-4 py-1.5 rounded-full mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-dark-accent/70">
