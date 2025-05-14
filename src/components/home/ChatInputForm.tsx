@@ -53,6 +53,7 @@ const ChatInputForm = ({
   };
 
   const handleModalCancel = (text: string) => {
+    // Transfer text back to the input field when canceled
     setInput(text);
   };
 

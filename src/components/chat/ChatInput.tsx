@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -80,14 +79,15 @@ export const ChatInput = ({
 
   const hasReachedLimit = !isSubscribed && messageCount >= weeklyLimit;
 
+  // Auto-resize the textarea when content changes
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = '3rem';
       const scrollHeight = Math.min(textareaRef.current.scrollHeight, 192);
       textareaRef.current.style.height = `${scrollHeight}px`;
       
-      // Calculate line count by measuring content height against line height
-      const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight) || 24; // Default line height if can't get it
+      // Calculate line count
+      const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight) || 24;
       const contentHeight = textareaRef.current.scrollHeight;
       const calculatedLineCount = Math.ceil(contentHeight / lineHeight);
       setLineCount(calculatedLineCount);
@@ -133,18 +133,11 @@ export const ChatInput = ({
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     setInput(text);
     setIsJournalModalOpen(false);
-    // Auto-submit if needed
-    // Leaving this commented out as we want users to hit send themselves
-    // if (text.trim()) {
-    //   handleSubmit(new Event('submit') as unknown as React.FormEvent);
-    // }
   };
 
   const handleModalCancel = (text: string) => {
     setInput(text);
   };
-
-  // --- Render ---
 
   // Mobile Layout
   if (isMobile) {

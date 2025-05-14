@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
@@ -98,9 +99,14 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   };
 
   const handleCancel = () => {
-    if (journalText.trim()) {
-      onCancel(journalText);
-    }
+    onCancel(journalText); // Pass the current text back to the parent component
+    setJournalText('');
+    onClose();
+  };
+
+  // X button click handler
+  const handleCloseClick = () => {
+    onCancel(journalText); // Pass the current text back to the parent component
     setJournalText('');
     onClose();
   };
@@ -145,7 +151,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               key="journal-modal-overlay"
               className="fixed inset-0 z-40 bg-black/50"
               {...overlayMotionProps}
-              onClick={onClose}
+              onClick={handleCloseClick} // Updated to use handleCloseClick
               aria-label="Close modal overlay"
             />
           )}
@@ -168,7 +174,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
               <div className={`flex justify-end mb-2 px-6`}>
                 <button
-                  onClick={handleCancel}
+                  onClick={handleCloseClick} // Updated to use handleCloseClick
                   className="text-deep-charcoal hover:text-opacity-70 transition-all"
                   aria-label="Close journal entry"
                 >
