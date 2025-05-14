@@ -1,10 +1,10 @@
 
 import {
   toast as sonnerToast,
-  ToastOptions as SonnerToastOptions,
+  type ToastT,
 } from "sonner";
 
-export type ToastProps = SonnerToastOptions & {
+export type ToastProps = ToastT & {
   title?: string;
   description?: React.ReactNode;
   action?: {
@@ -31,4 +31,5 @@ export function toast({
   });
 }
 
-export { useToast } from "sonner";
+// Re-export the useToaster hook from sonner (not useToast)
+export { useToaster as useToast } from "sonner";
