@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,8 +8,6 @@ import { useTodayChat } from '@/hooks/useTodayChat';
 import ChatInputForm from './home/ChatInputForm';
 import ChatSuggestionsDisplay from './home/ChatSuggestionsDisplay';
 import UpgradeLink from './home/UpgradeLink';
-import HeroTestimonial from './home/HeroTestimonial';
-
 
 // Chat suggestions that appear as conversation starters
 const chatSuggestions = [
@@ -154,7 +153,6 @@ const WritingInput = () => {
         onSuggestionClick={handleSuggestionClick}
         hasReachedLimit={hasReachedLimit}
       />
-      
     </div>
   );
 };
