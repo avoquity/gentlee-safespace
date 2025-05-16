@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import HeroTestimonial from '../components/home/HeroTestimonial';
 import GentleeExamples from '../components/home/GentleeExamples';
 import InviteSection from '../components/home/InviteSection';
+import AbstractBackground from '../components/home/AbstractBackground';
 
 // Complete list of topics for the homepage
 const suggestedTopics = [
@@ -37,7 +38,10 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen bg-warm-beige flex flex-col">
+    <div className="min-h-screen bg-warm-beige flex flex-col relative overflow-hidden">
+      {/* Abstract Background */}
+      <AbstractBackground />
+      
       <Header />
       
       <main className="flex-1 w-full mx-auto flex flex-col min-h-screen">
