@@ -70,7 +70,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         if (error) throw error;
       }
 
-      onSend(journalText, isSavedAsLetter); // always false for isSavedAsLetter (feature hidden)
+      onSend(journalText, isSavedAsLetter); // Pass the text to parent for immediate sending
       setJournalText('');
       onClose();
     } catch (error) {
@@ -84,13 +84,13 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   };
 
   const handleCancel = () => {
-    onCancel(journalText); // Pass the current text back to the parent component
+    onCancel(journalText); // Pass the current text back to the input field
     setJournalText('');
     onClose();
   };
 
   const handleCloseClick = () => {
-    onCancel(journalText); // Pass the current text back to the parent component
+    onCancel(journalText); // Pass the current text back to the input field when clicking X
     setJournalText('');
     onClose();
   };
