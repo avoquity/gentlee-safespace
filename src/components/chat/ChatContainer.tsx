@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
-import { ChatInput } from './ChatInput';
+import { ChatInput } from './input';
 import { ScrollToTop } from './ScrollToTop';
 import { Highlight, Message } from '@/types/chat';
 import { ScrollToTopFloating } from './ScrollToTopFloating';
