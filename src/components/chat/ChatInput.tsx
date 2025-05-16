@@ -134,9 +134,9 @@ export const ChatInput = ({
     setInput(text);
     setIsJournalModalOpen(false);
     
-    // Submit the form with the journal text immediately
-    const event = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
-    handleSubmit(event);
+    // Create a synthetic form submit event and immediately submit
+    const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+    handleSubmit(formEvent);
   };
 
   const handleModalCancel = (text: string) => {

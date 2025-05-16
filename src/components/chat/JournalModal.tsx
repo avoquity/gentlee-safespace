@@ -70,9 +70,8 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         if (error) throw error;
       }
 
-      onSend(journalText, isSavedAsLetter); // Pass the text to parent for immediate sending
-      setJournalText('');
-      onClose();
+      // Pass the text for immediate sending and close the modal
+      onSend(journalText, isSavedAsLetter); 
     } catch (error) {
       toast({
         title: "Error",
