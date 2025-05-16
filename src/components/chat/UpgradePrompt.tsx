@@ -81,6 +81,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
               Upgrade to Reflection
             </Link> to continue.
           </p>
+          {/* Only show dismiss button when approaching the limit (not at limit) */}
           {onDismiss && (
             <button 
               onClick={onDismiss} 
@@ -94,13 +95,19 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
       )}
       
       {isAtLimit && (
-        <p className="text-sm font-poppins">
-          You've reached your weekly message limit. 
-          <Link to="/upgrade" className="ml-1 font-medium text-muted-sage hover:underline">
-            Upgrade to Reflection
-          </Link> to continue.
-        </p>
+        <div className="flex flex-col">
+          <p className="text-sm font-poppins font-medium">
+            You've reached your weekly message limit. 
+            <Link to="/upgrade" className="ml-1 font-medium text-muted-sage hover:underline">
+              Upgrade to Reflection
+            </Link> to continue.
+          </p>
+          <p className="text-xs mt-1 text-deep-charcoal/70">
+            Free accounts are limited to {weeklyLimit} messages per week.
+          </p>
+        </div>
       )}
     </motion.div>
   );
 };
+

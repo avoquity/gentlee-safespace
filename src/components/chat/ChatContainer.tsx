@@ -48,7 +48,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   // Create refs
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndWrapperRef = useRef<HTMLDivElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <div className="min-h-screen bg-warm-beige flex flex-col relative" ref={containerRef} style={{position: 'relative', overflow: 'auto'}}>
@@ -82,16 +81,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-warm-beige via-warm-beige to-transparent py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          <form ref={formRef} onSubmit={onSubmit}>
-            <ChatInput 
-              input={input}
-              setInput={setInput}
-              handleSubmit={onSubmit}
-              messageCount={messageCount}
-              weeklyLimit={weeklyLimit}
-              onJournalClick={() => {}} // This is no longer needed as ChatInput handles the journal modal
-            />
-          </form>
+          <ChatInput 
+            input={input}
+            setInput={setInput}
+            handleSubmit={onSubmit}
+            messageCount={messageCount}
+            weeklyLimit={weeklyLimit}
+            onJournalClick={() => {}}
+          />
         </div>
       </div>
       

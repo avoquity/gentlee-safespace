@@ -70,7 +70,8 @@ export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
 
   const handleTextareaFocus = () => {
     setIsFocused(true);
-    if (messageCount === weeklyLimit - 1) {
+    // Only allow dismissing when approaching the limit (not at the limit)
+    if (messageCount === weeklyLimit - 1 && !hasReachedLimit) {
       handleDismissUpgradePrompt();
     }
   };
@@ -81,11 +82,11 @@ export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
         <UpgradePrompt
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
-          onDismiss={messageCount === weeklyLimit - 1 ? handleDismissUpgradePrompt : undefined}
+          onDismiss={hasReachedLimit ? undefined : handleDismissUpgradePrompt}
           className="mb-4"
         />
       )}
-      <form onSubmit={handleSubmit} className="flex items-end gap-3 w-full">
+      <div className="flex items-end gap-3 w-full">
         <ChatSuggestions
           suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
           inputValue={input}
@@ -133,20 +134,25 @@ export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <motion.button
-          type="submit"
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            if (!hasReachedLimit) {
+              handleSubmit(e as unknown as React.FormEvent);
+            }
+          }}
           aria-label="Send"
           className={`h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal font-poppins text-base hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
             hasReachedLimit ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          whileTap={{ scale: hasReachedLimit ? 1 : 0.98 }}
           disabled={hasReachedLimit}
           style={{ borderRadius: 100, marginLeft: 8 }}
         >
           <span>Send</span>
           <ArrowRight className="w-4 h-4" />
-        </motion.button>
-      </form>
+        </button>
+      </div>
     </>
   );
 };

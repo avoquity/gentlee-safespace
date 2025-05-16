@@ -71,7 +71,8 @@ export const MobileChatInput: React.FC<MobileChatInputProps> = ({
 
   const handleTextareaFocus = () => {
     setIsFocused(true);
-    if (messageCount === weeklyLimit - 1) {
+    // Only dismiss when approaching limit (not at limit)
+    if (messageCount === weeklyLimit - 1 && !hasReachedLimit) {
       handleDismissUpgradePrompt();
     }
   };
@@ -136,7 +137,7 @@ export const MobileChatInput: React.FC<MobileChatInputProps> = ({
         <UpgradePrompt
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
-          onDismiss={messageCount === weeklyLimit - 1 ? handleDismissUpgradePrompt : undefined}
+          onDismiss={hasReachedLimit ? undefined : handleDismissUpgradePrompt}
           className="mb-8"
         />
       )}

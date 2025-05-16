@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -121,6 +122,7 @@ export const useChat = (
           return;
         }
         
+        console.log("Weekly message count:", count);
         setMessageCount(count || 0);
       } catch (error) {
         console.error("Error in fetchWeeklyMessageCount:", error);
@@ -135,12 +137,20 @@ export const useChat = (
     }
   }, [user, messages]);
 
+  // Log whenever message count changes for debugging
+  useEffect(() => {
+    console.log(`Current message count: ${messageCount}/${WEEKLY_MESSAGE_LIMIT}`);
+  }, [messageCount]);
+
   // Handle closing the conversation wrapper
   const handleCloseConversation = async () => {
     if (await closeConversation(messages, currentChatId)) {
       navigate('/entries');
     }
   };
+
+  // Weekly message limit constant
+  const WEEKLY_MESSAGE_LIMIT = 10;
 
   return {
     messages,

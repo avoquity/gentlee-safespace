@@ -43,10 +43,26 @@ export const ChatInputContainer = ({
     setInput(text);
   };
 
-  const handleDismissUpgradePrompt = () => setShowUpgradePrompt(false);
+  // Only allow dismissing if not at the limit
+  const handleDismissUpgradePrompt = () => {
+    if (!hasReachedLimit) {
+      setShowUpgradePrompt(false);
+    }
+  };
 
-  const shouldShowUpgradePrompt = showUpgradePrompt &&
-    (messageCount === weeklyLimit - 1 || messageCount >= weeklyLimit);
+  // Reset prompt visibility when the message count changes to be at the limit
+  React.useEffect(() => {
+    if (hasReachedLimit) {
+      // Always show the prompt when at the limit
+      setShowUpgradePrompt(true);
+    }
+  }, [hasReachedLimit]);
+
+  // Only show upgrade prompt when approaching/at limit AND we allow showing it
+  // Always show it when at the limit, regardless of the state
+  const shouldShowUpgradePrompt = 
+    (showUpgradePrompt && messageCount === weeklyLimit - 1) || // Approaching limit and not dismissed
+    hasReachedLimit; // At limit, always show regardless of dismiss state
 
   return (
     <div className="relative w-full flex flex-col gap-0">
