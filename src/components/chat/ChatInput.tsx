@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -133,9 +134,13 @@ export const ChatInput = ({
   const handleModalSend = (text: string, isSavedAsLetter: boolean) => {
     setInput(text);
     setIsJournalModalOpen(false);
+    // Submit the form with the journal text immediately
+    const event = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+    handleSubmit(event);
   };
 
   const handleModalCancel = (text: string) => {
+    // Transfer text from modal to the main input field
     setInput(text);
   };
 

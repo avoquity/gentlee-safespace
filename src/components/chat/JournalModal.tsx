@@ -88,6 +88,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
       onSend(journalText, isSavedAsLetter); // always false for isSavedAsLetter (feature hidden)
       setJournalText('');
+      onClose();
     } catch (error) {
       toast({
         title: "Error",
