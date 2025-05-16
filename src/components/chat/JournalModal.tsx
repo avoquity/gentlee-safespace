@@ -90,7 +90,9 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   };
 
   const handleCloseClick = () => {
-    onCancel(journalText); // Pass the current text back to the input field when clicking X
+    // This function is called when the X button is clicked
+    // We should only transfer the text back to the input field but NOT send it
+    onCancel(journalText);
     setJournalText('');
     onClose();
   };
