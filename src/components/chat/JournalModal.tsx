@@ -1,25 +1,14 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-
-// Track window size for responsive modal (mobile/tablet style)
-function useIsMobileSheet() {
-  const [isSheet, setIsSheet] = React.useState(false);
-  useEffect(() => {
-    function update() {
-      setIsSheet(window.innerWidth < 1024);
-    }
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-  return isSheet;
-}
+import { useIsMobileSheet } from '@/hooks/useIsMobileSheet';
+import { ModalOverlay } from './journal/ModalOverlay';
+import { ModalHeader } from './journal/ModalHeader';
+import { JournalTextarea } from './journal/JournalTextarea';
+import { JournalActions } from './journal/JournalActions';
 
 interface JournalModalProps {
   isOpen: boolean;
@@ -37,19 +26,15 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   initialText = ""
 }) => {
   const [journalText, setJournalText] = useState(initialText);
-  // Temporarily hide this feature
-  // const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const isSheet = useIsMobileSheet();
-  const [isSavedAsLetter, setIsSavedAsLetter] = useState(false);
 
-  // Autofocus on open
+  // Set initial text when modal opens
   useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus();
+    if (isOpen) {
       setJournalText(initialText);
     }
   }, [isOpen, initialText]);
@@ -57,7 +42,6 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   // Reset state on close
   useEffect(() => {
     if (!isOpen) {
-      // setIsSavedAsLetter(false);
       setIsSending(false);
       setIsSavedAsLetter(false);
     }
@@ -105,26 +89,16 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     onClose();
   };
 
-  // X button click handler
   const handleCloseClick = () => {
     onCancel(journalText); // Pass the current text back to the parent component
     setJournalText('');
     onClose();
   };
 
-  // Overlay animation for mobile/tablet
-  const overlayMotionProps = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-    transition: { duration: 0.24, ease: [0.4, 0.0, 0.2, 1] }
-  };
-
   // Modal/sheet animation/config
   const modalMotionProps = isSheet
     ? {
-        className:
-          "fixed inset-x-0 bottom-0 z-50 flex items-end justify-center",
+        className: "fixed inset-x-0 bottom-0 z-50 flex items-end justify-center",
         initial: { y: "100%", opacity: 1 },
         animate: { y: 0, opacity: 1 },
         exit: { y: "100%" },
@@ -147,15 +121,8 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       {isOpen && (
         <>
           {/* Overlay for mobile/tablet, only when modal is open and in sheet mode */}
-          {isSheet && (
-            <motion.div
-              key="journal-modal-overlay"
-              className="fixed inset-0 z-40 bg-black/50"
-              {...overlayMotionProps}
-              onClick={handleCloseClick} // Updated to use handleCloseClick
-              aria-label="Close modal overlay"
-            />
-          )}
+          {isSheet && <ModalOverlay onClick={handleCloseClick} />}
+          
           <motion.div {...modalMotionProps}>
             <motion.div
               className={contentClass}
@@ -165,74 +132,21 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               transition={{ type: "spring", bounce: 0.12, duration: 0.30 }}
               onClick={e => e.stopPropagation()} // prevent closing modal when clicking inside
             >
-              {/* Drag handle/bar on top for sheet modal */}
-              {isSheet && (
-                <div
-                  className="mx-auto my-2 w-12 h-[5px] rounded-full bg-deep-charcoal/10"
-                  aria-hidden="true"
-                ></div>
-              )}
-
-              <div className={`flex justify-end mb-2 px-6`}>
-                <button
-                  onClick={handleCloseClick} // Updated to use handleCloseClick
-                  className="text-deep-charcoal hover:text-opacity-70 transition-all"
-                  aria-label="Close journal entry"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              {/* Textarea */}
-              <div className="flex-1 px-6 pb-3">
-                <textarea
-                  ref={textareaRef}
-                  value={journalText}
-                  onChange={(e) => setJournalText(e.target.value)}
-                  placeholder="Take your time. Write what's on your mind."
-                  className="w-full h-full bg-transparent text-lg text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none focus:outline-none font-poppins"
-                  autoFocus
-                  style={{
-                    minHeight: isSheet ? "150px" : "unset",
-                    overflowY: 'auto'
-                  }}
-                />
-              </div>
-              {/* Feature Hidden: Save letter switch remains hidden here */}
-
-              {/* "Sticky" Bottom Button Row */}
-              <div
-                className={`
-                  w-full px-6 pb-[max(18px,env(safe-area-inset-bottom))] pt-0 
-                  flex gap-3
-                  ${isSheet
-                    ? "sticky bottom-0 bg-soft-ivory"
-                    : "mt-4 bg-soft-ivory/95 border-t-0"}
-                `}
-                style={{
-                  boxShadow: isSheet
-                    ? "0px -8px 32px 0 rgba(202 189 176 / 7%)"
-                    : undefined
-                }}
-              >
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={isSending}
-                  className="flex-1 font-poppins rounded-full h-12 text-base"
-                  type="button"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSend}
-                  disabled={isSending || !journalText.trim()}
-                  className="flex-1 font-poppins rounded-full h-12 text-base flex items-center justify-center gap-2"
-                  type="button"
-                >
-                  <Send size={18} className="mr-1 -ml-1" />
-                  Send
-                </Button>
-              </div>
+              <ModalHeader onClose={handleCloseClick} isSheet={isSheet} />
+              
+              <JournalTextarea 
+                value={journalText}
+                onChange={(e) => setJournalText(e.target.value)}
+                isSheet={isSheet}
+              />
+              
+              <JournalActions 
+                onCancel={handleCancel}
+                onSend={handleSend}
+                isSending={isSending}
+                hasContent={!!journalText.trim()}
+                isSheet={isSheet}
+              />
             </motion.div>
           </motion.div>
         </>
