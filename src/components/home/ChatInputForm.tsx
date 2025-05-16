@@ -63,7 +63,9 @@ const ChatInputForm = ({
             style={{
               height: '3rem',
               minHeight: '3rem',
-              maxHeight: '12rem'
+              maxHeight: '12rem',
+              // Add right padding to prevent text from flowing under the button
+              paddingRight: isMobile ? '16px' : '160px'
             }}
             disabled={hasReachedLimit}
             autoFocus
