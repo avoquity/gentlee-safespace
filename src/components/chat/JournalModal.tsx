@@ -89,14 +89,6 @@ export const JournalModal: React.FC<JournalModalProps> = ({
     onClose();
   };
 
-  const handleCloseClick = () => {
-    // This function is called when the X button is clicked
-    // We should only transfer the text back to the input field but NOT send it
-    onCancel(journalText);
-    setJournalText('');
-    onClose();
-  };
-
   // Modal/sheet animation/config
   const modalMotionProps = isSheet
     ? {
@@ -123,7 +115,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       {isOpen && (
         <>
           {/* Overlay for mobile/tablet, only when modal is open and in sheet mode */}
-          {isSheet && <ModalOverlay onClick={handleCloseClick} />}
+          {isSheet && <ModalOverlay onClick={handleCancel} />}
           
           <motion.div {...modalMotionProps}>
             <motion.div
@@ -134,7 +126,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               transition={{ type: "spring", bounce: 0.12, duration: 0.30 }}
               onClick={e => e.stopPropagation()} // prevent closing modal when clicking inside
             >
-              <ModalHeader onClose={handleCloseClick} isSheet={isSheet} />
+              <ModalHeader isSheet={isSheet} />
               
               <JournalTextarea 
                 value={journalText}
