@@ -25,6 +25,8 @@ interface ChatContainerProps {
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
+  shouldShowInsight?: boolean;
+  insightText?: string;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -40,7 +42,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onClose,
   onHighlightChange,
   onHighlightRemove,
-  messagesEndRef
+  messagesEndRef,
+  shouldShowInsight = false,
+  insightText = ''
 }) => {
   // Environment detection
   const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
@@ -72,6 +76,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             onHighlightChange={onHighlightChange}
             onHighlightRemove={onHighlightRemove}
             messagesEndRef={messagesEndRef}
+            shouldShowInsight={shouldShowInsight}
+            insightText={insightText}
           />
           <div ref={messagesEndWrapperRef} style={{ height: 1, position: 'relative'}} aria-hidden />
         </div>

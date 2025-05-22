@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
@@ -7,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import { CheckInModal } from '@/components/chat/CheckInModal';
 import { useCheckInModal } from '@/hooks/useCheckInModal';
+import { useInsights } from '@/hooks/chat/useInsights';
 
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
@@ -35,7 +37,7 @@ const Chat = () => {
     processInitialMessage,
     loadTodaysChat
   } = useChat(chatIdFromParams, location.state);
-
+  
   // Check-in modal integration
   const {
     isOpen: isCheckInOpen,
@@ -45,6 +47,9 @@ const Chat = () => {
     handleDismiss,
     handleComplete
   } = useCheckInModal(user?.id, messages.length);
+  
+  // Insights feature integration
+  const { shouldShowInsight, selectedInsight } = useInsights(user?.id, messageCount);
 
   // Redirect to /auth if user is not logged in, but only after loading is complete
   useEffect(() => {
@@ -157,6 +162,8 @@ const Chat = () => {
         onHighlightChange={handleHighlightChange}
         onHighlightRemove={handleHighlightRemove}
         messagesEndRef={messagesEndRef}
+        shouldShowInsight={shouldShowInsight}
+        insightText={selectedInsight}
       />
 
       <CheckInModal

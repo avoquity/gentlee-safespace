@@ -6,19 +6,24 @@ import { useAuth } from '@/contexts/AuthContext';
 import { HighlightedText } from './HighlightedText';
 import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
 import { Highlighter } from 'lucide-react';
+import { InsightCard } from './InsightCard';
 
 interface ChatMessageProps {
   message: Message;
   highlights: Highlight[];
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
+  showInsight?: boolean;
+  insightText?: string;
 }
 
 export const ChatMessage = ({ 
   message, 
   highlights, 
   onHighlightChange, 
-  onHighlightRemove 
+  onHighlightRemove,
+  showInsight = false,
+  insightText = ''
 }: ChatMessageProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -27,20 +32,6 @@ export const ChatMessage = ({
   const [showHighlightTooltip, setShowHighlightTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const messageRef = useRef<HTMLDivElement>(null);
-
-  // Reset tooltip when clicking outside
-  // useEffect(() => {
-  //   const handleClickOutside = (event: MouseEvent) => {
-  //     if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
-  //       setShowHighlightTooltip(false);
-  //     }
-  //   };
-
-  //   document.addEventListener('mousedown', handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside);
-  //   };
-  // }, []);
 
   const handleHighlight = async () => {
     if (!user || !selectionRange) return;
@@ -116,6 +107,11 @@ export const ChatMessage = ({
           highlights={highlights}
           onRemoveHighlight={onHighlightRemove}
         />
+        
+        {/* Show the insight card after this AI message if applicable */}
+        {message.sender === 'ai' && showInsight && insightText && (
+          <InsightCard insight={insightText} />
+        )}
 
         {showHighlightTooltip && selectionRange && (
           <div 

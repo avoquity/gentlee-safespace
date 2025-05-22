@@ -11,6 +11,8 @@ interface ChatMessagesProps {
   onHighlightChange: (highlight: Highlight) => void;
   onHighlightRemove: (highlightId: number) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
+  shouldShowInsight?: boolean;
+  insightText?: string;
 }
 
 export const ChatMessages: React.FC<ChatMessagesProps> = ({ 
@@ -19,17 +21,41 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   isTyping, 
   onHighlightChange, 
   onHighlightRemove,
-  messagesEndRef
+  messagesEndRef,
+  shouldShowInsight = false,
+  insightText = ''
 }: ChatMessagesProps) => {
+  // Find the first AI message after the second user message
+  const findInsightTarget = () => {
+    let userMessageCount = 0;
+    let targetIndex = -1;
+    
+    for (let i = 0; i < messages.length; i++) {
+      if (messages[i].sender === 'user') {
+        userMessageCount++;
+        if (userMessageCount === 2 && i + 1 < messages.length && messages[i + 1].sender === 'ai') {
+          targetIndex = i + 1;
+          break;
+        }
+      }
+    }
+    
+    return targetIndex;
+  };
+  
+  const insightTargetIndex = findInsightTarget();
+
   // Groups messages into sequence blocks
   const renderMessages = () => {
-    return messages.map((message) => (
+    return messages.map((message, index) => (
       <ChatMessage
         key={`msg-${message.id}`}
         message={message}
         highlights={highlights.filter(h => h.message_id.toString() === message.id)}
         onHighlightChange={onHighlightChange}
         onHighlightRemove={onHighlightRemove}
+        showInsight={shouldShowInsight && index === insightTargetIndex}
+        insightText={shouldShowInsight && index === insightTargetIndex ? insightText : ''}
       />
     ));
   };
