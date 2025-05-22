@@ -64,12 +64,13 @@ const Index = () => {
               <TestimonialGrid />
             </div>
             
-            {/* NEW: Gentlee Examples Section */}
-            <GentleeExamples scrollToInput={scrollToInput} />
-            
-            {/* Topic Tags */}
-            <div className="mt-16">
-              <TopicTagsDisplay topics={suggestedTopics} />
+            {/* NEW: Gentlee Examples Section with embedded tags */}
+            <div className="relative">
+              <GentleeExamples scrollToInput={scrollToInput} />
+              {/* Topic Tags - now moved inside GentleeExamples component visually */}
+              <div className="absolute top-[272px] left-1/2 transform -translate-x-1/2 w-full">
+                <TopicTagsDisplay topics={suggestedTopics} />
+              </div>
             </div>
             
             <div className="animate-fade-up">
