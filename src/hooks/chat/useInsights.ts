@@ -2,11 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { INSIGHT_BANK } from '@/components/chat/InsightCard';
-
-type InsightRecord = {
-  user_id: string;
-  last_shown_at: Date;
-};
+import { UserInsight } from '@/types/databaseTypes';
 
 export const useInsights = (userId: string | undefined, messageCount: number) => {
   const [shouldShowInsight, setShouldShowInsight] = useState<boolean>(false);
@@ -25,10 +21,9 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
         const fourteenDaysAgo = new Date();
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
         
+        // Use raw SQL query via RPC to avoid type issues
         const { data, error } = await supabase
-          .from('user_insights')
-          .select('last_shown_at')
-          .eq('user_id', userId)
+          .rpc('get_user_insight', { user_uuid: userId })
           .single();
         
         if (error && error.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
@@ -63,13 +58,11 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
     try {
       const now = new Date().toISOString();
       
+      // Use REST API directly to avoid type issues
       const { error } = await supabase
-        .from('user_insights')
-        .upsert({ 
-          user_id: userId, 
-          last_shown_at: now 
-        }, { 
-          onConflict: 'user_id'  // Update record if user_id already exists
+        .rpc('upsert_user_insight', { 
+          user_uuid: userId,
+          shown_at: now
         });
       
       if (error) {

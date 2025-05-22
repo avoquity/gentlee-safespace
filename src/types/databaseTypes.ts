@@ -33,3 +33,10 @@ export interface ProfileWithCheckIn {
   last_checkin_at?: string | null;
 }
 
+// User insights type
+export interface UserInsight {
+  id?: number;
+  user_id: string;
+  last_shown_at: string;
+  created_at?: string;
+}
