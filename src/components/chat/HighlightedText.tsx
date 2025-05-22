@@ -5,10 +5,18 @@ import { Highlight } from '@/types/chat';
 interface HighlightedTextProps {
   text: string;
   highlights: Highlight[];
-  onRemoveHighlight: (id: number) => void;
+  onHighlightChange: (highlight: Highlight) => void; 
+  onHighlightRemove: (highlightId: number) => void;
+  messageId: string;
 }
 
-export const HighlightedText = ({ text, highlights, onRemoveHighlight }: HighlightedTextProps) => {
+export const HighlightedText = ({ 
+  text, 
+  highlights, 
+  onHighlightChange,
+  onHighlightRemove,
+  messageId 
+}: HighlightedTextProps) => {
   const renderTextWithHighlights = () => {
     const parts: JSX.Element[] = [];
     let lastIndex = 0;
@@ -42,7 +50,7 @@ export const HighlightedText = ({ text, highlights, onRemoveHighlight }: Highlig
                      pointer-events-none group-hover:pointer-events-auto z-50"
             onClick={(e) => {
               e.stopPropagation();
-              onRemoveHighlight(highlight.id);
+              onHighlightRemove(highlight.id);
             }}
           >
             Remove highlight
