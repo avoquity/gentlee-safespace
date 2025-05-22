@@ -25,22 +25,15 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   shouldShowInsight = false,
   insightText = ''
 }: ChatMessagesProps) => {
-  // Find the first AI message after the second user message
+  // Always display the insight after the first AI message
+  // This ensures it appears early and stays visible
   const findInsightTarget = () => {
-    let userMessageCount = 0;
-    let targetIndex = -1;
-    
     for (let i = 0; i < messages.length; i++) {
-      if (messages[i].sender === 'user') {
-        userMessageCount++;
-        if (userMessageCount === 2 && i + 1 < messages.length && messages[i + 1].sender === 'ai') {
-          targetIndex = i + 1;
-          break;
-        }
+      if (messages[i].sender === 'ai') {
+        return i;
       }
     }
-    
-    return targetIndex;
+    return -1;
   };
   
   const insightTargetIndex = findInsightTarget();
