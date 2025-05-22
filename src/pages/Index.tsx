@@ -64,19 +64,26 @@ const Index = () => {
               <TestimonialGrid />
             </div>
             
-            {/* NEW: Gentlee Examples Section */}
-            <GentleeExamples scrollToInput={scrollToInput} />
-            
-            {/* Topic Tags */}
+            {/* Topic Tags placed just above GentleeExamples */}
             <div className="mt-16">
-              <TopicTagsDisplay topics={suggestedTopics} />
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="mb-4"
+              >
+                <TopicTagsDisplay topics={suggestedTopics} />
+              </motion.div>
             </div>
+            
+            {/* Gentlee Examples Section */}
+            <GentleeExamples scrollToInput={scrollToInput} />
             
             <div className="animate-fade-up">
               <FAQSection />
             </div>
             
-            {/* NEW: Final Invite Section */}
+            {/* Final Invite Section */}
             <InviteSection scrollToInput={scrollToInput} />
           </div>
         </div>
