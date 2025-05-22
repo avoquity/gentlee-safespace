@@ -22,8 +22,9 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
         
         // Use our custom SQL function via RPC to avoid type issues
+        // The correct syntax is to provide both data and result type parameters
         const { data, error } = await supabase
-          .rpc<UserInsight>('get_user_insight', { user_uuid: userId })
+          .rpc<UserInsight, any>('get_user_insight', { user_uuid: userId })
           .single();
         
         if (error && error.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
