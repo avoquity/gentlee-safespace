@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { INSIGHT_BANK } from '@/components/chat/InsightCard';
 import { UserInsight } from '@/types/databaseTypes';
 import { Message } from '@/types/chat';
+import { addDays, parseISO, isAfter } from 'date-fns';
 
 export const useInsights = (userId: string | undefined, messageCount: number, messages: Message[] = []) => {
   const [shouldShowInsight, setShouldShowInsight] = useState<boolean>(false);
@@ -12,32 +13,70 @@ export const useInsights = (userId: string | undefined, messageCount: number, me
   // Check if we should show an insight based on criteria
   useEffect(() => {
     const checkInsightEligibility = async () => {
-      if (!userId || messageCount < 2) {
-        // Only show after the 2nd message
+      if (!userId || messages.length === 0) {
         return;
       }
 
       try {
-        // Choose an insight based on the conversation context
-        const insight = selectRelevantInsight(messages);
+        // Count number of AI messages
+        const aiMessageCount = messages.filter(m => m.sender === 'ai').length;
         
-        setSelectedInsight(insight);
-        setShouldShowInsight(true);
-        
-        // Still record that user has seen an insight for tracking purposes
-        await recordInsightShown(userId);
+        // Only show after the first AI message
+        if (aiMessageCount < 1) {
+          return;
+        }
+
+        // Check when the last insight was shown to this user
+        const { data, error } = await supabase
+          .from('user_insights')
+          .select('shown_at')
+          .eq('user_id', userId)
+          .order('shown_at', { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.error('Error checking user insights:', error);
+          return;
+        }
+
+        // Determine if we should show an insight
+        let shouldShow = true;
+
+        // If user has seen an insight before, check the 14-day interval
+        if (data && data.length > 0) {
+          const lastShownDate = parseISO(data[0].shown_at);
+          const nextEligibleDate = addDays(lastShownDate, 14); // Add 14 days
+          const now = new Date();
+          
+          // Only show if it's been at least 14 days since the last insight
+          shouldShow = isAfter(now, nextEligibleDate);
+          
+          console.log('Last insight shown:', lastShownDate);
+          console.log('Next eligible date:', nextEligibleDate);
+          console.log('Should show insight:', shouldShow);
+        }
+
+        if (shouldShow) {
+          // Choose an insight based on the conversation context
+          const insight = selectRelevantInsight(messages);
+          setSelectedInsight(insight);
+          setShouldShowInsight(true);
+          
+          // Record that user has seen an insight
+          await recordInsightShown(userId);
+        }
       } catch (error) {
         console.error('Error in insight eligibility check:', error);
       }
     };
     
     checkInsightEligibility();
-  }, [userId, messageCount, messages]);
+  }, [userId, messages]);
 
   // Select a more relevant insight based on conversation context
   const selectRelevantInsight = (messages: Message[]) => {
     // Default to random selection if there are no messages
-    if (messages.length < 2) {
+    if (messages.length === 0) {
       const randomIndex = Math.floor(Math.random() * INSIGHT_BANK.length);
       return INSIGHT_BANK[randomIndex];
     }
