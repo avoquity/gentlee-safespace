@@ -21,19 +21,20 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
         const fourteenDaysAgo = new Date();
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
         
-        // Use our custom SQL function via RPC to avoid type issues
-        // The correct syntax is to provide both data and result type parameters
+        // Use our custom SQL function via RPC
+        // First parameter is the function name, second is the return type
         const { data, error } = await supabase
-          .rpc<UserInsight, any>('get_user_insight', { user_uuid: userId })
+          .rpc('get_user_insight', { user_uuid: userId })
           .single();
         
-        if (error && error.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
+        if (error && error.code !== 'PGRST116') {
           console.error('Error checking insight history:', error);
           return;
         }
 
         // If no record or last shown more than 14 days ago, show insight
-        const shouldShow = !data || new Date(data.last_shown_at) < fourteenDaysAgo;
+        const insightData = data as UserInsight;
+        const shouldShow = !data || new Date(insightData?.last_shown_at) < fourteenDaysAgo;
         
         if (shouldShow) {
           // Pick a random insight
@@ -59,7 +60,7 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
     try {
       const now = new Date().toISOString();
       
-      // Use our custom SQL function via RPC to avoid type issues
+      // Use our custom SQL function via RPC
       const { error } = await supabase
         .rpc('upsert_user_insight', { 
           user_uuid: userId,
