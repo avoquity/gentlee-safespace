@@ -29,9 +29,9 @@ export const useInsights = (userId: string | undefined, messageCount: number, me
         // Check when the last insight was shown to this user
         const { data, error } = await supabase
           .from('user_insights')
-          .select('shown_at')
+          .select('last_shown_at')
           .eq('user_id', userId)
-          .order('shown_at', { ascending: false })
+          .order('last_shown_at', { ascending: false })
           .limit(1);
 
         if (error) {
@@ -44,7 +44,7 @@ export const useInsights = (userId: string | undefined, messageCount: number, me
 
         // If user has seen an insight before, check the 14-day interval
         if (data && data.length > 0) {
-          const lastShownDate = parseISO(data[0].shown_at);
+          const lastShownDate = parseISO(data[0].last_shown_at);
           const nextEligibleDate = addDays(lastShownDate, 14); // Add 14 days
           const now = new Date();
           
