@@ -12,9 +12,7 @@ const ChatBubble = ({ isUser, children }: { isUser: boolean; children: React.Rea
     <div className={`${isUser ? 'ml-auto text-right' : 'mr-auto'} w-full md:max-w-[85%] mb-3`}>
       <div 
         className={`inline-block px-4 py-3 rounded-[14px] text-left
-        ${isUser 
-          ? 'bg-white text-[#333]' 
-          : 'bg-white text-[#234] border border-[#BBD1C5] shadow-[inset_0px_0px_2px_rgba(0,0,0,0.1)]'}`}
+        ${isUser ? 'bg-white text-[#333]' : 'bg-[#DCE7DF] text-[#2A2A2A]'}`}
         style={{ 
           fontSize: 'clamp(15px, 4vw, 17px)', 
           lineHeight: 1.45 
@@ -29,7 +27,7 @@ const ChatBubble = ({ isUser, children }: { isUser: boolean; children: React.Rea
 // Typing indicator component with three animated dots
 const TypingIndicator = () => {
   return (
-    <div className="flex space-x-1 px-4 py-3 rounded-[14px] bg-white text-[#234] border border-[#BBD1C5] shadow-[inset_0px_0px_2px_rgba(0,0,0,0.1)] inline-block mb-3">
+    <div className="flex space-x-1 px-4 py-3 rounded-[14px] bg-[#DCE7DF] text-[#2A2A2A] inline-block mb-3">
       <motion.span 
         className="w-2 h-2 bg-gray-600 rounded-full"
         animate={{ opacity: [0.4, 1, 0.4] }}
@@ -111,18 +109,18 @@ const GentleeExamples = ({
         <div className="max-w-2xl mx-auto mb-12 px-4">
           <div className="bg-warm-beige/30 rounded-lg p-6 shadow-sm">
             <ChatBubble isUser={true}>
-              Everything feels noisy today, and I'm tired of pretending I'm okay.
+              I'm overwhelmed by all the decisions in front of me.
             </ChatBubble>
             
             <ChatBubble isUser={false}>
-              It's hard carrying that much sound inside—like every thought is talking over the next.
+              That feeling makes sense—it's like standing in a busy train station with every track calling your name.
             </ChatBubble>
             
             {showTyping && <div className="mr-auto"><TypingIndicator /></div>}
             
             {showSecondResponse && (
               <ChatBubble isUser={false}>
-                Let's turn the volume down for a moment. If one true voice could rise above the chatter, what might it whisper?
+                Before choosing a platform, could we pause and ask: 'Which option protects my energy for the next small step?'
               </ChatBubble>
             )}
           </div>
