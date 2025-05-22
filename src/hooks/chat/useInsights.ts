@@ -147,7 +147,7 @@ export const useInsights = (userId: string | undefined, messageCount: number, me
     try {
       const now = new Date().toISOString();
       
-      // Use our custom SQL function via RPC
+      // Use our custom SQL function via RPC - Make sure parameter name matches the function parameter
       const { error } = await supabase
         .rpc('upsert_user_insight', { 
           user_uuid: userId,

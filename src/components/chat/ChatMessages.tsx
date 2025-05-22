@@ -29,13 +29,25 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const findInsightTarget = () => {
     for (let i = 0; i < messages.length; i++) {
       if (messages[i].sender === 'ai') {
+        console.log('Found AI message to show insight after at index:', i);
         return i; // Return index of first AI message
       }
     }
+    console.log('No AI messages found for insight display');
     return -1; // No AI messages found
   };
   
   const insightTargetIndex = findInsightTarget();
+
+  // Add debug logs for insight visibility
+  useEffect(() => {
+    if (shouldShowInsight) {
+      console.log('Insight should be shown:', shouldShowInsight);
+      console.log('Insight text:', insightText);
+      console.log('Target message index:', insightTargetIndex);
+      console.log('Message count:', messages.length);
+    }
+  }, [shouldShowInsight, insightText, insightTargetIndex, messages.length]);
 
   // Groups messages into sequence blocks
   const renderMessages = () => {
