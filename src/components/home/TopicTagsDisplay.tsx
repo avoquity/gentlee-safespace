@@ -7,7 +7,7 @@ interface TopicTagsDisplayProps {
 
 const TopicTagsDisplay = ({ topics }: TopicTagsDisplayProps) => {
   return (
-    <div className="flex flex-wrap items-center gap-2 justify-center max-w-4xl mx-auto">
+    <div className="flex flex-wrap items-center gap-3 justify-center max-w-4xl mx-auto mt-3 mb-20">
       {topics.map((topic) => (
         <button
           key={topic}
