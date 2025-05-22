@@ -23,10 +23,10 @@ interface InsightCardProps {
 export const InsightCard: React.FC<InsightCardProps> = ({ insight }) => {
   return (
     <motion.div 
-      className="insight-ping"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className="insight-card"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {insight}
     </motion.div>
