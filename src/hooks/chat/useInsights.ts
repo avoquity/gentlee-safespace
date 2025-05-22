@@ -21,9 +21,9 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
         const fourteenDaysAgo = new Date();
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
         
-        // Use raw SQL query via RPC to avoid type issues
+        // Use our custom SQL function via RPC to avoid type issues
         const { data, error } = await supabase
-          .rpc('get_user_insight', { user_uuid: userId })
+          .rpc<UserInsight>('get_user_insight', { user_uuid: userId })
           .single();
         
         if (error && error.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
@@ -58,7 +58,7 @@ export const useInsights = (userId: string | undefined, messageCount: number) =>
     try {
       const now = new Date().toISOString();
       
-      // Use REST API directly to avoid type issues
+      // Use our custom SQL function via RPC to avoid type issues
       const { error } = await supabase
         .rpc('upsert_user_insight', { 
           user_uuid: userId,

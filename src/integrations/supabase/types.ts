@@ -305,6 +305,19 @@ export type Database = {
         Args: { p_message_text: string; p_send_date?: string }
         Returns: string
       }
+      get_user_insight: {
+        Args: { user_uuid: string }
+        Returns: {
+          id: number
+          user_id: string
+          last_shown_at: string
+          created_at: string
+        }[]
+      }
+      upsert_user_insight: {
+        Args: { user_uuid: string; shown_at: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
