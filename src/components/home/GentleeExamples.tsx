@@ -109,18 +109,18 @@ const GentleeExamples = ({
         <div className="max-w-2xl mx-auto mb-12 px-4">
           <div className="bg-warm-beige/30 rounded-lg p-6 shadow-sm">
             <ChatBubble isUser={true}>
-              I'm overwhelmed by all the decisions in front of me.
+              Everything feels noisy today, and I'm tired of pretending I'm okay.
             </ChatBubble>
             
             <ChatBubble isUser={false}>
-              That feeling makes sense—it's like standing in a busy train station with every track calling your name.
+              It's hard carrying that much sound inside—like every thought is talking over the next.
             </ChatBubble>
             
             {showTyping && <div className="mr-auto"><TypingIndicator /></div>}
             
             {showSecondResponse && (
               <ChatBubble isUser={false}>
-                Before choosing a platform, could we pause and ask: 'Which option protects my energy for the next small step?'
+                Let's turn the volume down for a moment. If one true voice could rise above the chatter, what might it whisper?
               </ChatBubble>
             )}
           </div>
