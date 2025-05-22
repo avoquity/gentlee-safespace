@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Flower } from "lucide-react";
 
 // Bank of curated insights for selection
 export const INSIGHT_BANK = [
@@ -28,7 +29,10 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      {insight}
+      <div className="flex items-center gap-2">
+        <Flower size={18} className="text-dusty-rose flex-shrink-0" />
+        <span>{insight}</span>
+      </div>
     </motion.div>
   );
 };

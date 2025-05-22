@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -68,13 +67,12 @@
   background-color: #f9f5f0;
 }
 
-/* Updated insight-card class to replace insight-ping */
+/* Updated insight-card class with increased padding and removed italic */
 .insight-card {
   display: block;
-  margin: 12px 0;
-  padding: 14px 18px;
-  font-style: italic;
-  font-size: 1.05rem;
+  margin: 24px 0 16px; /* Increased top padding between AI text and insight */
+  padding: 16px 20px; /* Increased internal padding */
+  font-size: 1.1rem; /* Slightly larger text */
   font-weight: 500;
   line-height: 1.5;
   background-color: var(--dusty-rose);
