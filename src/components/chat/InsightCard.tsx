@@ -29,8 +29,8 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="flex items-center gap-2">
-        <Flower size={18} className="text-dusty-rose flex-shrink-0" />
+      <div className="flex items-start gap-2">
+        <Flower size={18} className="text-soft-yellow flex-shrink-0 mt-1" />
         <span>{insight}</span>
       </div>
     </motion.div>

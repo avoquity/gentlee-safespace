@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,6 +30,8 @@
     --dark-accent: #4A4552;
     --dusty-rose: #D98C8C;
     --dusty-rose-rgb: 217, 140, 140;
+    --soft-yellow: #FEF7CD;
+    --soft-yellow-rgb: 254, 247, 205;
   }
  
   .dark {
@@ -67,7 +70,7 @@
   background-color: #f9f5f0;
 }
 
-/* Updated insight-card class with increased padding and removed italic */
+/* Updated insight-card class with increased padding and soft yellow background */
 .insight-card {
   display: block;
   margin: 24px 0 16px; /* Increased top padding between AI text and insight */
@@ -75,11 +78,10 @@
   font-size: 1.1rem; /* Slightly larger text */
   font-weight: 500;
   line-height: 1.5;
-  background-color: var(--dusty-rose);
-  background-color: rgba(var(--dusty-rose-rgb), .15);
-  border: 1px solid rgba(var(--dusty-rose-rgb), .3);
+  background-color: var(--soft-yellow);
+  border: 1px solid rgba(var(--soft-yellow-rgb), .3);
   border-radius: 8px;
-  box-shadow: 0 3px 10px rgba(var(--dusty-rose-rgb), .1);
+  box-shadow: 0 3px 10px rgba(var(--soft-yellow-rgb), .1);
   animation: fadeIn 0.5s ease;
   color: #234;
   max-width: 92%;

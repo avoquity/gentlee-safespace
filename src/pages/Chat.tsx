@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
@@ -48,8 +47,8 @@ const Chat = () => {
     handleComplete
   } = useCheckInModal(user?.id, messages.length);
   
-  // Insights feature integration
-  const { shouldShowInsight, selectedInsight } = useInsights(user?.id, messageCount);
+  // Insights feature integration - pass messages for context
+  const { shouldShowInsight, selectedInsight } = useInsights(user?.id, messageCount, messages);
 
   // Redirect to /auth if user is not logged in, but only after loading is complete
   useEffect(() => {
