@@ -16,7 +16,7 @@ interface GentleeExamplesProps {
 const GentleeExamples = ({
   scrollToInput
 }: GentleeExamplesProps) => {
-  return <div className="w-full max-w-[95rem] mx-auto py-16 px-1 sm:px-2">
+  return <div className="w-full max-w-[95rem] mx-auto py-8 px-1 sm:px-2">
       <div className="text-center">
         {/* "Gentlee moments" badge above title */}
         <motion.div initial={{
@@ -58,22 +58,10 @@ const GentleeExamples = ({
         delay: 0.1
       }} className="text-xl text-deep-charcoal/80 font-montserrat mb-4 max-w-3xl mx-auto">We often don't need advice. We just need a safe space for our thoughts so we can process them, and reconnect with our inner world.</motion.p>
         
-        {/* Topic Tags - Moved directly under the subtext with 16px top margin and 8px gap */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.6,
-        delay: 0.15
-      }} className="mt-4 mb-8 px-4">
-          {/* This will be populated with the TopicTagsDisplay component */}
-        </motion.div>
+        {/* Topic tags are now moved outside this component */}
         
         {/* Carousel with enlarged screenshots - larger size for better readability */}
-        <div className="max-w-4xl mx-auto mb-8 px-4">
+        <div className="max-w-4xl mx-auto mb-8 px-4 mt-8">
           <Carousel opts={{
           loop: true,
           align: "center",
