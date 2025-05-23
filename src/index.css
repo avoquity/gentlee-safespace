@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -67,6 +68,7 @@
 
 .bg-warm-beige {
   background-color: #f9f5f0;
+  background-image: linear-gradient(to bottom, rgba(249, 245, 240, 1), rgba(247, 243, 238, 0.8));
 }
 
 /* Updated insight-card class with increased padding and soft yellow background */

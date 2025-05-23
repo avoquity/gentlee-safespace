@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import Header from '../components/Header';
 import WritingInput from '../components/WritingInput';
@@ -11,6 +10,7 @@ import { motion } from 'framer-motion';
 import HeroTestimonial from '../components/home/HeroTestimonial';
 import GentleeExamples from '../components/home/GentleeExamples';
 import InviteSection from '../components/home/InviteSection';
+import BackgroundArt from '../components/home/BackgroundArt';
 
 // Complete list of topics for the homepage
 const suggestedTopics = [
@@ -37,10 +37,13 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen bg-warm-beige flex flex-col">
+    <div className="min-h-screen bg-warm-beige flex flex-col relative">
+      {/* Background art elements */}
+      <BackgroundArt />
+      
       <Header />
       
-      <main className="flex-1 w-full mx-auto flex flex-col min-h-screen">
+      <main className="flex-1 w-full mx-auto flex flex-col min-h-screen relative z-10">
         <div className="pt-20 max-w-[95rem] mx-auto w-full px-1 sm:px-2">
           <div className="space-y-8">
             <QuoteRotator />
