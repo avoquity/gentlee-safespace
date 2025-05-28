@@ -2,8 +2,8 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/chat';
+import { useSharedMessageLogic } from './useSharedMessageLogic';
 
 export const useInputHandling = (
   user: any,
@@ -19,18 +19,24 @@ export const useInputHandling = (
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
   ) => Promise<void>,
-  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void
+  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
+  isAnyProcessing: boolean,
+  startMessageProcessing: () => void,
+  stopMessageProcessing: () => void
 ) => {
   const [input, setInput] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { insertUserMessage } = useSharedMessageLogic(user?.id);
 
   // Handle form submission
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !user) return;
+    if (!input.trim() || !user || isAnyProcessing) return;
 
+    startMessageProcessing();
+    
     try {
       // First check if today's chat already exists
       let chatId = currentChatId;
@@ -56,32 +62,10 @@ export const useInputHandling = (
         });
       }
 
-      const { data: messageData, error: messageError } = await supabase
-        .from('messages')
-        .insert([{
-          chat_id: chatId,
-          content: input,
-          user_role: 'user',
-          sender_id: user.id,
-        }])
-        .select()
-        .single();
-
-      if (messageError) {
-        toast({
-          title: "Error saving message",
-          description: messageError.message,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const newMessage = {
-        id: messageData.id.toString(),
-        text: input,
-        sender: 'user' as const,
-        timestamp: new Date()
-      };
+      // Use shared message insertion logic
+      const newMessage = await insertUserMessage(input, chatId);
+      
+      if (!newMessage) return;
 
       addMessage(newMessage);
       setInput('');
@@ -95,8 +79,10 @@ export const useInputHandling = (
         description: "Failed to send your message. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      stopMessageProcessing();
     }
-  }, [input, user, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, addMessage, streamAIResponse, updateMessage, toast]);
+  }, [input, user, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, addMessage, streamAIResponse, updateMessage, toast, isAnyProcessing, startMessageProcessing, stopMessageProcessing, insertUserMessage]);
 
   // Mute toggle handling
   const handleMuteToggle = useCallback(() => {
