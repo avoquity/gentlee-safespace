@@ -11,7 +11,6 @@ import { useMessages } from './chat/useMessages';
 import { useInitialSetup } from './chat/useInitialSetup';
 import { useInputHandling } from './chat/useInputHandling';
 import { useDataFetching } from './chat/useDataFetching';
-import { useProcessingState } from './chat/useProcessingState';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek } from 'date-fns';
 
@@ -34,17 +33,6 @@ export const useChat = (
       sessionStorage.setItem('initialMessage', initialMessage);
     }
   }, [initialMessage]);
-
-  // Processing state management
-  const {
-    isProcessingMessage,
-    isProcessingInitial,
-    isAnyProcessing,
-    startMessageProcessing,
-    stopMessageProcessing,
-    startInitialProcessing,
-    stopInitialProcessing
-  } = useProcessingState();
 
   // Custom hooks
   const {
@@ -85,10 +73,7 @@ export const useChat = (
     getTodayFormattedDate,
     updateMessage,
     addMessage,
-    streamAIResponse,
-    isAnyProcessing,
-    startInitialProcessing,
-    stopInitialProcessing
+    streamAIResponse
   );
 
   const {
@@ -106,10 +91,7 @@ export const useChat = (
     getTodayFormattedDate,
     addMessage,
     streamAIResponse,
-    updateMessage,
-    isAnyProcessing,
-    startMessageProcessing,
-    stopMessageProcessing
+    updateMessage
   );
 
   // Fetch data

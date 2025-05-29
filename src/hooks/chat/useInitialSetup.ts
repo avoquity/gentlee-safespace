@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Message, LocationState } from '@/types/chat';
-import { useSharedMessageLogic } from './useSharedMessageLogic';
 
 export const useInitialSetup = (
   user: any,
@@ -22,17 +22,13 @@ export const useInitialSetup = (
     chatId: number, 
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
-  ) => Promise<void>,
-  isAnyProcessing: boolean,
-  startInitialProcessing: () => void,
-  stopInitialProcessing: () => void
+  ) => Promise<void>
 ) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   const [todaysChatChecked, setTodaysChatChecked] = useState(false);
   const [displayDate, setDisplayDate] = useState(entryDate || '');
-  const { insertUserMessage } = useSharedMessageLogic(user?.id);
 
   // Initialize currentChatId from URL or props if available
   useEffect(() => {
@@ -83,14 +79,8 @@ export const useInitialSetup = (
     }
   }, [user, chatIdFromUrl, currentChatId, todaysChatChecked, navigate, findTodaysChat, setCurrentChatId, getTodayFormattedDate]);
 
-  // Process initial message function with race condition protection
+  // Process initial message function
   const processInitialMessage = useCallback(async () => {
-    // Wait for any ongoing processing to complete
-    if (isAnyProcessing) {
-      console.log('Waiting for ongoing processing to complete...');
-      return;
-    }
-
     // Check for pending message in session storage first, take priority over initialMessage
     const pendingMessage = sessionStorage.getItem('pendingMessage');
     const initialMessage = sessionStorage.getItem('initialMessage');
@@ -100,15 +90,6 @@ export const useInitialSetup = (
     
     if (messageToProcess && user && !initialMessageProcessed) {
       setInitialMessageProcessed(true);
-      startInitialProcessing();
-      
-      // Clear session storage immediately to prevent duplicate processing
-      if (pendingMessage) {
-        sessionStorage.removeItem('pendingMessage');
-      }
-      if (initialMessage) {
-        sessionStorage.removeItem('initialMessage');
-      }
       
       try {
         // First check if today's chat already exists or use current chat
@@ -129,10 +110,32 @@ export const useInitialSetup = (
 
         setCurrentChatId(chatId);
 
-        // Use shared message insertion logic
-        const firstMessage = await insertUserMessage(messageToProcess, chatId);
-        
-        if (!firstMessage) return;
+        const { data: messageData, error: messageError } = await supabase
+          .from('messages')
+          .insert([{
+            chat_id: chatId,
+            content: messageToProcess,
+            user_role: 'user',
+            sender_id: user.id,
+          }])
+          .select()
+          .single();
+
+        if (messageError) {
+          toast({
+            title: "Error saving message",
+            description: messageError.message,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const firstMessage = {
+          id: messageData.id.toString(),
+          text: messageToProcess,
+          sender: 'user' as const,
+          timestamp: new Date()
+        };
         
         addMessage(firstMessage);
         
@@ -141,6 +144,14 @@ export const useInitialSetup = (
           state: { entryDate: getTodayFormattedDate() },
           replace: true 
         });
+        
+        // Only remove storage items after successfully processing
+        if (pendingMessage) {
+          sessionStorage.removeItem('pendingMessage');
+        }
+        if (initialMessage) {
+          sessionStorage.removeItem('initialMessage');
+        }
         
         // Stream AI response to the user message
         await streamAIResponse(messageToProcess, chatId, updateMessage, addMessage);
@@ -151,11 +162,9 @@ export const useInitialSetup = (
           description: "Failed to process your message. Please try again.",
           variant: "destructive"
         });
-      } finally {
-        stopInitialProcessing();
       }
     }
-  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast, isAnyProcessing, startInitialProcessing, stopInitialProcessing, insertUserMessage]);
+  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast]);
 
   return {
     displayDate,
