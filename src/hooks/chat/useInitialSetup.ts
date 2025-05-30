@@ -88,7 +88,8 @@ export const useInitialSetup = (
     
     console.log('Processing initial message:', messageToProcess);
     
-    if (messageToProcess && user && !initialMessageProcessed) {
+    // Only process if currentChatId is null and a message exists
+    if (currentChatId === null && messageToProcess && user && !initialMessageProcessed) {
       setInitialMessageProcessed(true);
       
       try {
