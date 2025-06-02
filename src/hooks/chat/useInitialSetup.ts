@@ -81,10 +81,22 @@ export const useInitialSetup = (
 
   // Process initial message function
   const processInitialMessage = useCallback(async () => {
-    // Check for pending message in session storage first, take priority over initialMessage
+    let messageToProcess: string | null = null;
+    // let processedItemType: 'pending' | 'initial' | null = null; // Not strictly needed but good for clarity
+
     const pendingMessage = sessionStorage.getItem('pendingMessage');
-    const initialMessage = sessionStorage.getItem('initialMessage');
-    const messageToProcess = pendingMessage || initialMessage;
+    if (pendingMessage) {
+      messageToProcess = pendingMessage;
+      // processedItemType = 'pending';
+      sessionStorage.removeItem('pendingMessage'); // Remove immediately
+    } else {
+      const initialMessageFromStorage = sessionStorage.getItem('initialMessage');
+      if (initialMessageFromStorage) {
+        messageToProcess = initialMessageFromStorage;
+        // processedItemType = 'initial';
+        sessionStorage.removeItem('initialMessage'); // Remove immediately
+      }
+    }
     
     console.log('Processing initial message:', messageToProcess);
     
@@ -114,7 +126,7 @@ export const useInitialSetup = (
           .from('messages')
           .insert([{
             chat_id: chatId,
-            content: messageToProcess,
+            content: messageToProcess, // Use the variable that holds the message
             user_role: 'user',
             sender_id: user.id,
           }])
@@ -132,7 +144,7 @@ export const useInitialSetup = (
 
         const firstMessage = {
           id: messageData.id.toString(),
-          text: messageToProcess,
+          text: messageToProcess, // Use the variable that holds the message
           sender: 'user' as const,
           timestamp: new Date()
         };
@@ -145,13 +157,7 @@ export const useInitialSetup = (
           replace: true 
         });
         
-        // Only remove storage items after successfully processing
-        if (pendingMessage) {
-          sessionStorage.removeItem('pendingMessage');
-        }
-        if (initialMessage) {
-          sessionStorage.removeItem('initialMessage');
-        }
+        // sessionStorage items are already removed. No need to remove them here again.
         
         // Stream AI response to the user message
         await streamAIResponse(messageToProcess, chatId, updateMessage, addMessage);
