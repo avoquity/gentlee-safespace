@@ -19,7 +19,8 @@ export const useInputHandling = (
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
   ) => Promise<void>,
-  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void
+  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
+  firstMessageLockRef: React.MutableRefObject<boolean>
 ) => {
   const [input, setInput] = useState('');
   const [isMuted, setIsMuted] = useState(false);
@@ -37,8 +38,16 @@ export const useInputHandling = (
       
       // If no current chat ID, check for today's chat
       if (!chatId) {
+        // It's a new chat, handleSubmit is taking control for this first message.
+        firstMessageLockRef.current = true;
+        console.log('handleSubmit: Lock acquired for new chat.');
+
+        // Clear any messages that might have been intended for processInitialMessage
+        sessionStorage.removeItem('initialMessage');
+        sessionStorage.removeItem('pendingMessage');
+        console.log('handleSubmit: Cleared session stored initial/pending messages.');
+
         const todaysChatId = await findTodaysChat();
-        
         if (todaysChatId) {
           chatId = todaysChatId;
         } else {
@@ -46,7 +55,12 @@ export const useInputHandling = (
           chatId = await createNewChat();
         }
         
-        if (!chatId) return;
+        if (!chatId) {
+          // Potentially release lock if chat creation failed and we are aborting.
+          // However, the current design is to have a separate lock reset mechanism.
+          // For now, if createNewChat() fails, lock might remain true until reset.
+          return;
+        }
         setCurrentChatId(chatId);
         
         // Update URL with new chat ID
@@ -95,8 +109,10 @@ export const useInputHandling = (
         description: "Failed to send your message. Please try again.",
         variant: "destructive"
       });
+      // If lock was acquired but an error occurred, it might remain set.
+      // This will be handled by the lock reset mechanism.
     }
-  }, [input, user, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, addMessage, streamAIResponse, updateMessage, toast]);
+  }, [input, user, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, addMessage, streamAIResponse, updateMessage, toast, firstMessageLockRef]);
 
   // Mute toggle handling
   const handleMuteToggle = useCallback(() => {
