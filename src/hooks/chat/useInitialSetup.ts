@@ -22,7 +22,8 @@ export const useInitialSetup = (
     chatId: number, 
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
-  ) => Promise<void>
+    ) => Promise<void>,
+    firstMessageLockRef: React.MutableRefObject<boolean>
 ) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -101,6 +102,18 @@ export const useInitialSetup = (
     console.log('Processing initial message:', messageToProcess);
     
     if (messageToProcess && user && !initialMessageProcessed) {
+      if (firstMessageLockRef.current) {
+        console.log('processInitialMessage: Lock already acquired by handleSubmit. Clearing stored message and aborting.');
+        // sessionStorage was already cleared when messageToProcess was populated.
+        // setInitialMessageProcessed(true); // Consider if this is needed to prevent re-runs if other dependencies change.
+                                         // For now, let's assume the combination of initialMessageProcessed and the lock is sufficient.
+        return; // Abort if lock is held.
+      }
+
+      // Acquire the lock if we are going to process this message.
+      firstMessageLockRef.current = true;
+      console.log('processInitialMessage: Lock acquired.');
+
       setInitialMessageProcessed(true);
       
       try {
@@ -168,9 +181,12 @@ export const useInitialSetup = (
           description: "Failed to process your message. Please try again.",
           variant: "destructive"
         });
+        // Note: The lock is intentionally not released here.
+        // It's expected to be reset by a dedicated mechanism after the first successful message exchange
+        // or when the component unmounts/chat session ends.
       }
     }
-  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast]);
+  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast, firstMessageLockRef]);
 
   return {
     displayDate,
