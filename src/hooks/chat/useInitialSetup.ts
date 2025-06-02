@@ -22,7 +22,8 @@ export const useInitialSetup = (
     chatId: number, 
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
-  ) => Promise<void>
+  ) => Promise<void>,
+  firstMessageSentBySubmitRef: React.RefObject<boolean>
 ) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -90,6 +91,17 @@ export const useInitialSetup = (
     
     // Only process if currentChatId is null and a message exists
     if (currentChatId === null && messageToProcess && user && !initialMessageProcessed) {
+      // Wait a bit to see if handleSubmit processes a message first
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      if (firstMessageSentBySubmitRef.current === true) {
+        console.log("handleSubmit took precedence, processInitialMessage yielding for sessionStorage message.");
+        sessionStorage.removeItem('initialMessage');
+        sessionStorage.removeItem('pendingMessage');
+        setInitialMessageProcessed(true); // Mark as processed to prevent re-attempts
+        return;
+      }
+
       setInitialMessageProcessed(true);
       
       try {
@@ -165,7 +177,7 @@ export const useInitialSetup = (
         });
       }
     }
-  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast]);
+  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast, firstMessageSentBySubmitRef]);
 
   return {
     displayDate,

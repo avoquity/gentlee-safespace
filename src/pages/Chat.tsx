@@ -20,6 +20,7 @@ const Chat = () => {
   const { user, loading } = useAuth();
   const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
   const { toast } = useToast();
+  const firstMessageSentBySubmitRef = useRef(false);
 
   const {
     messages,
@@ -35,7 +36,7 @@ const Chat = () => {
     handleHighlightRemove,
     processInitialMessage,
     loadTodaysChat
-  } = useChat(chatIdFromParams, location.state);
+  } = useChat(chatIdFromParams, location.state, firstMessageSentBySubmitRef);
   
   // Check-in modal integration
   const {

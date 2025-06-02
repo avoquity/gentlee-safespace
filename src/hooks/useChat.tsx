@@ -16,7 +16,8 @@ import { startOfWeek, endOfWeek } from 'date-fns';
 
 export const useChat = (
   chatIdFromUrl: number | null = null,
-  locationState: LocationState | null = null
+  locationState: LocationState | null = null,
+  firstMessageSentBySubmitRef: React.RefObject<boolean>
 ): UseChatReturn => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -73,7 +74,8 @@ export const useChat = (
     getTodayFormattedDate,
     updateMessage,
     addMessage,
-    streamAIResponse
+    streamAIResponse,
+    firstMessageSentBySubmitRef
   );
 
   const {
@@ -91,7 +93,8 @@ export const useChat = (
     getTodayFormattedDate,
     addMessage,
     streamAIResponse,
-    updateMessage
+    updateMessage,
+    firstMessageSentBySubmitRef
   );
 
   // Fetch data

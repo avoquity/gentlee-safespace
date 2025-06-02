@@ -19,7 +19,8 @@ export const useInputHandling = (
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
   ) => Promise<void>,
-  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void
+  updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
+  firstMessageSentBySubmitRef: React.RefObject<boolean>
 ) => {
   const [input, setInput] = useState('');
   const [isMuted, setIsMuted] = useState(false);
@@ -37,6 +38,9 @@ export const useInputHandling = (
       
       // If no current chat ID, check for today's chat
       if (!chatId) {
+        // Signal that handleSubmit is handling the first message
+        firstMessageSentBySubmitRef.current = true;
+
         const todaysChatId = await findTodaysChat();
         
         if (todaysChatId) {
@@ -54,6 +58,10 @@ export const useInputHandling = (
           state: { entryDate: getTodayFormattedDate() },
           replace: true 
         });
+
+        // Clear sessionStorage items as handleSubmit is now definitively handling the first interaction
+        sessionStorage.removeItem('initialMessage');
+        sessionStorage.removeItem('pendingMessage');
       }
 
       const { data: messageData, error: messageError } = await supabase
@@ -96,7 +104,7 @@ export const useInputHandling = (
         variant: "destructive"
       });
     }
-  }, [input, user, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, addMessage, streamAIResponse, updateMessage, toast]);
+  }, [input, user, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, addMessage, streamAIResponse, updateMessage, toast, firstMessageSentBySubmitRef]);
 
   // Mute toggle handling
   const handleMuteToggle = useCallback(() => {
