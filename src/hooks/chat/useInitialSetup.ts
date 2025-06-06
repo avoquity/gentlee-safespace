@@ -22,7 +22,8 @@ export const useInitialSetup = (
     chatId: number, 
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
     addMessageCallback: (message: Message) => void
-  ) => Promise<void>
+    ) => Promise<void>,
+    firstMessageLockRef: React.MutableRefObject<boolean>
 ) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -81,14 +82,38 @@ export const useInitialSetup = (
 
   // Process initial message function
   const processInitialMessage = useCallback(async () => {
-    // Check for pending message in session storage first, take priority over initialMessage
+    let messageToProcess: string | null = null;
+    // let processedItemType: 'pending' | 'initial' | null = null; // Not strictly needed but good for clarity
+
     const pendingMessage = sessionStorage.getItem('pendingMessage');
-    const initialMessage = sessionStorage.getItem('initialMessage');
-    const messageToProcess = pendingMessage || initialMessage;
+    if (pendingMessage) {
+      messageToProcess = pendingMessage;
+      // processedItemType = 'pending';
+      sessionStorage.removeItem('pendingMessage'); // Remove immediately
+    } else {
+      const initialMessageFromStorage = sessionStorage.getItem('initialMessage');
+      if (initialMessageFromStorage) {
+        messageToProcess = initialMessageFromStorage;
+        // processedItemType = 'initial';
+        sessionStorage.removeItem('initialMessage'); // Remove immediately
+      }
+    }
     
     console.log('Processing initial message:', messageToProcess);
     
     if (messageToProcess && user && !initialMessageProcessed) {
+      if (firstMessageLockRef.current) {
+        console.log('processInitialMessage: Lock already acquired by handleSubmit. Clearing stored message and aborting.');
+        // sessionStorage was already cleared when messageToProcess was populated.
+        // setInitialMessageProcessed(true); // Consider if this is needed to prevent re-runs if other dependencies change.
+                                         // For now, let's assume the combination of initialMessageProcessed and the lock is sufficient.
+        return; // Abort if lock is held.
+      }
+
+      // Acquire the lock if we are going to process this message.
+      firstMessageLockRef.current = true;
+      console.log('processInitialMessage: Lock acquired.');
+
       setInitialMessageProcessed(true);
       
       try {
@@ -114,7 +139,7 @@ export const useInitialSetup = (
           .from('messages')
           .insert([{
             chat_id: chatId,
-            content: messageToProcess,
+            content: messageToProcess, // Use the variable that holds the message
             user_role: 'user',
             sender_id: user.id,
           }])
@@ -132,7 +157,7 @@ export const useInitialSetup = (
 
         const firstMessage = {
           id: messageData.id.toString(),
-          text: messageToProcess,
+          text: messageToProcess, // Use the variable that holds the message
           sender: 'user' as const,
           timestamp: new Date()
         };
@@ -145,13 +170,7 @@ export const useInitialSetup = (
           replace: true 
         });
         
-        // Only remove storage items after successfully processing
-        if (pendingMessage) {
-          sessionStorage.removeItem('pendingMessage');
-        }
-        if (initialMessage) {
-          sessionStorage.removeItem('initialMessage');
-        }
+        // sessionStorage items are already removed. No need to remove them here again.
         
         // Stream AI response to the user message
         await streamAIResponse(messageToProcess, chatId, updateMessage, addMessage);
@@ -162,9 +181,12 @@ export const useInitialSetup = (
           description: "Failed to process your message. Please try again.",
           variant: "destructive"
         });
+        // Note: The lock is intentionally not released here.
+        // It's expected to be reset by a dedicated mechanism after the first successful message exchange
+        // or when the component unmounts/chat session ends.
       }
     }
-  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast]);
+  }, [user, initialMessageProcessed, currentChatId, findTodaysChat, createNewChat, setCurrentChatId, navigate, getTodayFormattedDate, streamAIResponse, updateMessage, addMessage, toast, firstMessageLockRef]);
 
   return {
     displayDate,

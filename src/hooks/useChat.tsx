@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LocationState } from '@/types/chat';
@@ -22,6 +22,7 @@ export const useChat = (
   const navigate = useNavigate();
   const { user } = useAuth();
   const [messageCount, setMessageCount] = useState(0);
+  const firstMessageLockRef = useRef<boolean>(false);
   
   // First prioritize chatId from URL, then from location state
   const { initialMessage, chatId: stateExistingChatId, entryDate } = locationState || 
@@ -73,7 +74,8 @@ export const useChat = (
     getTodayFormattedDate,
     updateMessage,
     addMessage,
-    streamAIResponse
+    streamAIResponse,
+    firstMessageLockRef
   );
 
   const {
@@ -91,7 +93,8 @@ export const useChat = (
     getTodayFormattedDate,
     addMessage,
     streamAIResponse,
-    updateMessage
+    updateMessage,
+    firstMessageLockRef
   );
 
   // Fetch data
@@ -151,6 +154,28 @@ export const useChat = (
 
   // Weekly message limit constant
   const WEEKLY_MESSAGE_LIMIT = 10;
+
+  // Effect to reset the firstMessageLockRef
+  useEffect(() => {
+    // The lock is engaged by either processInitialMessage or handleSubmit
+    // when handling the very first message of a potentially new chat session.
+    // It should be reset once that first user message has been successfully sent
+    // and the AI response process has started.
+    if (firstMessageLockRef.current) {
+      const firstUserMessageExists = messages.some(msg => msg.sender === 'user');
+
+      // We reset the lock if it's currently true AND at least one user message exists in the chat.
+      // This implies that the user's first message has been added to the messages array.
+      // At this point, the lock has served its purpose of preventing duplicate submissions
+      // of that initial message.
+      if (firstUserMessageExists) {
+        console.log('useChat: Resetting firstMessageLockRef. Current messages count:', messages.length);
+        firstMessageLockRef.current = false;
+      }
+    }
+    // Adding firstMessageLockRef to dependency array to be explicit, although its .current mutation doesn't trigger re-render.
+    // `messages` is the primary driver for this effect to re-run.
+  }, [messages, firstMessageLockRef]);
 
   return {
     messages,
