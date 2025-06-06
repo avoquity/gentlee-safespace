@@ -34,6 +34,7 @@ export const ChatInputContainer = ({
     setIsJournalModalOpen(false);
     
     // Create a synthetic form submit event and immediately submit
+    console.log("JournalModal text before handleSubmit:", text);
     const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
     handleSubmit(formEvent);
   };

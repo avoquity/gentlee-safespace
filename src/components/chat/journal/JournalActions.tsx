@@ -43,6 +43,7 @@ export const JournalActions: React.FC<JournalActionsProps> = ({
         Cancel
       </Button>
       <Button
+        variant="black"
         onClick={onSend}
         disabled={isSending || !hasContent}
         className="flex-1 font-poppins rounded-full h-12 text-base flex items-center justify-center gap-2"
