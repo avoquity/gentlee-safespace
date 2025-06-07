@@ -99,7 +99,6 @@ export const useInitialSetup = (
       }
     }
     
-    console.log('Processing initial message:', messageToProcess);
     
     if (messageToProcess && user && !initialMessageProcessed) {
       if (firstMessageLockRef.current) {
