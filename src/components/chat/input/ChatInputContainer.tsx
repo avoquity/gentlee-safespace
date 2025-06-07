@@ -40,7 +40,8 @@ export const ChatInputContainer = ({
 
   const handleModalCancel = (text: string) => {
     // Transfer text from modal to the main input field without submitting
-    setInput(text);
+    setInput("");
+    setIsJournalModalOpen(false);
   };
 
   // Only allow dismissing if not at the limit

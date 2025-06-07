@@ -29,6 +29,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const findInsightTarget = () => {
     for (let i = 0; i < messages.length; i++) {
       if (messages[i].sender === 'ai') {
+        // console.log('Found AI message to show insight after at index:', i);
         return i; // Return index of first AI message
       }
     }
