@@ -16,7 +16,7 @@ export interface AnalyticsEvent {
   created_at?: string;
 }
 
-// Profile type
+// Profile type with new feature flags
 export interface ProfileWithCheckIn {
   id: string;
   created_at?: string | null;
@@ -31,6 +31,11 @@ export interface ProfileWithCheckIn {
   checkin_opted_in?: boolean | null;
   last_mood_value?: number | null;
   last_checkin_at?: string | null;
+  // New feature flags
+  onboarding_completed?: boolean | null;
+  feature_guided_conversation?: boolean | null;
+  feature_wisdom_library?: boolean | null;
+  first_chat_completed?: boolean | null;
 }
 
 // User insights type
@@ -39,4 +44,26 @@ export interface UserInsight {
   user_id: string;
   last_shown_at: string;
   created_at?: string;
+}
+
+// New types for personalized insights
+export interface PersonalizedInsight {
+  id: string;
+  user_id: string;
+  insight_text: string;
+  generated_from_themes?: string[];
+  conversation_context?: string;
+  generated_at: string;
+  created_at: string;
+}
+
+export interface SavedInsight {
+  id: string;
+  user_id: string;
+  insight_text: string;
+  insight_type: 'generic' | 'personalized';
+  personalized_insight_id?: string;
+  user_notes?: string;
+  saved_at: string;
+  created_at: string;
 }

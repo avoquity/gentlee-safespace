@@ -71,45 +71,6 @@ export type Database = {
           },
         ]
       }
-      idea: {
-        Row: {
-          company_name: string
-          created_at: string
-          email: string
-          id: number
-          idea: string
-          industry: string | null
-          product_features: string
-          target_audience: string
-          unique_value: string | null
-          user_acquisition: string | null
-        }
-        Insert: {
-          company_name: string
-          created_at?: string
-          email: string
-          id?: number
-          idea: string
-          industry?: string | null
-          product_features: string
-          target_audience: string
-          unique_value?: string | null
-          user_acquisition?: string | null
-        }
-        Update: {
-          company_name?: string
-          created_at?: string
-          email?: string
-          id?: number
-          idea?: string
-          industry?: string | null
-          product_features?: string
-          target_audience?: string
-          unique_value?: string | null
-          user_acquisition?: string | null
-        }
-        Relationships: []
-      }
       letters: {
         Row: {
           created_at: string
@@ -191,22 +152,48 @@ export type Database = {
           payment_reference?: string
           report_id?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "payments_report_id_fkey"
-            columns: ["report_id"]
-            isOneToOne: false
-            referencedRelation: "idea"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      personalized_insights: {
+        Row: {
+          conversation_context: string | null
+          created_at: string
+          generated_at: string
+          generated_from_themes: string[] | null
+          id: string
+          insight_text: string
+          user_id: string
+        }
+        Insert: {
+          conversation_context?: string | null
+          created_at?: string
+          generated_at?: string
+          generated_from_themes?: string[] | null
+          id?: string
+          insight_text: string
+          user_id: string
+        }
+        Update: {
+          conversation_context?: string | null
+          created_at?: string
+          generated_at?: string
+          generated_from_themes?: string[] | null
+          id?: string
+          insight_text?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
           created_at: string | null
+          feature_guided_conversation: boolean | null
+          feature_wisdom_library: boolean | null
+          first_chat_completed: boolean | null
           first_name: string | null
           id: string
           last_name: string | null
+          onboarding_completed: boolean | null
           subscription_current_period_end: string | null
           subscription_end_date: string | null
           subscription_id: string | null
@@ -216,9 +203,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          feature_guided_conversation?: boolean | null
+          feature_wisdom_library?: boolean | null
+          first_chat_completed?: boolean | null
           first_name?: string | null
           id: string
           last_name?: string | null
+          onboarding_completed?: boolean | null
           subscription_current_period_end?: string | null
           subscription_end_date?: string | null
           subscription_id?: string | null
@@ -228,9 +219,13 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          feature_guided_conversation?: boolean | null
+          feature_wisdom_library?: boolean | null
+          first_chat_completed?: boolean | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          onboarding_completed?: boolean | null
           subscription_current_period_end?: string | null
           subscription_end_date?: string | null
           subscription_id?: string | null
@@ -240,37 +235,105 @@ export type Database = {
         }
         Relationships: []
       }
-      reports: {
+      report_sections: {
         Row: {
-          content: string
+          content: Json
           created_at: string
           id: number
-          idea_id: number
+          report_id: number
           section: string
-          subsection: string | null
         }
         Insert: {
-          content: string
+          content: Json
           created_at?: string
           id?: number
-          idea_id: number
+          report_id: number
           section: string
-          subsection?: string | null
         }
         Update: {
-          content?: string
+          content?: Json
           created_at?: string
           id?: number
-          idea_id?: number
+          report_id?: number
           section?: string
-          subsection?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "reports_idea_id_fkey"
-            columns: ["idea_id"]
+            foreignKeyName: "report_sections_report_id_fkey"
+            columns: ["report_id"]
             isOneToOne: false
-            referencedRelation: "idea"
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: number
+          original_idea: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          original_idea: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          original_idea?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_insights: {
+        Row: {
+          created_at: string
+          id: string
+          insight_text: string
+          insight_type: string
+          personalized_insight_id: string | null
+          saved_at: string
+          user_id: string
+          user_notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insight_text: string
+          insight_type?: string
+          personalized_insight_id?: string | null
+          saved_at?: string
+          user_id: string
+          user_notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insight_text?: string
+          insight_type?: string
+          personalized_insight_id?: string | null
+          saved_at?: string
+          user_id?: string
+          user_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_insights_personalized_insight_id_fkey"
+            columns: ["personalized_insight_id"]
+            isOneToOne: false
+            referencedRelation: "personalized_insights"
             referencedColumns: ["id"]
           },
         ]

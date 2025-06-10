@@ -14,6 +14,7 @@ import Privacy from '@/pages/Privacy';
 import Upgrade from './pages/Upgrade';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Profile from './pages/Profile';
+import WisdomLibrary from './pages/WisdomLibrary';
 import { Suspense, lazy, useEffect } from 'react';
 
 // Create a new QueryClient instance with robust error handling
@@ -57,6 +58,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/chat/:chatId?" element={<Chat />} />
               <Route path="/entries" element={<Entries />} />
+              <Route path="/library" element={<WisdomLibrary />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/about" element={<About />} />

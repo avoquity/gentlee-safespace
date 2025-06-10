@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatContainer } from '@/components/chat/ChatContainer';
@@ -8,6 +9,9 @@ import confetti from 'canvas-confetti';
 import { CheckInModal } from '@/components/chat/CheckInModal';
 import { useCheckInModal } from '@/hooks/useCheckInModal';
 import { useInsights } from '@/hooks/chat/useInsights';
+import { GuidedFirstConversation } from '@/components/chat/GuidedFirstConversation';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useOnboardingState } from '@/hooks/useOnboardingState';
 
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
@@ -20,6 +24,10 @@ const Chat = () => {
   const { user, loading } = useAuth();
   const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
   const { toast } = useToast();
+
+  // Feature flags and onboarding
+  const { guidedConversation } = useFeatureFlags();
+  const { isFirstTimeUser, firstChatCompleted, markFirstChatCompleted, markOnboardingCompleted } = useOnboardingState();
 
   const {
     messages,
@@ -49,6 +57,43 @@ const Chat = () => {
   
   // Insights feature integration - pass messages for context
   const { shouldShowInsight, selectedInsight } = useInsights(user?.id, messageCount, messages);
+
+  // Guided conversation state
+  const [showGuidedConversation, setShowGuidedConversation] = useState(false);
+
+  // Determine if we should show guided conversation
+  useEffect(() => {
+    if (guidedConversation && isFirstTimeUser && !firstChatCompleted && messages.length === 0 && !chatIdFromParams) {
+      setShowGuidedConversation(true);
+    } else {
+      setShowGuidedConversation(false);
+    }
+  }, [guidedConversation, isFirstTimeUser, firstChatCompleted, messages.length, chatIdFromParams]);
+
+  // Mark first chat as completed when user sends their first message
+  useEffect(() => {
+    if (messages.length > 0 && !firstChatCompleted) {
+      markFirstChatCompleted();
+      setShowGuidedConversation(false);
+    }
+  }, [messages.length, firstChatCompleted, markFirstChatCompleted]);
+
+  const handleGuidedStarterClick = (text: string) => {
+    setInput(text);
+    setShowGuidedConversation(false);
+    markOnboardingCompleted();
+    
+    // Auto-submit the guided starter
+    setTimeout(() => {
+      const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+      handleSubmit(formEvent);
+    }, 100);
+  };
+
+  const handleSkipGuide = () => {
+    setShowGuidedConversation(false);
+    markOnboardingCompleted();
+  };
 
   // Redirect to /auth if user is not logged in, but only after loading is complete
   useEffect(() => {
@@ -147,6 +192,18 @@ const Chat = () => {
 
   return (
     <div className="relative bg-warm-beige">
+      {showGuidedConversation && (
+        <div className="fixed inset-0 bg-warm-beige z-50 overflow-y-auto">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <GuidedFirstConversation
+              onStarterClick={handleGuidedStarterClick}
+              onSkip={handleSkipGuide}
+              isVisible={showGuidedConversation}
+            />
+          </div>
+        </div>
+      )}
+
       <ChatContainer
         messages={messages}
         input={input}
