@@ -7,9 +7,15 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType>({ user: null, session: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  user: null, 
+  session: null, 
+  loading: true,
+  logout: async () => {}
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -22,6 +28,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSession(newSession);
     setUser(newSession?.user || null);
     setLoading(false);
+  }, []);
+
+  const logout = useCallback(async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error during logout:', error);
+      throw error;
+    }
   }, []);
 
   useEffect(() => {
@@ -89,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [loading, initialized]);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading }}>
+    <AuthContext.Provider value={{ user, session, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
