@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,14 @@ export const WisdomLibrary = () => {
         .order('saved_at', { ascending: false });
 
       if (error) throw error;
-      setInsights(data || []);
+      
+      // Cast the insight_type to the correct type
+      const typedData = (data || []).map(insight => ({
+        ...insight,
+        insight_type: insight.insight_type as 'generic' | 'personalized'
+      }));
+      
+      setInsights(typedData);
     } catch (error) {
       console.error('Error fetching saved insights:', error);
     } finally {

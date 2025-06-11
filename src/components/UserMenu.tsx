@@ -9,18 +9,18 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { UserAvatar } from './UserAvatar';
+import UserAvatar from './UserAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Calendar, CreditCard, BookOpen, LogOut } from 'lucide-react';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 export const UserMenu = () => {
-  const { signOut, user } = useAuth();
+  const { logout, user } = useAuth();
   const { wisdomLibrary } = useFeatureFlags();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await logout();
     } catch (error) {
       console.error('Error signing out:', error);
     }

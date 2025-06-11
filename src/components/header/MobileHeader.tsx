@@ -41,7 +41,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
       
       <div className="flex items-center">
         {user ? (
-          <UserMenu size="sm" />
+          <UserMenu />
         ) : (
           <Button
             onClick={() => navigate('/auth', { state: { tab: 'signin' } })}
