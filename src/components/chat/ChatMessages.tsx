@@ -30,12 +30,14 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const { user } = useAuth();
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
 
-  // Check if this is a first-time user
+  // Improved first-time user detection with logging
   useEffect(() => {
     const checkFirstTimeUser = async () => {
       if (!user) return;
 
       try {
+        console.log('🔍 Checking if user is first-time user:', user.id);
+        
         const { data: userChats, error } = await supabase
           .from('chat')
           .select('id')
@@ -46,7 +48,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           return;
         }
 
-        setIsFirstTimeUser(!userChats || userChats.length <= 1);
+        const isNewUser = !userChats || userChats.length <= 1;
+        console.log('👤 First-time user status:', isNewUser, 'Chat count:', userChats?.length || 0);
+        setIsFirstTimeUser(isNewUser);
       } catch (error) {
         console.error('Error in checkFirstTimeUser:', error);
       }

@@ -38,26 +38,35 @@ export const ChatMessage = ({
   const [celebrationType, setCelebrationType] = useState<'validation' | 'insight' | 'breakthrough'>('validation');
   const messageRef = useRef<HTMLDivElement>(null);
 
-  // Trigger micro-celebration for emotional moments in first-time user AI responses
+  // Enhanced trigger for micro-celebration on AI responses for first-time users
   useEffect(() => {
     if (message.sender === 'ai' && isFirstTimeUser && message.text) {
-      // Look for emotionally validating phrases
+      console.log('🔍 Checking AI message for validation phrases:', message.text);
+      
+      // Expanded validation phrases that match our enhanced AI prompts
       const validationPhrases = [
-        'you\'re being heard', 'you\'re not alone', 'makes sense', 'understandable',
-        'valid', 'important', 'matters', 'see you', 'hear you', 'brave', 'courage',
-        'strength', 'wisdom', 'insight', 'beautiful', 'powerful'
+        'courage', 'brave', 'strength', 'hear you', 'see you', 'being heard',
+        'makes sense', 'understandable', 'valid', 'important', 'matters',
+        'wise', 'wisdom', 'insight', 'beautiful', 'powerful', 'human',
+        'not alone', 'carrying', 'holding', 'deserve', 'asking for',
+        'your heart', 'your pain', 'your words', 'speaking', 'sharing',
+        'safe', 'space', 'gentle', 'kind', 'compassion', 'understanding',
+        'feel', 'feeling', 'emotion', 'difficult', 'hard', 'tough'
       ];
 
       const hasValidation = validationPhrases.some(phrase => 
-        message.text.toLowerCase().includes(phrase)
+        message.text.toLowerCase().includes(phrase.toLowerCase())
       );
+
+      console.log('🎯 Found validation phrase:', hasValidation);
 
       if (hasValidation) {
         // Delay to let the message appear first
         setTimeout(() => {
+          console.log('🎉 Triggering validation celebration');
           setCelebrationType('validation');
           setShowCelebration(true);
-        }, 1000);
+        }, 1500);
       }
     }
   }, [message, isFirstTimeUser]);
@@ -65,10 +74,11 @@ export const ChatMessage = ({
   // Trigger celebration when insight is shown
   useEffect(() => {
     if (showInsight && insightText && isFirstTimeUser) {
+      console.log('🎯 Triggering insight celebration for first-time user');
       setTimeout(() => {
         setCelebrationType('insight');
         setShowCelebration(true);
-      }, 2000);
+      }, 2500);
     }
   }, [showInsight, insightText, isFirstTimeUser]);
 
@@ -163,7 +173,7 @@ export const ChatMessage = ({
 
           {showHighlightTooltip && selectionRange && (
             <div 
-              className="fixed z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 flex items-center gap-2 text-sm text-deep-charcoal hover:text-white hover:bg-soft-yellow transition-colors duration-200 cursor-pointer"
+              className="fixed z-50 bg-white shadow-lg rounded-lg px-4 py-2 transform -translate-x-1/2 flex items-center gap-2 text-sm text-gray-700 hover:text-white hover:bg-yellow-500 transition-colors duration-200 cursor-pointer"
               style={{
                 left: tooltipPosition.x,
                 top: tooltipPosition.y

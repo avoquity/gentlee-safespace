@@ -235,38 +235,6 @@ export type Database = {
         }
         Relationships: []
       }
-      report_sections: {
-        Row: {
-          content: Json
-          created_at: string
-          id: number
-          report_id: number
-          section: string
-        }
-        Insert: {
-          content: Json
-          created_at?: string
-          id?: number
-          report_id: number
-          section: string
-        }
-        Update: {
-          content?: Json
-          created_at?: string
-          id?: number
-          report_id?: number
-          section?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "report_sections_report_id_fkey"
-            columns: ["report_id"]
-            isOneToOne: false
-            referencedRelation: "reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       reports: {
         Row: {
           created_at: string
