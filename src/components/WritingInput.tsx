@@ -61,7 +61,7 @@ const WritingInput = () => {
     if (!user) {
       sessionStorage.setItem('pendingMessage', input);
       navigate('/auth', {
-        state: { tab: 'signin', redirectTo: '/chat' }
+        state: { tab: 'signin', redirectTo: '/chat', pendingMessage: input } // Added pendingMessage here
       });
       return;
     }

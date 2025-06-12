@@ -50,21 +50,33 @@ const Auth = () => {
   }, []);
 
   const handleSuccessfulAuth = () => {
-    const pendingMessage = sessionStorage.getItem('pendingMessage');
+    let pendingMessage = location.state?.pendingMessage;
+
+    if (!pendingMessage) {
+      const messageFromSessionStorage = sessionStorage.getItem('pendingMessage');
+      if (messageFromSessionStorage) {
+        pendingMessage = messageFromSessionStorage;
+        sessionStorage.removeItem('pendingMessage'); // Clean up session storage
+      }
+    }
     
     if (pendingMessage) {
       // Navigate to chat with the initial message as a state parameter
       navigate('/chat', { 
         state: { 
           initialMessage: pendingMessage,
+          // Ensure entryDate is consistently formatted
           entryDate: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
         } 
       });
     } else {
-      navigate(location.state?.redirectTo || '/');
+      // If redirectTo is '/chat', navigate there even without a message.
+      // Otherwise, navigate to redirectTo or fallback to '/'
+      const redirectTo = location.state?.redirectTo;
+      navigate(redirectTo || '/');
     }
     
-    setIsOpen(false);
+    setIsOpen(false); // This should be called regardless of the navigation path
   };
 
   return (
