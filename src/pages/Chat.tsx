@@ -12,6 +12,9 @@ import { useInsights } from '@/hooks/chat/useInsights';
 import { GuidedFirstConversation } from '@/components/chat/GuidedFirstConversation';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useOnboardingState } from '@/hooks/useOnboardingState';
+import { StickyVoiceButton } from '@/components/chat/StickyVoiceButton';
+import { VoiceModal } from '@/components/chat/VoiceModal';
+import { useVoiceMode } from '@/hooks/useVoiceMode';
 
 // Weekly message limit for free users
 const WEEKLY_MESSAGE_LIMIT = 10;
@@ -24,6 +27,12 @@ const Chat = () => {
   const { user, loading } = useAuth();
   const chatIdFromParams = params.chatId ? parseInt(params.chatId) : null;
   const { toast } = useToast();
+
+  // Voice mode state
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [lastAIResponse, setLastAIResponse] = useState('');
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const { speakText, stopSpeaking, isPlaying } = useVoiceMode();
 
   // Feature flags and onboarding
   const { guidedConversation } = useFeatureFlags();
@@ -60,6 +69,38 @@ const Chat = () => {
 
   // Guided conversation state
   const [showGuidedConversation, setShowGuidedConversation] = useState(false);
+
+  // Monitor AI responses for voice playback
+  useEffect(() => {
+    const latestMessage = messages[messages.length - 1];
+    if (latestMessage && latestMessage.sender === 'ai' && latestMessage.text !== lastAIResponse) {
+      setLastAIResponse(latestMessage.text);
+      
+      // Auto-speak if voice modal is open
+      if (isVoiceModalOpen && latestMessage.text.trim()) {
+        setIsAISpeaking(true);
+        speakText(latestMessage.text).finally(() => {
+          setIsAISpeaking(false);
+        });
+      }
+    }
+  }, [messages, lastAIResponse, isVoiceModalOpen, speakText]);
+
+  // Handle voice message sending
+  const handleVoiceMessage = (message: string) => {
+    setInput(message);
+    setIsVoiceModalOpen(false);
+    
+    // Create a synthetic form submit event and immediately submit
+    const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+    handleSubmit(formEvent);
+  };
+
+  // Handle stopping AI speech
+  const handleStopAISpeaking = () => {
+    stopSpeaking();
+    setIsAISpeaking(false);
+  };
 
   // Determine if we should show guided conversation
   useEffect(() => {
@@ -192,6 +233,12 @@ const Chat = () => {
 
   return (
     <div className="relative bg-warm-beige">
+      {/* Sticky Voice Button */}
+      <StickyVoiceButton
+        onClick={() => setIsVoiceModalOpen(true)}
+        isActive={isVoiceModalOpen || isAISpeaking || isPlaying}
+      />
+
       {showGuidedConversation && (
         <div className="fixed inset-0 bg-warm-beige z-50 overflow-y-auto">
           <div className="min-h-screen flex items-center justify-center p-4">
@@ -229,6 +276,15 @@ const Chat = () => {
         onOptIn={handleOptIn}
         onDismiss={handleDismiss}
         onComplete={handleComplete}
+      />
+
+      <VoiceModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        onSendMessage={handleVoiceMessage}
+        lastAIResponse={lastAIResponse}
+        isAISpeaking={isAISpeaking}
+        onStopSpeaking={handleStopAISpeaking}
       />
     </div>
   );

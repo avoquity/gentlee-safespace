@@ -9,9 +9,19 @@ interface VoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSendMessage: (message: string) => void;
+  lastAIResponse?: string;
+  isAISpeaking?: boolean;
+  onStopSpeaking?: () => void;
 }
 
-export const VoiceModal = ({ isOpen, onClose, onSendMessage }: VoiceModalProps) => {
+export const VoiceModal = ({ 
+  isOpen, 
+  onClose, 
+  onSendMessage, 
+  lastAIResponse = '',
+  isAISpeaking = false,
+  onStopSpeaking
+}: VoiceModalProps) => {
   const {
     isRecording,
     transcribedText,
@@ -24,8 +34,6 @@ export const VoiceModal = ({ isOpen, onClose, onSendMessage }: VoiceModalProps) 
     stopSpeaking,
     resetTranscription
   } = useVoiceMode();
-
-  const [lastAIResponse, setLastAIResponse] = useState('');
 
   // Handle recording toggle
   const handleRecordingToggle = async () => {
@@ -45,19 +53,20 @@ export const VoiceModal = ({ isOpen, onClose, onSendMessage }: VoiceModalProps) 
     }
   };
 
-  // Mock AI response for demo (in real app, this would come from the chat system)
+  // Auto-speak AI responses when they come in
   useEffect(() => {
-    if (transcribedText && !isRecording && !isProcessing) {
-      // Simulate AI response - in the real implementation, this would be handled by the chat system
-      const mockResponse = "I understand what you're saying. This is a voice response that will be spoken aloud.";
-      setLastAIResponse(mockResponse);
-      
-      // Auto-speak the AI response
-      setTimeout(() => {
-        speakText(mockResponse);
-      }, 1000);
+    if (lastAIResponse && !isAISpeaking && lastAIResponse.trim()) {
+      speakText(lastAIResponse);
     }
-  }, [transcribedText, isRecording, isProcessing, speakText]);
+  }, [lastAIResponse, isAISpeaking, speakText]);
+
+  // Handle stop speaking
+  const handleStopSpeaking = () => {
+    stopSpeaking();
+    if (onStopSpeaking) {
+      onStopSpeaking();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -145,12 +154,12 @@ export const VoiceModal = ({ isOpen, onClose, onSendMessage }: VoiceModalProps) 
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium text-deep-charcoal">AI Response:</h3>
                   <Button
-                    onClick={() => isPlaying ? stopSpeaking() : speakText(lastAIResponse)}
+                    onClick={() => (isPlaying || isAISpeaking) ? handleStopSpeaking() : speakText(lastAIResponse)}
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
                   >
-                    {isPlaying ? (
+                    {(isPlaying || isAISpeaking) ? (
                       <VolumeX className="w-4 h-4" />
                     ) : (
                       <Volume2 className="w-4 h-4" />
