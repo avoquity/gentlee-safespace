@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { JournalButton } from '../JournalButton';
+import { VoiceModeButton } from '../VoiceModeButton';
 import { UpgradePrompt } from '../UpgradePrompt';
 import { ChatSuggestions } from '../ChatSuggestions';
 import { chatSuggestions } from './chatSuggestions';
@@ -10,13 +11,16 @@ import { chatSuggestions } from './chatSuggestions';
 interface MobileChatInputProps {
   input: string;
   setInput: (value: string) => void;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubm
+
+it: (e: React.FormEvent) => void;
   hasReachedLimit: boolean;
   openJournalModal: () => void;
   shouldShowUpgradePrompt: boolean;
   messageCount: number;
   weeklyLimit: number;
   handleDismissUpgradePrompt: () => void;
+  onVoiceModeClick?: () => void;
 }
 
 export const MobileChatInput: React.FC<MobileChatInputProps> = ({
@@ -28,7 +32,8 @@ export const MobileChatInput: React.FC<MobileChatInputProps> = ({
   shouldShowUpgradePrompt,
   messageCount,
   weeklyLimit,
-  handleDismissUpgradePrompt
+  handleDismissUpgradePrompt,
+  onVoiceModeClick = () => {}
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -104,13 +109,12 @@ export const MobileChatInput: React.FC<MobileChatInputProps> = ({
             }}
             disabled={hasReachedLimit}
           />
-          {/* JournalButton right of input */}
-          <div
-            className="flex-shrink-0 ml-3"
-            style={{ minWidth: 44, minHeight: 44 }}
-            aria-label="Journal mode"
-            title="Journal mode"
-          >
+          {/* Voice and Journal Buttons */}
+          <div className="flex items-center gap-2 ml-3">
+            <VoiceModeButton
+              onClick={onVoiceModeClick}
+              className="w-11 h-11"
+            />
             <JournalButton
               onClick={openJournalModal}
               isMobile={true}

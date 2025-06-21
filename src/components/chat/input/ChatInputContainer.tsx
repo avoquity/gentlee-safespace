@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileChatInput } from './MobileChatInput';
 import { DesktopChatInput } from './DesktopChatInput';
 import { JournalModal } from '../JournalModal';
+import { VoiceModal } from '../VoiceModal';
 import { UpgradePrompt } from '../UpgradePrompt';
 
 interface ChatInputContainerProps {
@@ -25,6 +26,7 @@ export const ChatInputContainer = ({
 }: ChatInputContainerProps) => {
   const isMobile = useIsMobile();
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(true);
   const hasReachedLimit = messageCount >= weeklyLimit;
 
@@ -42,6 +44,16 @@ export const ChatInputContainer = ({
     // Transfer text from modal to the main input field without submitting
     setInput("");
     setIsJournalModalOpen(false);
+  };
+
+  // Handle voice modal interactions
+  const handleVoiceModalSend = (message: string) => {
+    setInput(message);
+    setIsVoiceModalOpen(false);
+    
+    // Create a synthetic form submit event and immediately submit
+    const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+    handleSubmit(formEvent);
   };
 
   // Only allow dismissing if not at the limit
@@ -78,6 +90,7 @@ export const ChatInputContainer = ({
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
           handleDismissUpgradePrompt={handleDismissUpgradePrompt}
+          onVoiceModeClick={() => setIsVoiceModalOpen(true)}
         />
       ) : (
         <DesktopChatInput
@@ -90,6 +103,7 @@ export const ChatInputContainer = ({
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
           handleDismissUpgradePrompt={handleDismissUpgradePrompt}
+          onVoiceModeClick={() => setIsVoiceModalOpen(true)}
         />
       )}
       
@@ -99,6 +113,12 @@ export const ChatInputContainer = ({
         onSend={handleModalSend}
         onCancel={handleModalCancel}
         initialText={input}
+      />
+
+      <VoiceModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        onSendMessage={handleVoiceModalSend}
       />
     </div>
   );

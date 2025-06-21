@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { JournalButton } from '../JournalButton';
+import { VoiceModeButton } from '../VoiceModeButton';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { UpgradePrompt } from '../UpgradePrompt';
 import { ChatSuggestions } from '../ChatSuggestions';
@@ -18,6 +19,7 @@ interface DesktopChatInputProps {
   messageCount: number;
   weeklyLimit: number;
   handleDismissUpgradePrompt: () => void;
+  onVoiceModeClick?: () => void;
 }
 
 export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
@@ -29,7 +31,8 @@ export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
   shouldShowUpgradePrompt,
   messageCount,
   weeklyLimit,
-  handleDismissUpgradePrompt
+  handleDismissUpgradePrompt,
+  onVoiceModeClick = () => {}
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -118,40 +121,55 @@ export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
             disabled={hasReachedLimit}
           />
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <JournalButton
-                  onClick={openJournalModal}
-                  isMobile={false}
-                  className="ml-2"
-                />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="font-montserrat text-sm">
-              Journal mode
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            if (!hasReachedLimit) {
-              handleSubmit(e as unknown as React.FormEvent);
-            }
-          }}
-          aria-label="Send"
-          className={`h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal font-poppins text-base hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
-            hasReachedLimit ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={hasReachedLimit}
-          style={{ borderRadius: 100, marginLeft: 8 }}
-        >
-          <span>Send</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <VoiceModeButton
+                    onClick={onVoiceModeClick}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="font-montserrat text-sm">
+                Voice mode
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <JournalButton
+                    onClick={openJournalModal}
+                    isMobile={false}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="font-montserrat text-sm">
+                Journal mode
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              if (!hasReachedLimit) {
+                handleSubmit(e as unknown as React.FormEvent);
+              }
+            }}
+            aria-label="Send"
+            className={`h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal font-poppins text-base hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
+              hasReachedLimit ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={hasReachedLimit}
+            style={{ borderRadius: 100 }}
+          >
+            <span>Send</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </>
   );
