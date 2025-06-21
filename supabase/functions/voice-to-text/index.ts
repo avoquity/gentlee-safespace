@@ -62,7 +62,8 @@ serve(async (req) => {
     
     // ElevenLabs expects 'file' parameter, not 'audio'
     formData.append('file', blob, 'audio.webm');
-    formData.append('model_id', 'eleven_multilingual_v2');
+    // Use correct model ID for speech-to-text
+    formData.append('model_id', 'scribe_v1');
 
     console.log('Sending request to ElevenLabs Speech-to-Text API...');
 
