@@ -10,17 +10,13 @@ interface VoiceModalProps {
   onClose: () => void;
   onSendMessage: (message: string) => void;
   lastAIResponse?: string;
-  isAISpeaking?: boolean;
-  onStopSpeaking?: () => void;
 }
 
 export const VoiceModal = ({ 
   isOpen, 
   onClose, 
   onSendMessage, 
-  lastAIResponse = '',
-  isAISpeaking = false,
-  onStopSpeaking
+  lastAIResponse = ''
 }: VoiceModalProps) => {
   const {
     isRecording,
@@ -34,6 +30,8 @@ export const VoiceModal = ({
     stopSpeaking,
     resetTranscription
   } = useVoiceMode();
+
+  const [lastSpokenResponse, setLastSpokenResponse] = useState('');
 
   // Handle recording toggle
   const handleRecordingToggle = async () => {
@@ -53,20 +51,27 @@ export const VoiceModal = ({
     }
   };
 
-  // Auto-speak AI responses when they come in
+  // Auto-speak new AI responses when modal is open
   useEffect(() => {
-    if (lastAIResponse && !isAISpeaking && lastAIResponse.trim()) {
+    if (isOpen && 
+        lastAIResponse && 
+        lastAIResponse.trim() && 
+        lastAIResponse !== lastSpokenResponse &&
+        !isPlaying) {
+      
+      console.log('🔊 VoiceModal auto-speaking new AI response:', lastAIResponse.substring(0, 50) + '...');
+      setLastSpokenResponse(lastAIResponse);
       speakText(lastAIResponse);
     }
-  }, [lastAIResponse, isAISpeaking, speakText]);
+  }, [isOpen, lastAIResponse, lastSpokenResponse, isPlaying, speakText]);
 
-  // Handle stop speaking
-  const handleStopSpeaking = () => {
-    stopSpeaking();
-    if (onStopSpeaking) {
-      onStopSpeaking();
+  // Reset spoken response when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setLastSpokenResponse('');
+      stopSpeaking();
     }
-  };
+  }, [isOpen, stopSpeaking]);
 
   if (!isOpen) return null;
 
@@ -154,12 +159,12 @@ export const VoiceModal = ({
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium text-deep-charcoal">AI Response:</h3>
                   <Button
-                    onClick={() => (isPlaying || isAISpeaking) ? handleStopSpeaking() : speakText(lastAIResponse)}
+                    onClick={() => isPlaying ? stopSpeaking() : speakText(lastAIResponse)}
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
                   >
-                    {(isPlaying || isAISpeaking) ? (
+                    {isPlaying ? (
                       <VolumeX className="w-4 h-4" />
                     ) : (
                       <Volume2 className="w-4 h-4" />

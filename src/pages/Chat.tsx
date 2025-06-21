@@ -31,8 +31,7 @@ const Chat = () => {
   // Voice mode state
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [lastAIResponse, setLastAIResponse] = useState('');
-  const [isAISpeaking, setIsAISpeaking] = useState(false);
-  const { speakText, stopSpeaking, isPlaying } = useVoiceMode();
+  const { isPlaying } = useVoiceMode();
 
   // Feature flags and onboarding
   const { guidedConversation } = useFeatureFlags();
@@ -70,27 +69,18 @@ const Chat = () => {
   // Guided conversation state
   const [showGuidedConversation, setShowGuidedConversation] = useState(false);
 
-  // Track when AI responses are complete for TTS
+  // Track latest AI response for voice modal
   useEffect(() => {
     const latestMessage = messages[messages.length - 1];
     if (latestMessage && 
         latestMessage.sender === 'ai' && 
         latestMessage.text !== lastAIResponse &&
-        !isTyping && // Only speak when not typing (message is complete)
+        !isTyping && // Only update when not typing (message is complete)
         latestMessage.text.trim()) {
       
       setLastAIResponse(latestMessage.text);
-      
-      // Auto-speak if voice modal is open and AI is not currently speaking
-      if (isVoiceModalOpen && !isAISpeaking) {
-        console.log('🔊 Auto-speaking AI response:', latestMessage.text.substring(0, 50) + '...');
-        setIsAISpeaking(true);
-        speakText(latestMessage.text).finally(() => {
-          setIsAISpeaking(false);
-        });
-      }
     }
-  }, [messages, isTyping, lastAIResponse, isVoiceModalOpen, isAISpeaking, speakText]);
+  }, [messages, isTyping, lastAIResponse]);
 
   // Handle voice message sending
   const handleVoiceMessage = (message: string) => {
@@ -100,12 +90,6 @@ const Chat = () => {
     // Create a synthetic form submit event and immediately submit
     const formEvent = new Event('submit', { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
     handleSubmit(formEvent);
-  };
-
-  // Handle stopping AI speech
-  const handleStopAISpeaking = () => {
-    stopSpeaking();
-    setIsAISpeaking(false);
   };
 
   // Determine if we should show guided conversation
@@ -242,7 +226,7 @@ const Chat = () => {
       {/* Sticky Voice Button */}
       <StickyVoiceButton
         onClick={() => setIsVoiceModalOpen(true)}
-        isActive={isVoiceModalOpen || isAISpeaking || isPlaying}
+        isActive={isVoiceModalOpen || isPlaying}
       />
 
       {showGuidedConversation && (
@@ -289,8 +273,6 @@ const Chat = () => {
         onClose={() => setIsVoiceModalOpen(false)}
         onSendMessage={handleVoiceMessage}
         lastAIResponse={lastAIResponse}
-        isAISpeaking={isAISpeaking}
-        onStopSpeaking={handleStopAISpeaking}
       />
     </div>
   );

@@ -34,8 +34,11 @@ serve(async (req) => {
 
     console.log('Generating speech for text:', text.substring(0, 50) + '...');
 
+    // Use your custom voice ID, or fallback to the provided voice parameter
+    const voiceId = voice || 'Atp5cNFg1Wj5gyKD7HWV';
+
     // Generate speech using ElevenLabs
-    const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/9BWtsMINqrJLrRacOk9x', {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
         'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || '',
