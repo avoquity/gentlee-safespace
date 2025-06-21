@@ -61,7 +61,7 @@ export const MobileChatInput = ({
         />
       )}
       
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-3">
         <JournalButton onClick={openJournalModal} isMobile={true} />
         
         <div className="flex-1 relative">
@@ -87,6 +87,9 @@ export const MobileChatInput = ({
             <Send className="w-4 h-4" />
           </Button>
         </div>
+        
+        {/* Spacer for visual balance on mobile */}
+        <div className="w-10"></div>
       </div>
     </div>
   );

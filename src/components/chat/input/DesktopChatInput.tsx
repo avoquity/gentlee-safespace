@@ -62,7 +62,7 @@ export const DesktopChatInput = ({
       )}
       
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-end gap-3">
+        <div className="flex items-end gap-4">
           <JournalButton onClick={openJournalModal} isMobile={false} />
           
           <div className="flex-1 relative">
@@ -88,6 +88,9 @@ export const DesktopChatInput = ({
               <Send className="w-4 h-4" />
             </Button>
           </div>
+          
+          {/* Spacer to maintain visual balance */}
+          <div className="w-12"></div>
         </div>
       </div>
     </div>
