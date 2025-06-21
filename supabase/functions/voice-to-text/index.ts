@@ -50,27 +50,37 @@ serve(async (req) => {
     }
 
     console.log('Processing audio for transcription...');
+    console.log('Audio data length:', audio.length);
 
     // Process audio in chunks
     const binaryAudio = processBase64Chunks(audio);
+    console.log('Binary audio length:', binaryAudio.length);
     
     // Prepare form data for ElevenLabs
     const formData = new FormData();
     const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('audio', blob, 'audio.webm');
+    
+    // ElevenLabs expects 'file' parameter, not 'audio'
+    formData.append('file', blob, 'audio.webm');
     formData.append('model_id', 'eleven_multilingual_v2');
+
+    console.log('Sending request to ElevenLabs Speech-to-Text API...');
 
     // Send to ElevenLabs Speech-to-Text
     const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: {
         'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || '',
+        // Don't set Content-Type header, let FormData handle it
       },
       body: formData,
     });
 
+    console.log('ElevenLabs response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('ElevenLabs API error response:', errorText);
       throw new Error(`ElevenLabs API error: ${errorText}`);
     }
 
