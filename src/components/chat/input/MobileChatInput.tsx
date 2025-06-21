@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -11,9 +10,7 @@ import { chatSuggestions } from './chatSuggestions';
 interface MobileChatInputProps {
   input: string;
   setInput: (value: string) => void;
-  handleSubm
-
-it: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.FormEvent) => void;
   hasReachedLimit: boolean;
   openJournalModal: () => void;
   shouldShowUpgradePrompt: boolean;
