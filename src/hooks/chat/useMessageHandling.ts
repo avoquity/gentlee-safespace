@@ -26,7 +26,8 @@ export const useMessageHandling = (userId: string | undefined) => {
     userMessage: string, 
     chatId: number, 
     updateMessage: (id: string, updater: ((prevText: string) => string) | string, newText?: string) => void,
-    addMessageCallback: (message: Message) => void
+    addMessageCallback: (message: Message) => void,
+    onCompleteCallback?: (finalResponse: string) => void
   ) => {
     setIsTyping(true);
     
@@ -57,6 +58,11 @@ export const useMessageHandling = (userId: string | undefined) => {
         // Fixed: Using the correct overload of updateMessage to replace the temp message with the saved one
         // This ensures we don't see the message ID displayed in the UI
         updateMessage(tempMessage.id, savedMessage.id, savedMessage.text);
+        
+        // Call the completion callback with the final response
+        if (onCompleteCallback) {
+          onCompleteCallback(finalResponse);
+        }
       }
     } catch (error: any) {
       console.error('Error in AI streaming response:', error);

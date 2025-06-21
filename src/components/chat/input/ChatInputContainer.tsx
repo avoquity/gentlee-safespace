@@ -78,7 +78,6 @@ export const ChatInputContainer = ({
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
           handleDismissUpgradePrompt={handleDismissUpgradePrompt}
-          onVoiceModeClick={() => {}} // No-op since we have sticky button
         />
       ) : (
         <DesktopChatInput
@@ -91,7 +90,6 @@ export const ChatInputContainer = ({
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
           handleDismissUpgradePrompt={handleDismissUpgradePrompt}
-          onVoiceModeClick={() => {}} // No-op since we have sticky button
         />
       )}
       

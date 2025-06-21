@@ -70,21 +70,27 @@ const Chat = () => {
   // Guided conversation state
   const [showGuidedConversation, setShowGuidedConversation] = useState(false);
 
-  // Monitor AI responses for voice playback
+  // Track when AI responses are complete for TTS
   useEffect(() => {
     const latestMessage = messages[messages.length - 1];
-    if (latestMessage && latestMessage.sender === 'ai' && latestMessage.text !== lastAIResponse) {
+    if (latestMessage && 
+        latestMessage.sender === 'ai' && 
+        latestMessage.text !== lastAIResponse &&
+        !isTyping && // Only speak when not typing (message is complete)
+        latestMessage.text.trim()) {
+      
       setLastAIResponse(latestMessage.text);
       
-      // Auto-speak if voice modal is open
-      if (isVoiceModalOpen && latestMessage.text.trim()) {
+      // Auto-speak if voice modal is open and AI is not currently speaking
+      if (isVoiceModalOpen && !isAISpeaking) {
+        console.log('🔊 Auto-speaking AI response:', latestMessage.text.substring(0, 50) + '...');
         setIsAISpeaking(true);
         speakText(latestMessage.text).finally(() => {
           setIsAISpeaking(false);
         });
       }
     }
-  }, [messages, lastAIResponse, isVoiceModalOpen, speakText]);
+  }, [messages, isTyping, lastAIResponse, isVoiceModalOpen, isAISpeaking, speakText]);
 
   // Handle voice message sending
   const handleVoiceMessage = (message: string) => {

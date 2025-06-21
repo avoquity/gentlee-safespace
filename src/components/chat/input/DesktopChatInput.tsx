@@ -1,13 +1,11 @@
 
-import React, { useRef, useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Send } from 'lucide-react';
 import { JournalButton } from '../JournalButton';
-import { VoiceModeButton } from '../VoiceModeButton';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { UpgradePrompt } from '../UpgradePrompt';
-import { ChatSuggestions } from '../ChatSuggestions';
-import { chatSuggestions } from './chatSuggestions';
+import { useSubscription } from './useSubscription';
 
 interface DesktopChatInputProps {
   input: string;
@@ -19,10 +17,9 @@ interface DesktopChatInputProps {
   messageCount: number;
   weeklyLimit: number;
   handleDismissUpgradePrompt: () => void;
-  onVoiceModeClick?: () => void;
 }
 
-export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
+export const DesktopChatInput = ({
   input,
   setInput,
   handleSubmit,
@@ -32,145 +29,68 @@ export const DesktopChatInput: React.FC<DesktopChatInputProps> = ({
   messageCount,
   weeklyLimit,
   handleDismissUpgradePrompt,
-  onVoiceModeClick = () => {}
-}) => {
+}: DesktopChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [randomizedSuggestions, setRandomizedSuggestions] = useState<string[]>([]);
+  const { subscription } = useSubscription();
 
-  // Auto-resize the textarea when content changes
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '3rem';
-      const scrollHeight = Math.min(textareaRef.current.scrollHeight, 192);
-      textareaRef.current.style.height = `${scrollHeight}px`;
-      
-      // Calculate line count
-      const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight) || 24;
-      const contentHeight = textareaRef.current.scrollHeight;
-      const calculatedLineCount = Math.ceil(contentHeight / lineHeight);
-      
-      // If line count exceeds 2 and input has content, open journal modal
-      if (calculatedLineCount > 2 && input.trim().length > 0) {
-        openJournalModal();
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!hasReachedLimit) {
+        handleSubmit(e);
       }
-    }
-  }, [input, openJournalModal]);
-
-  useEffect(() => {
-    if (isFocused) {
-      const shuffled = [...chatSuggestions].sort(() => 0.5 - Math.random());
-      setRandomizedSuggestions(shuffled);
-    }
-  }, [isFocused]);
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  };
-
-  const handleTextareaFocus = () => {
-    setIsFocused(true);
-    // Only allow dismissing when approaching the limit (not at the limit)
-    if (messageCount === weeklyLimit - 1 && !hasReachedLimit) {
-      handleDismissUpgradePrompt();
     }
   };
 
   return (
-    <>
+    <div className="sticky bottom-0 bg-warm-beige p-6 border-t border-deep-charcoal/10">
       {shouldShowUpgradePrompt && (
         <UpgradePrompt
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
-          onDismiss={hasReachedLimit ? undefined : handleDismissUpgradePrompt}
+          hasReachedLimit={hasReachedLimit}
+          onDismiss={handleDismissUpgradePrompt}
           className="mb-4"
         />
       )}
-      <div className="flex items-end gap-3 w-full">
-        <ChatSuggestions
-          suggestions={randomizedSuggestions.length > 0 ? randomizedSuggestions : chatSuggestions}
-          inputValue={input}
-          onSuggestionClick={handleSuggestionClick}
-          isFocused={isFocused && !hasReachedLimit}
-          messageCount={messageCount}
-        />
-        <div className="flex-1 flex flex-col">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={hasReachedLimit ? "You've reached your weekly message limit" : "Continue your thoughts here..."}
-            className={`w-full px-1 py-3 text-lg bg-transparent border-b-2 border-deep-charcoal focus:border-deep-charcoal focus:outline-none text-deep-charcoal placeholder:text-deep-charcoal/50 resize-none leading-relaxed pr-14 ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`}
-            style={{
-              minHeight: '3rem',
-              maxHeight: '12rem',
-              height: '3rem',
-              overflowY: 'auto'
-            }}
-            onFocus={handleTextareaFocus}
-            onBlur={() => setTimeout(() => setIsFocused(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-            disabled={hasReachedLimit}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <VoiceModeButton
-                    onClick={onVoiceModeClick}
-                  />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="font-montserrat text-sm">
-                Voice mode
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <JournalButton
-                    onClick={openJournalModal}
-                    isMobile={false}
-                  />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="font-montserrat text-sm">
-                Journal mode
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              if (!hasReachedLimit) {
-                handleSubmit(e as unknown as React.FormEvent);
-              }
-            }}
-            aria-label="Send"
-            className={`h-[42px] px-6 rounded-full border-2 border-deep-charcoal flex items-center gap-2 text-deep-charcoal font-poppins text-base hover:bg-muted-sage hover:text-white hover:border-muted-sage transition-all duration-200 ${
-              hasReachedLimit ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={hasReachedLimit}
-            style={{ borderRadius: 100 }}
-          >
-            <span>Send</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+      
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-end gap-3">
+          <JournalButton onClick={openJournalModal} />
+          
+          <div className="flex-1 relative">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={hasReachedLimit ? "Weekly limit reached - upgrade to continue" : "Share what's on your mind..."}
+              disabled={hasReachedLimit}
+              className="min-h-[50px] max-h-32 resize-none border-none bg-transparent text-deep-charcoal placeholder:text-deep-charcoal/50 focus:ring-0 focus:border-none pr-12"
+              style={{ 
+                borderBottom: '1px solid rgba(26, 26, 26, 0.2)',
+                borderRadius: '0'
+              }}
+            />
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={!input.trim() || hasReachedLimit}
+              className="absolute right-2 bottom-2 h-8 w-8 p-0 bg-deep-charcoal hover:bg-deep-charcoal/80 text-white rounded-full"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
