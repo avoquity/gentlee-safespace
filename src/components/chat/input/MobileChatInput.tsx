@@ -31,7 +31,7 @@ export const MobileChatInput = ({
   handleDismissUpgradePrompt,
 }: MobileChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { subscription } = useSubscription();
+  const { isSubscribed } = useSubscription();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -56,14 +56,13 @@ export const MobileChatInput = ({
         <UpgradePrompt
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
-          hasReachedLimit={hasReachedLimit}
           onDismiss={handleDismissUpgradePrompt}
           className="mb-4"
         />
       )}
       
       <div className="flex items-end gap-2">
-        <JournalButton onClick={openJournalModal} />
+        <JournalButton onClick={openJournalModal} isMobile={true} />
         
         <div className="flex-1 relative">
           <Textarea

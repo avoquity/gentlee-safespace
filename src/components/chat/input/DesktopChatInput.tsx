@@ -31,7 +31,7 @@ export const DesktopChatInput = ({
   handleDismissUpgradePrompt,
 }: DesktopChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { subscription } = useSubscription();
+  const { isSubscribed } = useSubscription();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -56,7 +56,6 @@ export const DesktopChatInput = ({
         <UpgradePrompt
           messageCount={messageCount}
           weeklyLimit={weeklyLimit}
-          hasReachedLimit={hasReachedLimit}
           onDismiss={handleDismissUpgradePrompt}
           className="mb-4"
         />
@@ -64,7 +63,7 @@ export const DesktopChatInput = ({
       
       <div className="max-w-4xl mx-auto">
         <div className="flex items-end gap-3">
-          <JournalButton onClick={openJournalModal} />
+          <JournalButton onClick={openJournalModal} isMobile={false} />
           
           <div className="flex-1 relative">
             <Textarea
