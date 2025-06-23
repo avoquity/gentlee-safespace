@@ -5,9 +5,11 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { HighlightedText } from './HighlightedText';
 import { createHighlight, removeHighlight } from '@/utils/highlightUtils';
-import { Highlighter } from 'lucide-react';
+import { Highlighter, Volume2 } from 'lucide-react';
 import { InsightCard } from './InsightCard';
 import { MicroCelebration } from './MicroCelebration';
+import { useMessageTTS } from '@/hooks/useMessageTTS';
+import { Button } from '@/components/ui/button';
 
 interface ChatMessageProps {
   message: Message;
@@ -37,6 +39,7 @@ export const ChatMessage = ({
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationType, setCelebrationType] = useState<'validation' | 'insight' | 'breakthrough'>('validation');
   const messageRef = useRef<HTMLDivElement>(null);
+  const { isPlaying, speakMessage } = useMessageTTS();
 
   // Enhanced trigger for micro-celebration on AI responses for first-time users
   useEffect(() => {
@@ -147,6 +150,10 @@ export const ChatMessage = ({
     setShowHighlightTooltip(true);
   };
 
+  const handleSpeakMessage = () => {
+    speakMessage(message.text);
+  };
+
   return (
     <>
       <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -157,6 +164,20 @@ export const ChatMessage = ({
           }`}
           onMouseUp={handleTextSelection}
         >
+          {/* Voice icon for AI messages */}
+          {message.sender === 'ai' && (
+            <Button
+              onClick={handleSpeakMessage}
+              variant="ghost"
+              size="sm"
+              className={`absolute top-2 left-2 h-6 w-6 p-0 rounded-full transition-colors ${
+                isPlaying ? 'bg-muted-sage text-white' : 'hover:bg-muted-sage/20'
+              }`}
+            >
+              <Volume2 className="w-3 h-3" />
+            </Button>
+          )}
+
           <HighlightedText
             text={message.text}
             highlights={highlights}

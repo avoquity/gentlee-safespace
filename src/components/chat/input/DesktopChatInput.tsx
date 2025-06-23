@@ -2,10 +2,11 @@
 import React, { useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send } from 'lucide-react';
+import { Send, Mic, MicOff } from 'lucide-react';
 import { JournalButton } from '../JournalButton';
 import { UpgradePrompt } from '../UpgradePrompt';
 import { useSubscription } from './useSubscription';
+import { useNativeSpeechToText } from '@/hooks/useNativeSpeechToText';
 
 interface DesktopChatInputProps {
   input: string;
@@ -32,6 +33,15 @@ export const DesktopChatInput = ({
 }: DesktopChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isSubscribed } = useSubscription();
+  const {
+    isListening,
+    transcript,
+    error,
+    isSupported,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useNativeSpeechToText();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -41,12 +51,33 @@ export const DesktopChatInput = ({
     }
   }, [input]);
 
+  // Update input with transcript
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript, setInput]);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!hasReachedLimit) {
         handleSubmit(e);
       }
+    }
+  };
+
+  const handleMicrophoneClick = () => {
+    if (!isSupported()) {
+      alert('Speech recognition is not supported in this browser');
+      return;
+    }
+
+    if (isListening) {
+      stopListening();
+    } else {
+      resetTranscript();
+      startListening();
     }
   };
 
@@ -64,6 +95,24 @@ export const DesktopChatInput = ({
       <div className="max-w-4xl mx-auto">
         <div className="flex items-end gap-4">
           <JournalButton onClick={openJournalModal} isMobile={false} />
+          
+          <Button
+            onClick={handleMicrophoneClick}
+            variant="ghost"
+            size="sm"
+            disabled={hasReachedLimit}
+            className={`h-12 w-12 p-0 rounded-full transition-colors ${
+              isListening 
+                ? 'bg-red-500 text-white hover:bg-red-600' 
+                : 'hover:bg-deep-charcoal/10'
+            }`}
+          >
+            {isListening ? (
+              <MicOff className="w-5 h-5" />
+            ) : (
+              <Mic className="w-5 h-5" />
+            )}
+          </Button>
           
           <div className="flex-1 relative">
             <Textarea
@@ -92,6 +141,12 @@ export const DesktopChatInput = ({
           {/* Spacer to maintain visual balance */}
           <div className="w-12"></div>
         </div>
+
+        {error && (
+          <div className="mt-2 text-sm text-red-500">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );

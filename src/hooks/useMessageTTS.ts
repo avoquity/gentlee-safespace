@@ -2,16 +2,18 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useVoiceMode = () => {
+export const useMessageTTS = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
-  const speakText = useCallback(async (text: string) => {
-    if (isPlaying && currentAudio) {
-      // Stop current audio
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-      setCurrentAudio(null);
+  const speakMessage = useCallback(async (text: string) => {
+    if (isPlaying) {
+      // Stop current audio if playing
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null);
+      }
       setIsPlaying(false);
       return;
     }
@@ -58,18 +60,8 @@ export const useVoiceMode = () => {
     }
   }, [isPlaying, currentAudio]);
 
-  const stopSpeaking = useCallback(() => {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-      setCurrentAudio(null);
-    }
-    setIsPlaying(false);
-  }, [currentAudio]);
-
   return {
     isPlaying,
-    speakText,
-    stopSpeaking
+    speakMessage
   };
 };

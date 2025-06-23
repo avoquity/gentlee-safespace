@@ -2,10 +2,11 @@
 import React, { useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send } from 'lucide-react';
+import { Send, Mic, MicOff } from 'lucide-react';
 import { JournalButton } from '../JournalButton';
 import { UpgradePrompt } from '../UpgradePrompt';
 import { useSubscription } from './useSubscription';
+import { useNativeSpeechToText } from '@/hooks/useNativeSpeechToText';
 
 interface MobileChatInputProps {
   input: string;
@@ -32,6 +33,15 @@ export const MobileChatInput = ({
 }: MobileChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isSubscribed } = useSubscription();
+  const {
+    isListening,
+    transcript,
+    error,
+    isSupported,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useNativeSpeechToText();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -41,12 +51,33 @@ export const MobileChatInput = ({
     }
   }, [input]);
 
+  // Update input with transcript
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript, setInput]);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!hasReachedLimit) {
         handleSubmit(e);
       }
+    }
+  };
+
+  const handleMicrophoneClick = () => {
+    if (!isSupported()) {
+      alert('Speech recognition is not supported in this browser');
+      return;
+    }
+
+    if (isListening) {
+      stopListening();
+    } else {
+      resetTranscript();
+      startListening();
     }
   };
 
@@ -63,6 +94,24 @@ export const MobileChatInput = ({
       
       <div className="flex items-end gap-3">
         <JournalButton onClick={openJournalModal} isMobile={true} />
+        
+        <Button
+          onClick={handleMicrophoneClick}
+          variant="ghost"
+          size="sm"
+          disabled={hasReachedLimit}
+          className={`h-10 w-10 p-0 rounded-full transition-colors ${
+            isListening 
+              ? 'bg-red-500 text-white hover:bg-red-600' 
+              : 'hover:bg-deep-charcoal/10'
+          }`}
+        >
+          {isListening ? (
+            <MicOff className="w-4 h-4" />
+          ) : (
+            <Mic className="w-4 h-4" />
+          )}
+        </Button>
         
         <div className="flex-1 relative">
           <Textarea
@@ -87,10 +136,13 @@ export const MobileChatInput = ({
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        
-        {/* Spacer for visual balance on mobile */}
-        <div className="w-10"></div>
       </div>
+
+      {error && (
+        <div className="mt-2 text-sm text-red-500">
+          {error}
+        </div>
+      )}
     </div>
   );
 };
