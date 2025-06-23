@@ -20,7 +20,7 @@ export const useVoiceMode = () => {
       setIsPlaying(true);
 
       const { data, error } = await supabase.functions.invoke('text-to-voice', {
-        body: { text, voice: 'Atp5cNFg1Wj5gyKD7HWV' }
+        body: { text, voice: 'flHkNRp1BlvT73UL6gyz' }
       });
 
       if (error) {
