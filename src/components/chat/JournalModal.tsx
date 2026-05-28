@@ -95,7 +95,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         initial: { y: "100%", opacity: 1 },
         animate: { y: 0, opacity: 1 },
         exit: { y: "100%" },
-        transition: { type: "spring", bounce: 0.2, duration: 0.35 }
+        transition: { type: "spring" as const, bounce: 0.2, duration: 0.35 }
       }
     : {
         className:
