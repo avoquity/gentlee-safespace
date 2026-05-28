@@ -122,7 +122,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               initial={{ scale: 0.97, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.97, opacity: 0 }}
-              transition={{ type: "spring", bounce: 0.12, duration: 0.30 }}
+              transition={{ type: "spring" as const, bounce: 0.12, duration: 0.30 }}
               onClick={e => e.stopPropagation()} // prevent closing modal when clicking inside
             >
               <ModalHeader isSheet={isSheet} />

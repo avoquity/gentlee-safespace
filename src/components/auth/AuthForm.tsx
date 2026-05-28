@@ -31,7 +31,7 @@ export const AuthForm = ({ isOpen, onOpenChange }: AuthFormProps) => {
 
   // Timer for resend verification button
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     
     if (verificationSent && !canResendVerification) {
       timer = setInterval(() => {

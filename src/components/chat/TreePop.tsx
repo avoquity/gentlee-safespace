@@ -61,11 +61,10 @@ export const TreePop: React.FC<TreePopProps> = ({ isActive, prefersReducedMotion
                 animate={{ opacity: 1, scale: 1.2, y: 0 }}
                 exit={{ opacity: 0, scale: 0, y: 5 }}
                 transition={{
-                  type: "spring",
+                  type: "spring" as const,
                   stiffness: 260,
                   damping: 20,
                   duration: index === currentTreeIndex ? 0.5 : 0.01,
-                  exit: { duration: 0.5 }
                 }}
               >
                 {tree}
