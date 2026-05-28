@@ -200,7 +200,7 @@ Avoid
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1',
+        model: 'gpt-5.4-nano',
         messages: messages,
         temperature: isFirstTimeUser ? 1.0 : 1.0, // Same temperature for first-time and return users
         max_tokens: isFirstTimeUser ? 666 : 888, // Shorter responses for first-time users
